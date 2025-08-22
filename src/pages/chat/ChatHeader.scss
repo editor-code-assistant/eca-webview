@@ -8,7 +8,7 @@
         align-items: center;
 
         %item {
-            background-color: var(--vscode-input-background, #3c3c3c);
+            background-color: var(--eca-input-bg);
             padding: 0.2em 0.3em;
             border-radius: 0.5em;
             margin: 0.3em 0.4em;
@@ -29,13 +29,13 @@
         .mcps {
             @extend %item;
             .running {
-                color: var(--vscode-testing-iconPassed, #73c991);
+                color: var(--eca-success-fg);
             }
             .starting {
-                color: var(--vscode-testing-iconQueued, #cca700);
+                color: var(--eca-warning-fg);
             }
             .failed {
-                color: var(--vscode-testing-iconFailed, #f14c4c);
+                color: var(--eca-error-fg);
             }
         }
 
@@ -57,7 +57,7 @@
                 border-radius: 0.3em;
 
                 &:hover {
-                    background-color: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+                    background-color: var(--eca-toolbar-hover-bg);
                 }
             }
         }

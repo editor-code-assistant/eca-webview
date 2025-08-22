@@ -12,7 +12,7 @@
       display: flex;
       background: none;
       border: none;
-      color: var(--vscode-input-foreground, #cccccc);
+      color: var(--eca-input-fg);
       padding: 0.5em 0;
       height: 2em;
       opacity: 0.8;
@@ -36,7 +36,7 @@
       }
 
       .server {
-          background-color: var(--vscode-input-background, #3c3c3c);
+          background-color: var(--eca-input-bg);
           margin: 0.8em 0;
           border-radius: 0.4em;
           padding: 0.5em;
@@ -54,9 +54,9 @@
               width: 0.6em;
               height: 0.6em;
 
-            &.running {background-color: var(--vscode-testing-iconPassed, #73c991);}
-            &.starting {background-color: var(--vscode-testing-iconQueued, #cca700);}
-            &.failed, &.stopped {background-color: var(--vscode-testing-iconFailed, #f14c4c);}
+            &.running {background-color: var(--eca-success-fg);}
+            &.starting {background-color: var(--eca-warning-fg);}
+            &.failed, &.stopped {background-color: var(--eca-error-fg);}
           }
 
           .divider {
@@ -68,7 +68,7 @@
               display: block;
 
               dt {
-                  color: var(--vscode-input-placeholderForeground, #767676);
+                  color: var(--eca-input-placeholder-fg);
                   display: inline-block;
                   margin-inline-start: 0;
                   margin-top: 1em;
@@ -81,7 +81,7 @@
 
               .command {
                   display: inline-block;
-                  background-color: var(--vscode-panel-background, #252526);
+                  background-color: var(--eca-panel-bg);
                   border-radius: 0.4em;
                   padding: 0.2em 0.4em;
               }
@@ -93,7 +93,7 @@
                   .tool {
                       padding: 0.2em;
                       border-radius: 0.1em;
-                      background-color: var(--vscode-panel-background, #252526);
+                      background-color: var(--eca-panel-bg);
                       margin: 0 0.2em;
                       opacity: 0.7;
                       transition: opacity 0.1s;

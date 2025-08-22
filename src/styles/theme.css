@@ -1,0 +1,96 @@
+/* App-scoped theme variables mapped per editor host */
+
+html[data-editor="vscode"] {
+  --eca-editor-bg: var(--vscode-editor-background, #2b2d30);
+  --eca-editor-fg: var(--vscode-editor-foreground, #d4d4d4);
+
+  --eca-panel-bg: var(--vscode-panel-background, #252526);
+  --eca-panel-border: var(--vscode-panel-border, #3e3e3e);
+
+  --eca-input-bg: var(--vscode-input-background, #3c3c3c);
+  --eca-input-fg: var(--vscode-input-foreground, #cccccc);
+  --eca-input-placeholder-fg: var(--vscode-input-placeholderForeground, #767676);
+
+  --eca-toolbar-hover-bg: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+
+  --eca-success-fg: var(--vscode-testing-iconPassed, #73c991);
+  --eca-warning-fg: var(--vscode-testing-iconQueued, #cca700);
+  --eca-error-fg: var(--vscode-testing-iconFailed, #f14c4c);
+
+  --eca-warning-message-fg: var(--vscode-activityWarningBadge-background, #cca700);
+  --eca-confirm-action-bg: var(--vscode-banner-iconForeground, #73c991);
+  --eca-confirm-action-fg: var(--vscode-badge-foreground, #f8f8f8);
+
+  --eca-diff-unchanged-bg: var(--vscode-diffEditor-unchangedCodeBackground, rgba(116, 116, 116, 0.16));
+  --eca-diff-insert-bg: var(--vscode-diffEditor-insertedTextBackground, rgba(156, 204, 44, 0.2));
+  --eca-diff-delete-bg: var(--vscode-diffEditor-removedLineBackground, rgba(255, 0, 0, 0.2));
+
+  --eca-item-selectable-fg: var(--vscode-editorWidget-foreground, #767676);
+
+  --eca-tooltip-bg: var(--vscode-sideBar-background, #1e1e1e);
+  --eca-tooltip-fg: var(--vscode-sideBar-foreground, #e6e6e6);
+
+  --eca-toggle-slider-bg: var(--vscode-button-secondaryForeground, #cccccc);
+  --eca-toggle-icon-bg: var(--vscode-button-foreground, #ffffff);
+  --eca-toggle-bg: var(--vscode-button-background, #0078d4);
+
+  --eca-icon-font-family: var(--vscode-icon-close-font-family, codicon);
+  --eca-context-file-fg: var(--vscode-terminalSymbolIcon-flagForeground, #ee9d28);
+  --eca-context-directory-fg: var(--vscode-terminalSymbolIcon-fileForeground, #cccccc);
+  --eca-context-web-fg: var(--vscode-terminalSymbolIcon-argumentForeground, #75beff);
+  --eca-context-repo-map-fg: var(--vscode-terminalSymbolIcon-methodForeground, #b180d7);
+  --eca-context-mcp-resource-fg: var(--vscode-terminal-ansiBrightGreen, #23d18b);
+}
+
+html[data-editor="intellij"] {
+  /* Base */
+  --eca-editor-bg: #2b2d30;
+  --eca-editor-fg: #d4d4d4;
+
+  /* Panels and borders */
+  --eca-panel-bg: #252526;
+  --eca-panel-border: #3e3e3e;
+
+  /* Inputs */
+  --eca-input-bg: #3c3c3c;
+  --eca-input-fg: #cccccc;
+  --eca-input-placeholder-fg: #767676;
+
+  /* Toolbar/hover */
+  --eca-toolbar-hover-bg: #3c3c3c;
+
+  /* Status colors */
+  --eca-success-fg: #73c991;
+  --eca-warning-fg: #cca700;
+  --eca-error-fg: #f14c4c;
+
+  /* Badges/banners */
+  --eca-warning-message-fg: #cca700;
+  --eca-confirm-action-bg: #73c991;
+  --eca-confirm-action-fg: #f8f8f8;
+
+  /* Diff */
+  --eca-diff-unchanged-bg: rgba(116, 116, 116, 0.16);
+  --eca-diff-insert-bg: rgba(156, 204, 44, 0.2);
+  --eca-diff-delete-bg: rgba(255, 0, 0, 0.2);
+
+  /* Editor widgets and focus */
+  --eca-item-selectable-fg: #767676;
+
+  /* Sidebar */
+  --eca-tooltip-bg: #1e1e1e;
+  --eca-tooltip-fg: #e6e6e6;
+
+  /* Buttons */
+  --eca-toggle-slider-bg: #cccccc;
+  --eca-toggle-icon-bg: #ffffff;
+  --eca-toggle-bg: #0078d4;
+
+  /* Icons and terminals */
+  --eca-icon-font-family: codicon;
+  --eca-context-file-fg: #ee9d28;
+  --eca-context-directory-fg: #cccccc;
+  --eca-context-web-fg: #75beff;
+  --eca-context-repo-map-fg: #b180d7;
+  --eca-context-mcp-resource-fg: #23d18b;
+}

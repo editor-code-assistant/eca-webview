@@ -3,13 +3,13 @@
 }
 
 .diff-code-normal {
-    background-color: var(--vscode-diffEditor-unchangedCodeBackground, rgba(116, 116, 116, 0.16)) !important;
+    background-color: var(--eca-diff-unchanged-bg) !important;
 }
 
 .diff-code-insert {
-    background-color: var(--vscode-diffEditor-insertedTextBackground, rgba(156, 204, 44, 0.2)) !important;
+    background-color: var(--eca-diff-insert-bg) !important;
 }
 
 .diff-code-delete {
-    background-color: var(--vscode-diffEditor-removedLineBackground, rgba(255, 0, 0, 0.2)) !important;
+    background-color: var(--eca-diff-delete-bg) !important;
 }

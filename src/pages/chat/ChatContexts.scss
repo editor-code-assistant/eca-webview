@@ -6,10 +6,10 @@
     %context-label {
         opacity: 0.8;
         font-size: 0.9em;
-        color: var(--vscode-input-foreground, #cccccc);
+        color: var(--eca-input-fg);
         border-radius: 0.3em;
         background: none;
-        border: 1px solid var(--vscode-toolbar-hoverBackground, #3c3c3c);
+        border: 1px solid var(--eca-toolbar-hover-bg);
         transition: opacity 0.1s, background-color 0.1s;
         padding: 0.2em;
         margin: 0.2em 0.2em;
@@ -17,7 +17,7 @@
 
         &:hover {
             opacity: 1;
-            background-color: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+            background-color: var(--eca-toolbar-hover-bg);
         }
     }
 
@@ -26,17 +26,17 @@
     }
 
     #add-context {
-        background-color: var(--vscode-input-background, #3c3c3c);
+        background-color: var(--eca-input-bg);
         height: 30vh;
         max-width: 80vw;
         overflow: auto;
         padding: 0.6em 0.4em;
 
         input {
-            background-color: var(--vscode-input-background, #3c3c3c);
+            background-color: var(--eca-input-bg);
             outline: none;
             border: none;
-            color: var(--vscode-input-foreground, #cccccc);
+            color: var(--eca-input-fg);
             margin-bottom: 0.5em;
         }
 
@@ -48,12 +48,12 @@
             padding: 0.2em 0.5em;
 
             &:hover {
-                background-color: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+                background-color: var(--eca-toolbar-hover-bg);
                 cursor: pointer;
             }
 
             .label {
-                color: var(--vscode-input-foreground, #cccccc);
+                color: var(--eca-input-fg);
             }
             .description {
                 margin-left: 0.8em;
@@ -67,11 +67,11 @@
         vertical-align: middle;
         margin: 0 0.2em;
 
-        &.file { color: var(--vscode-terminalSymbolIcon-flagForeground, #ee9d28); }
-        &.directory { color: var(--vscode-terminalSymbolIcon-fileForeground, #cccccc); }
-        &.web { color: var(--vscode-terminalSymbolIcon-argumentForeground, #75beff); }
-        &.repoMap { color: var(--vscode-terminalSymbolIcon-methodForeground, #b180d7); }
-        &.mcpResource { color: var(--vscode-terminal-ansiBrightGreen, #23d18b); }
+        &.file { color: var(--eca-context-file-fg); }
+        &.directory { color: var(--eca-context-directory-fg); }
+        &.web { color: var(--eca-context-web-fg); }
+        &.repoMap { color: var(--eca-context-repo-map-fg); }
+        &.mcpResource { color: var(--eca-context-mcp-resource-fg); }
     }
 
     .added-context {
@@ -80,8 +80,8 @@
         &:hover {
             .context-icon {
                 &:before {
-                    font-family: var(--vscode-icon-close-font-family);
-                    color: var(--vscode-input-foreground, #cccccc);
+                    font-family: var(--eca-icon-font-family);
+                    color: var(--eca-input-fg);
                     content: "\ea76";
                 }
             }

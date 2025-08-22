@@ -37,9 +37,9 @@
   .progress-area {
       width: calc(100% - 2em);
       margin: 0 auto;
-      background-color: var(--vscode-panel-background, #252526);
+      background-color: var(--eca-panel-bg);
       padding: 0.5em 1em;
-      color: var(--vscode-input-placeholderForeground, #767676);
+      color: var(--eca-input-placeholder-fg);
       display: flex;
 
       p {
@@ -52,13 +52,13 @@
           margin: 0 0.2em;
 
           @keyframes spinner-sync {
-              33% {transform: translateY(2px);}
-              66% {transform: translateY(-2px);}
-              100% {transform: translateY(0px);}
+              33% {transform: translateY(2px);} 
+              66% {transform: translateY(-2px);} 
+              100% {transform: translateY(0px);} 
           }
 
           span {
-              background-color: var(--vscode-input-placeholderForeground, #767676) !important;
+              background-color: var(--eca-input-placeholder-fg) !important;
               animation-name: spinner-sync !important;
           }
       }

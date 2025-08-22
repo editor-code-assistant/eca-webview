@@ -1,4 +1,5 @@
 @import 'styles/codicon.css';
+@import './styles/theme.css';
 
 :root {
   --example-var: rgb(30, 30, 30);
@@ -9,7 +10,7 @@ body,
 #root {
   height: 100%;
   line-height: 1.3;
-  background-color: var(--vscode-editor-background);
+  background-color: var(--eca-editor-bg);
   font-family:
     system-ui,
     -apple-system,
@@ -26,7 +27,7 @@ body,
 
 body {
   padding: 0;
-  color: var(--vscode-editor-foreground);
+  color: var(--eca-editor-fg);
   padding: 0px;
   margin: 0px;
   height: 100%;

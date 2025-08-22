@@ -10,12 +10,12 @@
     .user-message {
       line-height: 1.4;
       padding: 0.1em 0.8em;
-      background-color: var(--vscode-input-background, #3c3c3c);
+      background-color: var(--eca-input-bg);
       border-radius: 0.4em;
     }
 
     .system-message {
-      color: var(--vscode-activityWarningBadge-background, #cca700);
+      color: var(--eca-warning-message-fg);
       white-space: pre-wrap;
     }
 }

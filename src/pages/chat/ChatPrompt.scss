@@ -3,15 +3,15 @@
     padding: 0.6em;
     flex-wrap: wrap;
     gap: 0.4em;
-    border-top: 1px solid var(--vscode-panel-border, #3e3e3e);
-    background-color: var(--vscode-input-background, #3c3c3c);
+    border-top: 1px solid var(--eca-panel-border);
+    background-color: var(--eca-input-bg);
 
     .field {
         width: 100%;
-        background-color: var(--vscode-input-background, #3c3c3c);
+        background-color: var(--eca-input-bg);
         margin: 0.3em 0;
         border: none;
-        color: var(--vscode-input-foreground, #cccccc);
+        color: var(--eca-input-fg);
         font-family: inherit;
         overflow: hidden;
         resize: none;
@@ -19,11 +19,11 @@
 
         &:focus {
             outline: none;
-            border-color: var(--vscode-focusBorder, #007acc);
+            border: none;
         }
 
         &::placeholder {
-            color: var(--vscode-input-placeholderForeground, #767676);
+            color: var(--eca-input-placeholder-fg);
         }
     }
 
@@ -31,8 +31,8 @@
         padding: 0.3em;
         border-radius: 0.5em;
         border: none;
-        color: var(--vscode-editorWidget-foreground, #767676);
-        background-color: var(--vscode-input-background, #3c3c3c);
+        color: var(--eca-item-selectable-fg);
+        background-color: var(--eca-input-bg);
         transition: background-color 100ms, color 100ms, opacity 0.1s;
         font-size: 0.9em;
         cursor: pointer;
@@ -45,20 +45,20 @@
         }
 
         &:hover {
-            color: var(--vscode-input-foreground, #cccccc);
-            background-color: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+            color: var(--eca-input-fg);
+            background-color: var(--eca-toolbar-hover-bg);
             opacity: 1;
         }
 
         option {
             cursor: pointer;
-            color: var(--vscode-editorWidget-foreground, #767676);
-            background-color: var(--vscode-input-background, #3c3c3c);
+            color: var(--eca-item-selectable-fg);
+            background-color: var(--eca-input-bg);
             border: none;
 
             &:hover {
-                color: var(--vscode-input-foreground, #cccccc);
-                background-color: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+                color: var(--eca-input-fg);
+                background-color: var(--eca-toolbar-hover-bg);
             }
         }
     }
@@ -83,7 +83,7 @@
             border-radius: 0.3em;
 
             &:hover {
-                background-color: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+                background-color: var(--eca-toolbar-hover-bg);
             }
         }
     }

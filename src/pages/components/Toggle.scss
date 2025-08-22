@@ -20,7 +20,7 @@ $buttonSize: $size / 3;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--vscode-button-secondaryForeground, #ccc);
+    background-color: var(--eca-toggle-slider-bg);
     transition: .4s;
 
     &::before {
@@ -30,18 +30,18 @@ $buttonSize: $size / 3;
       width: $buttonSize;
       left: 0.3em;
       bottom: 15%;
-      background-color: var(--vscode-button-foreground, #FFF);
+      background-color: var(--eca-toggle-icon-bg);
       transition: .4s;
     }
   }
 }
 
 input:checked + .slider {
-  background-color: var(--vscode-button-background, #0078d4);
+  background-color: var(--eca-toggle-bg);
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px var(--vscode-button-background, #0078d4);
+  box-shadow: 0 0 1px var(--eca-toggle-bg);
 }
 
 input:checked + .slider:before {
