@@ -1,3 +1,5 @@
+@import 'styles/codicon.css';
+
 :root {
   --example-var: rgb(30, 30, 30);
 }
