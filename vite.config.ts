@@ -3,6 +3,7 @@ import { resolve } from "path";
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: './',
   plugins: [react()],
   build: {
     rollupOptions: {
@@ -25,3 +26,4 @@ export default defineConfig({
     },
   }
 })
+
