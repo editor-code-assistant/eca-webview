@@ -1,7 +1,7 @@
-import { FileChangeDetails, ToolCallDetails, ToolCallOutput } from '@protocol/protocol';
 import { memo } from 'react';
 import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
+import { FileChangeDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { openFileInEditor } from '../../redux/thunks/vscode';

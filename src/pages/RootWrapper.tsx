@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useWebviewListener, webviewSend } from "../hooks";
-import { ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "@protocol/protocol";
+import { ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, addContext, setBehaviors, setCommands, setContexts, setModels, setSelectedBehavior, setSelectedModel, setWelcomeMessage } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";

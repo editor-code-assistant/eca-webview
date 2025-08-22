@@ -1,5 +1,5 @@
-import { ChatCommand, ChatContentReceivedParams, ChatContentRole, ChatContext, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "@protocol/protocol";
 import { createSlice } from "@reduxjs/toolkit";
+import { ChatCommand, ChatContentReceivedParams, ChatContentRole, ChatContext, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 
 interface ChatMessageText {
     type: 'text',
