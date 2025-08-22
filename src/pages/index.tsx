@@ -2,7 +2,7 @@ import { Chat } from "./chat/Chat";
 
 declare global {
   interface Window {
-    vscodeMediaUrl: string;
+    mediaUrl: string;
   }
 }
 
