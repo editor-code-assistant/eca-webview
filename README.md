@@ -1,3 +1,3 @@
-# ECA GUI
+# ECA webview
 
-This is the React frontend for the ECA VS Code extension.
+This is the React frontend for the ECA vscode and intellij plugins.
