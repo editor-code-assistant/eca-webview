@@ -44,53 +44,53 @@ html[data-editor="vscode"] {
 
 html[data-editor="intellij"] {
   /* Base */
-  --eca-editor-bg: #2b2d30;
-  --eca-editor-fg: #d4d4d4;
+  --eca-editor-bg: var(--intellij-editor-bg, #414450);
+  --eca-editor-fg: var(--intellij-editor-fg, #a0a0a0);
 
   /* Panels and borders */
-  --eca-panel-bg: #252526;
-  --eca-panel-border: #3e3e3e;
+  --eca-panel-bg: var(--intellij-panel-bg, #3a3d4c);
+  --eca-panel-border: var(--intellij-panel-border, #282a36);
 
   /* Inputs */
-  --eca-input-bg: #3c3c3c;
-  --eca-input-fg: #cccccc;
-  --eca-input-placeholder-fg: #767676;
+  --eca-input-bg: var(--intellij-input-bg, #3c3c3c);
+  --eca-input-fg: var(--intellij-input-fg, #cccccc);
+  --eca-input-placeholder-fg: var(--intellij-input-placeholder-fg, #767676);
 
   /* Toolbar/hover */
-  --eca-toolbar-hover-bg: #3c3c3c;
+  --eca-toolbar-hover-bg: var(--intellij-toolbar-hover-bg, #3c3c3c);
 
   /* Status colors */
-  --eca-success-fg: #73c991;
-  --eca-warning-fg: #cca700;
-  --eca-error-fg: #f14c4c;
+  --eca-success-fg: var(--intellij-success-fg, #73c991);
+  --eca-warning-fg: var(--intellij-warning-fg, #cca700);
+  --eca-error-fg: var(--intellij-error-fg, #f14c4c);
 
   /* Badges/banners */
-  --eca-warning-message-fg: #cca700;
-  --eca-confirm-action-bg: #73c991;
-  --eca-confirm-action-fg: #f8f8f8;
+  --eca-warning-message-fg: var(--intellij-warning-message-fg, #cca700);
+  --eca-confirm-action-bg: var(--intellij-confirm-action-bg, #73c991);
+  --eca-confirm-action-fg: var(--intellij-confirm-action-fg, #f8f8f8);
 
   /* Diff */
-  --eca-diff-unchanged-bg: rgba(116, 116, 116, 0.16);
-  --eca-diff-insert-bg: rgba(156, 204, 44, 0.2);
-  --eca-diff-delete-bg: rgba(255, 0, 0, 0.2);
+  --eca-diff-unchanged-bg: var(--intellij-diff-unchanged-bg, rgba(116, 116, 116, 0.16));
+  --eca-diff-insert-bg: var(--intellij-diff-insert-bg, rgba(156, 204, 44, 0.2));
+  --eca-diff-delete-bg: var(--intellij-diff-delete-bg, rgba(255, 0, 0, 0.2));
 
   /* Editor widgets and focus */
-  --eca-item-selectable-fg: #767676;
+  --eca-item-selectable-fg: var(--intellij-item-selectable-fg, #767676);
 
   /* Sidebar */
-  --eca-tooltip-bg: #1e1e1e;
-  --eca-tooltip-fg: #e6e6e6;
+  --eca-tooltip-bg: var(--intellij-tooltip-bg, #1e1e1e);
+  --eca-tooltip-fg: var(--intellij-tooltip-fg, #e6e6e6);
 
   /* Buttons */
-  --eca-toggle-slider-bg: #cccccc;
-  --eca-toggle-icon-bg: #ffffff;
-  --eca-toggle-bg: #0078d4;
+  --eca-toggle-slider-bg: var(--intellij-toogle-slider-bg, #cccccc);
+  --eca-toggle-icon-bg: var(--intellij-toggle-icon-bg, #ffffff);
+  --eca-toggle-bg: var(--intellij-toggle-bg, #0078d4);
 
   /* Icons and terminals */
-  --eca-icon-font-family: codicon;
-  --eca-context-file-fg: #ee9d28;
-  --eca-context-directory-fg: #cccccc;
-  --eca-context-web-fg: #75beff;
-  --eca-context-repo-map-fg: #b180d7;
-  --eca-context-mcp-resource-fg: #23d18b;
+  --eca-icon-font-family: codicon);
+  --eca-context-file-fg: var(--intellij-context-file-fg, #ee9d28);
+  --eca-context-directory-fg: var(--intellij-context-directory-fg, #cccccc);
+  --eca-context-web-fg: var(--intellij-web-fg, #75beff);
+  --eca-context-repo-map-fg: var(--intellij-repo-map-fg, #b180d7);
+  --eca-context-mcp-resource-fg: var(--intellij-mcp-resource-fg, #23d18b);
 }
