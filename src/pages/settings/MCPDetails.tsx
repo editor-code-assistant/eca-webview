@@ -30,7 +30,7 @@ export function MCPDetails() {
             </div>
             <div className="servers">
                 <h2 className="title">MCP Servers</h2>
-                <p className="description">MCPs are extra tools that can offer more power to ECA, for more details check <a href="https://modelcontextprotocol.io">MCP</a></p>
+                <p className="description">MCPs are extra tools that can offer more power to ECA, for more details check <a href="https://eca.dev/configuration/#mcp">ECA MCP docs</a></p>
                 {mcpServers.map((server, index) => {
                     let commandTxt;
                     if (server.type === 'mcp') {

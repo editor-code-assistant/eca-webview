@@ -1,10 +1,6 @@
 @import 'styles/codicon.css';
 @import './styles/theme.css';
 
-:root {
-  --example-var: rgb(30, 30, 30);
-}
-
 html,
 body,
 #root {
@@ -31,6 +27,8 @@ body {
   padding: 0px;
   margin: 0px;
   height: 100%;
+  border-right: 1px solid var(--eca-panel-bg);
+  border-left: 1px solid var(--eca-panel-bg);
 }
 
 *:focus {
@@ -39,6 +37,21 @@ body {
 
 .scrollable {
   scrollbar-width: thin;
+  scrollbar-color: var(--eca-input-bg) var(--eca-editor-bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 3px;
+  background-color: var(--eca-editor-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: var(--eca-input-bg);
 }
 
 ul {
