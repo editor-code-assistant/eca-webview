@@ -38,6 +38,7 @@ export function webviewSend<T>(
             return;
         }
         case 'intellij': {
+            window.postMessageToEditor(msg);
             return;
         }
     }
