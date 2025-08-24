@@ -2,9 +2,9 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend } from "../../hooks";
 import { ThunkApiType } from "../store";
 
-export const openFileInEditor = createAsyncThunk<void, { path: string }, ThunkApiType>(
-    "vscode/openFileInEditor",
+export const editorOpenFile = createAsyncThunk<void, { path: string }, ThunkApiType>(
+    "editor/openFile",
     async ({ path }, _) => {
-        webviewSend('vscode/openFileInEditor', { path });
+        webviewSend('editor/openFile', { path });
     }
 );

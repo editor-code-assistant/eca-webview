@@ -4,7 +4,7 @@ import 'react-diff-view/style/index.css';
 import { FileChangeDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
-import { openFileInEditor } from '../../redux/thunks/vscode';
+import { editorOpenFile } from '../../redux/thunks/vscode';
 import { ChatCollapsableMessage } from './ChatCollapsableMessage';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
@@ -76,7 +76,7 @@ function fileChangeToolCall({ path, diff, linesAdded, linesRemoved }: FileChange
     const dispatch = useEcaDispatch();
 
     const openFile = (_event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
-        dispatch(openFileInEditor({ path }));
+        dispatch(editorOpenFile({ path }));
     }
 
     return (
