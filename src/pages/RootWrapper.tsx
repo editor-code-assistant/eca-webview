@@ -6,6 +6,7 @@ import { addContentReceived, addContext, setBehaviors, setCommands, setContexts,
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
+import { focusChanged } from "../redux/thunks/editor";
 import { statusChanged } from "../redux/thunks/server";
 
 interface NavigateTo {
@@ -73,6 +74,10 @@ const RootWrapper = () => {
 
     useWebviewListener('config/updated', (config: { [key: string]: any }) => {
         dispatch(setConfig(config));
+    });
+
+    useWebviewListener('editor/focusChanged', (focus: any) => {
+        dispatch(focusChanged(focus))
     });
 
     useEffect(() => {

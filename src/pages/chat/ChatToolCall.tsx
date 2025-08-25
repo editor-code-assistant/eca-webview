@@ -4,7 +4,7 @@ import 'react-diff-view/style/index.css';
 import { FileChangeDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
-import { editorOpenFile } from '../../redux/thunks/vscode';
+import { editorOpenFile } from '../../redux/thunks/editor';
 import { ChatCollapsableMessage } from './ChatCollapsableMessage';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';

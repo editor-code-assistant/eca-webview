@@ -58,6 +58,7 @@ export const chatSlice = createSlice({
         chats: {} as { [key: string]: Chat },
         contexts: undefined as (ChatContext[] | undefined),
         addedContexts: [{ type: 'repoMap' }] as ChatContext[],
+        uniqueContexts: {} as { [key: string]: ChatContext },
         commands: undefined as (ChatCommand[] | undefined),
     },
     reducers: {
@@ -229,6 +230,35 @@ export const chatSlice = createSlice({
         setContexts: (state, action) => {
             state.contexts = action.payload.contexts;
         },
+        setUniqueContext: (state, action) => {
+            const context = action.payload.context as ChatContext;
+            const uniqueType = action.payload.uniqueType as string;
+
+            // Snapshot previous unique contexts before updating
+            const prevUniqueValues = Object.values(state.uniqueContexts);
+
+            // Update unique context for the given type
+            state.uniqueContexts[uniqueType] = context;
+
+            // Unique contexts after the update
+            const nextUniqueValues = Object.values(state.uniqueContexts);
+
+            // Remove any previous unique contexts from addedContexts
+            const filteredAdded = state.addedContexts.filter(existing =>
+                !prevUniqueValues.some(prev => JSON.stringify(prev) === JSON.stringify(existing))
+            );
+
+            // Merge current unique contexts into addedContexts without duplicates
+            const deduped = [...filteredAdded];
+            for (const u of nextUniqueValues) {
+                const exists = deduped.some(e => JSON.stringify(e) === JSON.stringify(u));
+                if (!exists) {
+                    deduped.push(u);
+                }
+            }
+
+            state.addedContexts = deduped;
+        },
         addContext: (state, action) => {
             state.addedContexts = [...state.addedContexts, action.payload];
         },
@@ -248,6 +278,7 @@ export const {
     setModels,
     setSelectedBehavior,
     setSelectedModel,
+    setUniqueContext,
     setWelcomeMessage,
     incRequestId,
     addContentReceived,
