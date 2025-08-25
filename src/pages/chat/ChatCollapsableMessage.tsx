@@ -17,7 +17,7 @@ export const ChatCollapsableMessage = memo(({ header, content, className, defaul
 
     return (
         <div className={`collapsable ${open ? 'open' : ''} ${className}`}>
-            <div className="header">
+            <div onClick={toggleOpen} className="header">
                 <i onClick={toggleOpen} className="chrevron codicon codicon-chevron-right"></i>
                 {header(toggleOpen)}
             </div>

@@ -1,5 +1,4 @@
 .collapsable {
-    padding: 0.5em 0.8em;
     border: 0.1em solid var(--eca-input-bg);
     border-radius: 0.4em;
 
@@ -15,6 +14,7 @@
     }
 
     .header {
+        padding: 0.5em 0.8em;
         opacity: 0.8;
         transition: opacity 100ms;
         cursor: pointer;
@@ -31,6 +31,7 @@
     }
 
     .content {
+        padding: 0 0.8em;
         overflow: hidden;
         transition: max-height 0.1s, overflow 0.1s;
         max-height: 0;
