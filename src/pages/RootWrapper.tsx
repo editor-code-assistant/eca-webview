@@ -54,6 +54,9 @@ const RootWrapper = () => {
 
     useWebviewListener('chat/contentReceived', (contentReceived: ChatContentReceivedParams) => {
         dispatch(addContentReceived(contentReceived))
+        if (contentReceived.content.type === 'toolCalled') {
+            webviewSend('editor/refresh', {});
+        }
     });
 
     useWebviewListener('chat/queryContext', (result: ChatQueryContextResponse) => {
