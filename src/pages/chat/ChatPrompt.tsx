@@ -4,11 +4,10 @@ import { webviewSend } from "../../hooks";
 import { setSelectedBehavior, setSelectedModel } from "../../redux/slices/chat";
 import { State, useEcaDispatch } from "../../redux/store";
 import { sendPrompt } from "../../redux/thunks/chat";
+import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
 import './ChatPrompt.scss';
-import { ToolTip } from "../components/ToolTip";
-import { SelectBox } from "../components/SelectBox";
 
 interface ChatPromptProps {
     enabled: boolean,

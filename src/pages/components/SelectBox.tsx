@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
+import { TooltipRefProps } from 'react-tooltip';
 import './SelectBox.scss';
 import { ToolTip } from './ToolTip';
-import { TooltipRefProps } from 'react-tooltip';
 
 interface ISelectBox {
     id: string,
@@ -11,7 +11,7 @@ interface ISelectBox {
     onSelected: (option: string) => void;
 }
 
-export function SelectBox({ id, options, defaultOption, onSelected, className }: ISelectBox) {
+export const SelectBox = memo(({ id, options, defaultOption, onSelected, className }: ISelectBox) => {
     const ref = useRef<TooltipRefProps>(null);
     const [selected, setSelected] = useState(false);
 
@@ -22,7 +22,7 @@ export function SelectBox({ id, options, defaultOption, onSelected, className }:
     };
 
     return (
-        <div style={{ display: 'inline-block' }}>
+        <div style={{ display: 'inline-block' }} className={className}>
             <button onClick={() => setSelected(!selected)} data-tooltip-id={id} className={`select-box-button ${selected ? 'selected' : ''}`}>{defaultOption || options[0]}</button>
             <ToolTip id={id}
                 ref={ref}
@@ -44,4 +44,4 @@ export function SelectBox({ id, options, defaultOption, onSelected, className }:
             </ToolTip>
         </div>
     );
-}
+});
