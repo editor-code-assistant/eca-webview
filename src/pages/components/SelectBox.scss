@@ -26,12 +26,12 @@
 
     &:active, &:focus {
         outline: none;
-        border: 1px solid var(--eca-toolbar-hover-bg);
+        border: 1px solid var(--eca-highlight-bg);
     }
 
     &:hover {
         color: var(--eca-input-fg);
-        background-color: var(--eca-toolbar-hover-bg);
+        background-color: var(--eca-highlight-bg);
         opacity: 1;
     }
 }

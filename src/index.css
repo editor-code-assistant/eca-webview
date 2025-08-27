@@ -62,5 +62,5 @@ ul {
 }
 
 a {
-  color: white;
+  color: var(--eca-link-fg);
 }

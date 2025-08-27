@@ -9,7 +9,7 @@
         color: var(--eca-input-fg);
         border-radius: 0.3em;
         background: none;
-        border: 1px solid var(--eca-toolbar-hover-bg);
+        border: 1px solid var(--eca-highlight-bg);
         transition: opacity 0.1s, background-color 0.1s;
         padding: 0.2em;
         margin: 0.2em 0.2em;
@@ -17,7 +17,7 @@
 
         &:hover {
             opacity: 1;
-            background-color: var(--eca-toolbar-hover-bg);
+            background-color: var(--eca-highlight-bg);
         }
     }
 
@@ -48,7 +48,7 @@
             padding: 0.2em 0.5em;
 
             &:hover {
-                background-color: var(--eca-toolbar-hover-bg);
+                background-color: var(--eca-highlight-bg);
                 cursor: pointer;
             }
 

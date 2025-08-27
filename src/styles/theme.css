@@ -11,7 +11,9 @@ html[data-editor="vscode"] {
   --eca-input-fg: var(--vscode-input-foreground, #cccccc);
   --eca-input-placeholder-fg: var(--vscode-input-placeholderForeground, #767676);
 
-  --eca-toolbar-hover-bg: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+  --eca-highlight-bg: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+
+  --eca-link-fg: var(--vscode-textLink-foreground , #4daafc);
 
   --eca-success-fg: var(--vscode-testing-iconPassed, #73c991);
   --eca-warning-fg: var(--vscode-testing-iconQueued, #cca700);
@@ -53,7 +55,9 @@ html[data-editor="intellij"] {
   --eca-input-fg: var(--intellij-input-fg, #cccccc);
   --eca-input-placeholder-fg: var(--intellij-input-placeholder-fg, #767676);
 
-  --eca-toolbar-hover-bg: var(--intellij-toolbar-hover-bg, #3c3c3c);
+  --eca-highlight-bg: var(--intellij-highlight-bg, #3c3c3c);
+
+  --eca-link-fg: var(--intellij-link-fg , #589df6);
 
   --eca-success-fg: var(--intellij-success-fg, #73c991);
   --eca-warning-fg: var(--intellij-warning-fg, #cca700);
