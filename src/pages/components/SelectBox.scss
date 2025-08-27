@@ -1,0 +1,58 @@
+.select-box-button {
+    padding: 0.3em;
+    border-radius: 0.3em;
+    border: none;
+    color: var(--eca-item-selectable-fg);
+    background-color: var(--eca-input-bg);
+    transition: background-color 100ms, color 100ms, opacity 0.1s;
+    font-size: 0.9em;
+    cursor: pointer;
+    height: 2em;
+    opacity: 0.8;
+
+    &::after {
+        font-family: var(--eca-icon-font-family);
+        content: "\eab4";
+        width: 0.5em;
+        vertical-align: middle;
+        height: 0.5em;
+        margin: 0.2em;
+    }
+
+    &.selected {
+        &::after {
+            content: "\eab7";
+        }
+    }
+
+    &:active, &:focus {
+        outline: none;
+        border: 1px solid var(--eca-toolbar-hover-bg);
+    }
+
+    &:hover {
+        color: var(--eca-input-fg);
+        background-color: var(--eca-toolbar-hover-bg);
+        opacity: 1;
+    }
+}
+
+.select-tooltip {
+    padding: 0 !important;
+    background-color: var(--eca-toolbar-hover-bg) !important;
+    border: 1px solid var(--eca-input-bg);
+
+    .option {
+        cursor: pointer;
+        display: block;
+        padding: 0.3em 0.5em;
+        opacity: 0.8;
+        transition: opacity 0.1s;
+
+        &:hover {
+            opacity: 1;
+            background-color: var(--eca-panel-bg);
+        }
+    }
+
+}

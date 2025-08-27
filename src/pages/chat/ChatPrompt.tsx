@@ -7,6 +7,8 @@ import { sendPrompt } from "../../redux/thunks/chat";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
 import './ChatPrompt.scss';
+import { ToolTip } from "../components/ToolTip";
+import { SelectBox } from "../components/SelectBox";
 
 interface ChatPromptProps {
     enabled: boolean,
@@ -31,16 +33,12 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         }
     }
 
-    const handleModelChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newModel = e.target.value;
-
+    const handleModelChanged = (newModel: string) => {
         webviewSend('chat/selectedModelChanged', { value: newModel });
         dispatch(setSelectedModel(newModel));
     }
 
-    const handleBehaviorChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newBehavior = e.target.value;
-
+    const handleBehaviorChanged = (newBehavior: string) => {
         webviewSend('chat/selectedBehaviorChanged', { value: newBehavior });
         dispatch(setSelectedBehavior(newBehavior));
     }
@@ -86,21 +84,18 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
             />
             {enabled && (
                 <div>
-                    <select value={selectedBehavior}
-                        className="behaviors"
-                        onChange={handleBehaviorChanged}
-                    >
-                        {behaviors.map((behavior) => (
-                            <option key={behavior} value={behavior}>{behavior}</option>
-                        ))}
-                    </select>
-                    <select onChange={handleModelChanged}
-                        value={selectedModel}
-                        className="models">
-                        {models.map((model) => (
-                            <option key={model} value={model}>{model}</option>
-                        ))}
-                    </select>
+                    <SelectBox
+                        id="select-behavior"
+                        defaultOption={selectedBehavior}
+                        onSelected={handleBehaviorChanged}
+                        options={behaviors}
+                    />
+                    <SelectBox
+                        id="select-model"
+                        defaultOption={selectedModel}
+                        onSelected={handleModelChanged}
+                        options={models}
+                    />
                 </div>
             )}
             <div className="spacing"></div>
