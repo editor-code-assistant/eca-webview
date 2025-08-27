@@ -8,7 +8,6 @@
     font-size: 0.9em;
     cursor: pointer;
     height: 2em;
-    opacity: 0.8;
 
     &::after {
         font-family: var(--eca-icon-font-family);
@@ -39,8 +38,9 @@
 
 .select-tooltip {
     padding: 0 !important;
-    background-color: var(--eca-toolbar-hover-bg) !important;
+    background-color: var(--eca-tooltip-bg) !important;
     border: 1px solid var(--eca-input-bg);
+    min-width: 8em;
 
     .option {
         cursor: pointer;

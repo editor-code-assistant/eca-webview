@@ -10,6 +10,7 @@ export function ToolTip(props: (ITooltip & RefAttributes<TooltipRefProps>)) {
             className={className}
             noArrow
             opacity={1}
-            delayShow={props.delayShow || 200} />
+            delayHide={0}
+            delayShow={0} />
     );
 }
