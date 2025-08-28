@@ -4,32 +4,37 @@ import { ServerStatus } from "../../redux/slices/server";
 import { State, useEcaDispatch } from "../../redux/store";
 import { stopPrompt } from "../../redux/thunks/chat";
 import './Chat.scss';
-import { ChatHeader } from './ChatHeader';
+import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from './ChatMessages';
 import { ChatPrompt } from "./ChatPrompt";
+import { ChatSubHeader } from './ChatSubHeader';
 
 export function Chat() {
     const dispatch = useEcaDispatch();
     const status = useSelector((state: State) => state.server.status);
     const running = status === ServerStatus.Running;
 
+    const selectedChat = useSelector((state: State) => state.chat.selectedChat);
     const allChats = useSelector((state: State) => state.chat.chats);
+    const chatsList = Object.values(allChats);
+    const notEmptyChats = chatsList.filter(c => c.id !== 'EMPTY');
 
-    //TODO Support multiple chats
-    let chatId = Object.values(allChats)[0]?.id;
+    let currentChatId = notEmptyChats.find(c => c.id === selectedChat)?.id;
 
-    const chat = chatId ? allChats[chatId] : undefined;
+    const currentProgress = currentChatId ? allChats[currentChatId].progress : undefined;
 
     const welcomeMessage = useSelector((state: State) => state.chat.welcomeMessage);
 
     const onStop = (_e: any) => {
-        dispatch(stopPrompt({ chatId }));
+        dispatch(stopPrompt({ chatId: currentChatId! }));
     };
 
     return (
         <div className="chat-container">
             {running && (
-                <ChatHeader chatId={chatId} />
+                <ChatHeader chats={chatsList} />)}
+            {running && (
+                <ChatSubHeader chatId={currentChatId} />
             )}
 
             {!running &&
@@ -41,7 +46,7 @@ export function Chat() {
                 </div>
             }
 
-            <ChatMessages chatId={chatId}>
+            <ChatMessages chatId={currentChatId}>
                 {running && (
                     <div className="welcome-message">
                         <h2>{welcomeMessage}</h2>
@@ -50,18 +55,18 @@ export function Chat() {
                 }
             </ChatMessages>
 
-            {chat && chat.progress && (
+            {currentProgress && (
                 <div className="progress-area">
-                    <p>{chat.progress}</p>
+                    <p>{currentProgress}</p>
                     <SyncLoader className="spinner" size={2} />
                     <div className="divider"></div>
-                    {chatId && (
+                    {currentChatId && (
                         <span onClick={onStop} className="stop">Stop</span>
                     )}
                 </div>
             )}
 
-            <ChatPrompt chatId={chatId} enabled={running} />
+            <ChatPrompt chatId={currentChatId} enabled={running} />
         </div>
     );
 }

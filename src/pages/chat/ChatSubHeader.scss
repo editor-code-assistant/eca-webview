@@ -1,0 +1,69 @@
+.chat-subheader {
+    display: inline-flex;
+
+    .details {
+        display: flex;
+        justify-content: start;
+        flex:1;
+        align-items: center;
+
+        %item {
+            background-color: var(--eca-input-bg);
+            padding: 0.2em 0.3em;
+            border-radius: 0.4em;
+            margin: 0.4em;
+            opacity: 0.8;
+            cursor: pointer;
+            transition: opacity 0.1s;
+            font-size: 0.9em;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .details-tooltip {
+            line-height: 0.5;
+        }
+
+        .mcps {
+            @extend %item;
+            .running {
+                color: var(--eca-success-fg);
+            }
+            .starting {
+                color: var(--eca-warning-fg);
+            }
+            .failed {
+                color: var(--eca-error-fg);
+            }
+        }
+
+        .usage {
+            @extend %item;
+        }
+    }
+    .spacing { flex: 1; }
+    .actions {
+        display: flex;
+        justify-content: end;
+        margin: 0 0.5em;
+
+        .action {
+            display: inline-block;
+
+            i {
+                cursor:pointer;
+                padding: 0.2em;
+                margin: 0.3em 0.1em;
+                border-radius: 0.3em;
+
+                &:hover {
+                    background-color: var(--eca-highlight-bg);
+                }
+            }
+        }
+
+    }
+
+}

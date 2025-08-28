@@ -1,67 +1,56 @@
 .chat-header {
-    display: inline-flex;
 
-    .details {
+    .chats {
         display: flex;
-        justify-content: start;
-        flex:1;
-        align-items: center;
+        background-color: var(--eca-panel-bg);
+        width: 100%;
 
-        %item {
-            background-color: var(--eca-input-bg);
-            padding: 0.2em 0.3em;
-            border-radius: 0.5em;
-            margin: 0.3em 0.4em;
-            opacity: 0.8;
-            cursor: pointer;
-            transition: opacity 0.1s;
+        .chat {
+            display: flex;
             font-size: 0.9em;
+            background-color: var(--eca-editor-bg);
+            padding: 0.5em 0;
+            padding-left: 0.8em;
+            cursor: pointer;
+            align-items: center;
+            border-top: 1px solid var(--eca-input-bg);
+            border-right: 1px solid var(--eca-input-bg);
+            transition: background-color 0.1s;
+
+            &.selected {
+                border-top: 1px solid var(--eca-link-fg);
+                background-color: var(--eca-editor-bg) !important;
+            }
+
+            &.empty {
+                padding-right: 0.8em;
+            }
+
+            &:hover {
+                background-color: var(--eca-input-bg);
+            }
+
+            .close {
+                margin: 0 0.2em;
+                border-radius: 0.4em;
+                margin-left: 0.5em;
+                padding: 0.1em;
+                z-index: 2;
+
+                &:hover {
+                    background-color: var(--eca-panel-bg);
+                }
+            }
+        }
+
+        .new-chat {
+            padding: 0.6em 0.8em;
+            cursor: pointer;
+            opacity: 0.7;
 
             &:hover {
                 opacity: 1;
             }
         }
-
-        .details-tooltip {
-            line-height: 0.5;
-        }
-
-        .mcps {
-            @extend %item;
-            .running {
-                color: var(--eca-success-fg);
-            }
-            .starting {
-                color: var(--eca-warning-fg);
-            }
-            .failed {
-                color: var(--eca-error-fg);
-            }
-        }
-
-        .usage {
-            @extend %item;
-        }
-    }
-    .actions {
-        display: flex;
-        justify-content: end;
-        margin: 0 0.5em;
-
-        .action {
-            display: inline-block;
-
-            i {
-                cursor:pointer;
-                padding: 0.2em;
-                margin: 0.3em 0.1em;
-                border-radius: 0.3em;
-
-                &:hover {
-                    background-color: var(--eca-highlight-bg);
-                }
-            }
-        }
-
     }
 }

@@ -31,8 +31,9 @@ interface ChatMessageReason {
 
 export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall;
 
-interface Chat {
+export interface Chat {
     id: string,
+    localId: number,
     lastRequestId: number,
     progress?: string,
     messages: ChatMessage[],
@@ -47,6 +48,8 @@ interface ChatUsage {
     sessionCost?: string,
 }
 
+const emptyStateChats = { 'EMPTY': { id: 'EMPTY', lastRequestId: 0, messages: [], localId: 1 } };
+
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
@@ -55,7 +58,9 @@ export const chatSlice = createSlice({
         selectedBehavior: "",
         selectedModel: "",
         welcomeMessage: "",
-        chats: {} as { [key: string]: Chat },
+        chats: emptyStateChats as { [key: string]: Chat },
+        chatLocalId: 1,
+        selectedChat: 'EMPTY' as string,
         contexts: undefined as (ChatContext[] | undefined),
         addedContexts: [{ type: 'repoMap' }] as ChatContext[],
         uniqueContexts: {} as { [key: string]: ChatContext },
@@ -86,17 +91,50 @@ export const chatSlice = createSlice({
                 };
             }
         },
+        clearChat: (state, action) => {
+            const chatId = action.payload.chatId;
+            state.chats[chatId].messages = [];
+        },
         resetChat: (state, action) => {
             const chatId = action.payload;
             const { [chatId]: oldChat, ...newChats } = state.chats;
             state.chats = newChats;
+            if (Object.values(state.chats).length === 0) {
+                state.chats = emptyStateChats;
+                state.selectedChat = 'EMPTY';
+                return;
+            }
+
+            if (chatId === state.selectedChat) {
+                state.selectedChat = Object.keys(state.chats)[Object.keys(state.chats).length - 1];
+                console.log(state.selectedChat);
+            }
         },
         resetChats: (state) => {
-            state.chats = {};
+            state.chats = emptyStateChats;
+            state.selectedChat = 'EMPTY';
+        },
+        newChat: (state) => {
+            state.chats = { ...state.chats, ...emptyStateChats };
+            state.selectedChat = 'EMPTY';
+        },
+        selectChat: (state, action) => {
+            console.log('was: ', state.selectedChat);
+            state.selectedChat = action.payload;
         },
         addContentReceived: (state, action) => {
             const { chatId, role, content } = action.payload as ChatContentReceivedParams;
-            let chat = state.chats[chatId] || { id: chatId, lastRequestId: 0, messages: [] };
+            const isNewChat = state.chats[chatId] === undefined;
+            console.log(Object.keys(state.chats));
+
+            let chat;
+            if (isNewChat) {
+                state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
+                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++ };
+                state.selectedChat = chatId;
+            } else {
+                chat = state.chats[chatId];
+            }
 
             switch (content.type) {
                 case 'progress': {
@@ -283,7 +321,10 @@ export const {
     incRequestId,
     addContentReceived,
     resetChat,
+    clearChat,
     resetChats,
+    newChat,
+    selectChat,
     setContexts,
     addContext,
     removeContext,

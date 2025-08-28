@@ -54,7 +54,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
-    }, [enabled]);
+    }, [enabled, chatId]);
 
     const onPromptChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setPromptValue(event.target.value);
