@@ -61,7 +61,7 @@ function genericToolCall(
                         <div>
                             <p>Result:</p>
                             {outputs!.map((output, index) => {
-                                const outputTxt = '```javascript\n' + output.text + '\n```';
+                                const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
                                 return (<MarkdownContent key={toolCallId + index} content={outputTxt} />)
                             })}
                         </div>}
