@@ -80,11 +80,11 @@ export function ChatSubHeader({ chatId }: Props) {
                         </div>
                         {usage && (
                             <ToolTip id="details-usage" className="details-tooltip">
-                                <p>Input tokens: {usage.messageInputTokens}</p>
-                                <p>Output tokens: {usage.messageOutputTokens}</p>
                                 <p>Session tokens: {usage.sessionTokens}</p>
-                                <p>Last message cost: ${usage.messageCost}</p>
+                                <p>Last message cost: ${usage.lastMessageCost}</p>
                                 <p>Session cost: ${usage.sessionCost}</p>
+                                <p>Context limit: ${usage.limit?.context}</p>
+                                <p>Output limit: ${usage.limit?.output}</p>
                             </ToolTip>
                         )}
                     </div>
