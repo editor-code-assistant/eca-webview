@@ -1,10 +1,10 @@
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
+import { clearChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
-import { clearChat } from '../../redux/slices/chat';
 
 interface Props {
     chatId?: string,
@@ -27,9 +27,9 @@ export function ChatSubHeader({ chatId }: Props) {
     if (usage && usageStringFormat) {
         usageString = usageStringFormat
             .replace('{sessionTokens}', usage.sessionTokens.toString())
-            .replace('{messageInputTokens}', usage.messageInputTokens.toString())
-            .replace('{messageOutputTokens}', usage.messageOutputTokens.toString())
-            .replace('{messageCost}', usage.messageCost ? `$${usage.messageCost}` : '')
+            .replace('{contextLimit}', usage.limit?.context?.toString() || '')
+            .replace('{outputLimit}', usage.limit?.output?.toString() || '')
+            .replace('{lastMessageCost}', usage.lastMessageCost ? `$${usage.lastMessageCost}` : '')
             .replace('{sessionCost}', usage.sessionCost ? `$${usage.sessionCost}` : '');
     }
 

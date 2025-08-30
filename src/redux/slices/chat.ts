@@ -41,11 +41,13 @@ export interface Chat {
 }
 
 interface ChatUsage {
-    messageInputTokens: number,
-    messageOutputTokens: number,
     sessionTokens: number,
-    messageCost?: string,
+    lastMessageCost?: string,
     sessionCost?: string,
+    limit?: {
+        context: number;
+        output: number;
+    }
 }
 
 const emptyStateChats = { 'EMPTY': { id: 'EMPTY', lastRequestId: 0, messages: [], localId: 1 } };

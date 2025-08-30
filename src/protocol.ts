@@ -133,11 +133,13 @@ interface ProgressContent {
 
 interface UsageContent {
     type: 'usage';
-    messageInputTokens: number;
-    messageOutputTokens: number;
     sessionTokens: number;
-    messageCost?: string;
+    lastMessageCost?: string;
     sessionCost?: string;
+    limit?: {
+        context: number;
+        output: number;
+    }
 }
 
 interface ToolCallPrepareContent {
