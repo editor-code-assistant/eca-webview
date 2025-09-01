@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useWebviewListener, webviewSend } from "../hooks";
 import { ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, addContext, setBehaviors, setCommands, setContexts, setModels, setSelectedBehavior, setSelectedModel, setWelcomeMessage } from "../redux/slices/chat";
+import { addContentReceived, addContext, setCommands, setContexts, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
@@ -36,20 +36,6 @@ const RootWrapper = () => {
 
     useWebviewListener('server/setWorkspaceFolders', (workspaceFolders: WorkspaceFolder[]) => {
         dispatch(setWorkspaceFolders(workspaceFolders));
-    });
-
-    useWebviewListener('chat/setBehaviors', ({ behaviors, selectedBehavior }: { behaviors: string[], selectedBehavior: string }) => {
-        dispatch(setBehaviors(behaviors));
-        dispatch(setSelectedBehavior(selectedBehavior));
-    });
-
-    useWebviewListener('chat/setModels', ({ models, selectedModel }: { models: string[], selectedModel: string }) => {
-        dispatch(setModels(models));
-        dispatch(setSelectedModel(selectedModel));
-    });
-
-    useWebviewListener('chat/setWelcomeMessage', (params: any) => {
-        dispatch(setWelcomeMessage(params.message));
     });
 
     useWebviewListener('chat/contentReceived', (contentReceived: ChatContentReceivedParams) => {

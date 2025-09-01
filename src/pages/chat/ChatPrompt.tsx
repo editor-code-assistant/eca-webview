@@ -1,7 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { webviewSend } from "../../hooks";
-import { setSelectedBehavior, setSelectedModel } from "../../redux/slices/chat";
 import { State, useEcaDispatch } from "../../redux/store";
 import { sendPrompt } from "../../redux/thunks/chat";
 import { SelectBox } from "../components/SelectBox";
@@ -19,10 +17,13 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [inputCompleting, setInputCompleting] = useState(false);
     const dispatch = useEcaDispatch();
 
-    const selectedBehavior = useSelector((state: State) => state.chat.selectedBehavior);
-    const behaviors = useSelector((state: State) => state.chat.behaviors);
-    const selectedModel = useSelector((state: State) => state.chat.selectedModel);
-    const models = useSelector((state: State) => state.chat.models);
+    const defaultBehavior = useSelector((state: State) => state.server.config.chat.defaultBehavior);
+    const behaviors = useSelector((state: State) => state.server.config.chat.behaviors || []);
+    const defaultModel = useSelector((state: State) => state.server.config.chat.defaultModel);
+    const models = useSelector((state: State) => state.server.config.chat.models || []);
+
+    const [selectedModel, setSelectedModel] = useState(defaultModel);
+    const [selectedBehavior, setSelectedBehavior] = useState(defaultBehavior);
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
@@ -33,13 +34,11 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     }
 
     const handleModelChanged = (newModel: string) => {
-        webviewSend('chat/selectedModelChanged', { value: newModel });
-        dispatch(setSelectedModel(newModel));
+        setSelectedModel(newModel);
     }
 
     const handleBehaviorChanged = (newBehavior: string) => {
-        webviewSend('chat/selectedBehaviorChanged', { value: newBehavior });
-        dispatch(setSelectedBehavior(newBehavior));
+        setSelectedBehavior(newBehavior);
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

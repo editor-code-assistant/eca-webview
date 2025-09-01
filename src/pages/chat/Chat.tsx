@@ -23,7 +23,7 @@ export function Chat() {
 
     const currentProgress = currentChatId ? allChats[currentChatId].progress : undefined;
 
-    const welcomeMessage = useSelector((state: State) => state.chat.welcomeMessage);
+    const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 
     const onStop = (_e: any) => {
         dispatch(stopPrompt({ chatId: currentChatId! }));

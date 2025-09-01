@@ -55,11 +55,6 @@ const emptyStateChats = { 'EMPTY': { id: 'EMPTY', lastRequestId: 0, messages: []
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
-        behaviors: [],
-        models: [],
-        selectedBehavior: "",
-        selectedModel: "",
-        welcomeMessage: "",
         chats: emptyStateChats as { [key: string]: Chat },
         chatLocalId: 1,
         selectedChat: 'EMPTY' as string,
@@ -69,21 +64,6 @@ export const chatSlice = createSlice({
         commands: undefined as (ChatCommand[] | undefined),
     },
     reducers: {
-        setBehaviors: (state, action) => {
-            state.behaviors = action.payload;
-        },
-        setSelectedBehavior: (state, action) => {
-            state.selectedBehavior = action.payload;
-        },
-        setModels: (state, action) => {
-            state.models = action.payload;
-        },
-        setSelectedModel: (state, action) => {
-            state.selectedModel = action.payload;
-        },
-        setWelcomeMessage: (state, action) => {
-            state.welcomeMessage = action.payload;
-        },
         incRequestId: (state, action) => {
             const chatId = action.payload.chatId;
             if (state.chats[chatId]) {
@@ -314,12 +294,7 @@ export const chatSlice = createSlice({
 });
 
 export const {
-    setBehaviors,
-    setModels,
-    setSelectedBehavior,
-    setSelectedModel,
     setUniqueContext,
-    setWelcomeMessage,
     incRequestId,
     addContentReceived,
     resetChat,
