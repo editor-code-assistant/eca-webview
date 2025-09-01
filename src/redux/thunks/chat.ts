@@ -4,9 +4,9 @@ import { ChatContext } from "../../protocol";
 import { incRequestId, resetChat } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
-export const sendPrompt = createAsyncThunk<void, { chatId?: string, prompt: string }, ThunkApiType>(
+export const sendPrompt = createAsyncThunk<void, { chatId?: string, prompt: string, model: string, behavior: string, }, ThunkApiType>(
     "chat/sendPrompt",
-    async ({ prompt, chatId }, { dispatch, getState }) => {
+    async ({ prompt, chatId, model, behavior }, { dispatch, getState }) => {
         const state = getState();
         let requestId = chatId ? state.chat.chats[chatId].lastRequestId : 0;
 
@@ -22,6 +22,8 @@ export const sendPrompt = createAsyncThunk<void, { chatId?: string, prompt: stri
                 requestId,
                 prompt,
                 contexts,
+                model,
+                behavior,
             },
         );
     }

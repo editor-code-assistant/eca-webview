@@ -27,8 +27,8 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
-        if (prompt && !inputCompleting) {
-            dispatch(sendPrompt({ prompt: prompt, chatId }));
+        if (prompt && !inputCompleting && selectedModel && selectedBehavior) {
+            dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, behavior: selectedBehavior }));
             setPromptValue('')
         }
     }
