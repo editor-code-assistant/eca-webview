@@ -17,25 +17,25 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [inputCompleting, setInputCompleting] = useState(false);
     const dispatch = useEcaDispatch();
 
-    const defaultBehavior = useSelector((state: State) => state.server.config.chat.defaultBehavior);
+    const selectBehavior = useSelector((state: State) => state.server.config.chat.selectBehavior);
     const behaviors = useSelector((state: State) => state.server.config.chat.behaviors || []);
-    const defaultModel = useSelector((state: State) => state.server.config.chat.defaultModel);
+    const selectModel = useSelector((state: State) => state.server.config.chat.selectModel);
     const models = useSelector((state: State) => state.server.config.chat.models || []);
 
     const [selectedModel, setSelectedModel] = useState<string>();
     const [selectedBehavior, setSelectedBehavior] = useState<string>();
 
     useEffect(() => {
-        if (selectedModel === undefined && defaultModel !== undefined) {
-             setSelectedModel(defaultModel);
+        if (selectedModel === undefined && selectModel !== undefined) {
+            setSelectedModel(selectModel);
         }
-    }, [defaultModel]);
+    }, [selectModel]);
 
     useEffect(() => {
-        if (selectedBehavior === undefined && defaultBehavior !== undefined) {
-             setSelectedBehavior(defaultBehavior);
+        if (selectedBehavior === undefined && selectBehavior !== undefined) {
+            setSelectedBehavior(selectBehavior);
         }
-    }, [defaultBehavior]);
+    }, [selectBehavior]);
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
