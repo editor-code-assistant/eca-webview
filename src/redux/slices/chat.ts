@@ -89,7 +89,6 @@ export const chatSlice = createSlice({
 
             if (chatId === state.selectedChat) {
                 state.selectedChat = Object.keys(state.chats)[Object.keys(state.chats).length - 1];
-                console.log(state.selectedChat);
             }
         },
         resetChats: (state) => {
@@ -101,13 +100,11 @@ export const chatSlice = createSlice({
             state.selectedChat = 'EMPTY';
         },
         selectChat: (state, action) => {
-            console.log('was: ', state.selectedChat);
             state.selectedChat = action.payload;
         },
         addContentReceived: (state, action) => {
             const { chatId, role, content } = action.payload as ChatContentReceivedParams;
             const isNewChat = state.chats[chatId] === undefined;
-            console.log(Object.keys(state.chats));
 
             let chat;
             if (isNewChat) {

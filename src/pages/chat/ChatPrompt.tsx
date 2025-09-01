@@ -22,8 +22,20 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const defaultModel = useSelector((state: State) => state.server.config.chat.defaultModel);
     const models = useSelector((state: State) => state.server.config.chat.models || []);
 
-    const [selectedModel, setSelectedModel] = useState(defaultModel);
-    const [selectedBehavior, setSelectedBehavior] = useState(defaultBehavior);
+    const [selectedModel, setSelectedModel] = useState<string>();
+    const [selectedBehavior, setSelectedBehavior] = useState<string>();
+
+    useEffect(() => {
+        if (selectedModel === undefined && defaultModel !== undefined) {
+             setSelectedModel(defaultModel);
+        }
+    }, [defaultModel]);
+
+    useEffect(() => {
+        if (selectedBehavior === undefined && defaultBehavior !== undefined) {
+             setSelectedBehavior(defaultBehavior);
+        }
+    }, [defaultBehavior]);
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
