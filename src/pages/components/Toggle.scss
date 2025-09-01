@@ -1,11 +1,11 @@
 $size: 2em;
-$buttonSize: $size / 3;
+$buttonSize: calc($size / 3);
 
 .toggle {
   position: relative;
   display: inline-block;
   width: $size;
-  height: $size / 2;
+  height: calc($size / 2);
 
   input {
     opacity: 0;
