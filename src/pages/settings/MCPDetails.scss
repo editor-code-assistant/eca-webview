@@ -57,6 +57,10 @@
             &.running {background-color: var(--eca-success-fg);}
             &.starting {background-color: var(--eca-warning-fg);}
             &.failed, &.stopped {background-color: var(--eca-error-fg);}
+
+            &.clickable {
+              cursor: pointer;
+            }
           }
 
           .divider {

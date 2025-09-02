@@ -7,6 +7,7 @@ import { startServer, stopServer } from '../../redux/thunks/mcp';
 import { Toggle } from '../components/Toggle';
 import { ToolTip } from '../components/ToolTip';
 import './MCPDetails.scss';
+import { openServerLogs } from '../../redux/thunks/server';
 
 export function MCPDetails() {
     const mcpServers = useSelector((state: State) => state.mcp.servers);
@@ -21,6 +22,12 @@ export function MCPDetails() {
         }
     }
 
+    const anyFailed = mcpServers.some(s => s.status === 'failed');
+
+    const onOpenServerLogs = (_: any) => {
+        dispatch(openServerLogs({}));
+    };
+
     return (
         <div className="mcp-details-container scrollable">
             <div className="header">
@@ -30,7 +37,9 @@ export function MCPDetails() {
             </div>
             <div className="servers">
                 <h2 className="title">MCP Servers</h2>
-                <p className="description">MCPs are extra tools that can offer more power to ECA, for more details check <a href="https://eca.dev/configuration/#mcp">ECA MCP docs</a></p>
+                <p className="description">MCPs are extra tools that can offer more power to ECA, for more details check <a href="https://eca.dev/configuration/#mcp">ECA MCP docs.</a></p>
+                {anyFailed &&
+                    <p className="server-logs">For more details of failed MCPs, check ECA <a href="#" onClick={onOpenServerLogs}>server Logs</a></p>}
                 {mcpServers.map((server, index) => {
                     let commandTxt;
                     if (server.type === 'mcp') {
@@ -38,13 +47,17 @@ export function MCPDetails() {
                     }
 
                     const stoppable = server.status === 'running' || server.status === 'starting';
+                    const failed = server.status === 'failed';
 
                     return (
                         <div key={index} className="server">
                             <span className="name">{server.name}</span>
-                            <i data-tooltip-id={`status-${server.name}`} className={`status ${server.status}`}></i>
+                            <i data-tooltip-id={`status-${server.name}`}
+                                className={`status ${server.status} ${failed ? 'clickable' : ''}`}
+                                onClick={failed ? onOpenServerLogs : undefined}></i>
                             <ToolTip id={`status-${server.name}`}>
-                                <span>{server.status}</span>
+                                {failed && <span> {server.status} - click to see server logs </span>}
+                                {!failed && <span>{server.status}</span>}
                             </ToolTip>
                             <div className="divider"></div>
                             <Toggle
