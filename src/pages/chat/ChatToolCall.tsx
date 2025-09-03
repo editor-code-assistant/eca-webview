@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 import { FileChangeDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
-import { useEcaDispatch } from '../../redux/store';
+import { EcaDispatch, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
 import { ChatCollapsableMessage } from './ChatCollapsableMessage';
@@ -70,10 +70,9 @@ function genericToolCall(
         />
     );
 }
-function fileChangeToolCall({ path, diff, linesAdded, linesRemoved }: FileChangeDetails, iconClass: string, approvalComp: React.ReactNode) {
+function fileChangeToolCall({ path, diff, linesAdded, linesRemoved }: FileChangeDetails, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch) {
     const fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
     const fileName = path.split('/').pop();
-    const dispatch = useEcaDispatch();
 
     const openFile = (_event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
         dispatch(editorOpenFile({ path }));
@@ -162,7 +161,7 @@ export const ChatToolCall = memo((props: Props) => {
     )
 
     if (props.details?.type === 'fileChange') {
-        return fileChangeToolCall(props.details, iconClass, approvalComp);
+        return fileChangeToolCall(props.details, iconClass, approvalComp, dispatch);
     } else {
         return genericToolCall(props, iconClass, approvalComp);
     }
