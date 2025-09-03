@@ -7,7 +7,7 @@ import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
 
 interface Props {
-    chatId?: string,
+    chatId: string,
 }
 
 export function ChatSubHeader({ chatId }: Props) {
@@ -15,12 +15,12 @@ export function ChatSubHeader({ chatId }: Props) {
     const navigate = useNavigate();
 
     const clearHistoryChat = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        dispatch(clearChat({ chatId: chatId! }));
+        dispatch(clearChat({ chatId: chatId }));
     }
 
     const mcpServers = useSelector((state: State) => state.mcp.servers.filter((server) => server.type === 'mcp'));
 
-    const usage = useSelector((state: State) => chatId && state.chat.chats[chatId].usage);
+    const usage = useSelector((state: State) => state.chat.chats[chatId].usage);
     const usageStringFormat = useSelector((state: State) => state.server.config.usageStringFormat);
 
     let usageString;
@@ -90,10 +90,8 @@ export function ChatSubHeader({ chatId }: Props) {
                     </div>
                 )}
             </div>
-            <div className="spacing"></div>
             <div className="actions">
-                {chatId && (
-                    <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash"></i></div>)}
+                <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash"></i></div>
             </div>
         </div>
     );

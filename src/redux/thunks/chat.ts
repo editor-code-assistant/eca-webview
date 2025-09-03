@@ -4,21 +4,19 @@ import { ChatContext } from "../../protocol";
 import { incRequestId, resetChat } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
-export const sendPrompt = createAsyncThunk<void, { chatId?: string, prompt: string, model: string, behavior: string, }, ThunkApiType>(
+export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: string, model: string, behavior: string, }, ThunkApiType>(
     "chat/sendPrompt",
     async ({ prompt, chatId, model, behavior }, { dispatch, getState }) => {
         const state = getState();
-        let requestId = chatId ? state.chat.chats[chatId].lastRequestId : 0;
+        let requestId = state.chat.chats[chatId].lastRequestId;
 
-        if (chatId) {
-            dispatch(incRequestId(chatId));
-        }
+        dispatch(incRequestId(chatId));
 
-        const contexts = state.chat.addedContexts;
+        const contexts = state.chat.chats[chatId].addedContexts;
 
         webviewSend('chat/userPrompt',
             {
-                chatId,
+                chatId: chatId !== 'EMPTY' ? chatId : undefined,
                 requestId,
                 prompt,
                 contexts,
@@ -61,13 +59,13 @@ export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiTyp
 export const queryContext = createAsyncThunk<void, { chatId?: string, query: string, contexts: ChatContext[] }, ThunkApiType>(
     "chat/queryContext",
     async ({ chatId, query, contexts }, _) => {
-        webviewSend('chat/queryContext', { chatId, query, contexts });
+        webviewSend('chat/queryContext', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query, contexts });
     }
 );
 
 export const queryCommands = createAsyncThunk<void, { chatId?: string, query: string }, ThunkApiType>(
     "chat/queryCommands",
     async ({ chatId, query }, _) => {
-        webviewSend('chat/queryCommands', { chatId, query });
+        webviewSend('chat/queryCommands', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query });
     }
 );

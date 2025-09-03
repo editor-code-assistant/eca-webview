@@ -37,6 +37,7 @@ export interface Chat {
     lastRequestId: number,
     progress?: string,
     messages: ChatMessage[],
+    addedContexts: ChatContext[],
     usage?: ChatUsage,
 }
 
@@ -50,19 +51,39 @@ interface ChatUsage {
     }
 }
 
-const emptyStateChats = { 'EMPTY': { id: 'EMPTY', lastRequestId: 0, messages: [], localId: 1 } };
+const emptyStateChats = {
+    'EMPTY': {
+        id: 'EMPTY',
+        lastRequestId: 0,
+        messages: [],
+        addedContexts: [{ type: 'repoMap' }],
+        localId: 1
+    }
+} as { [key: string]: Chat };
+
+interface ChatState {
+    chats: { [key: string]: Chat },
+    chatLocalId: number,
+    selectedChat: string,
+    contexts?: ChatContext[],
+    uniqueContexts: { [key: string]: ChatContext },
+    commands?: ChatCommand[],
+}
+
+const getCurrentChat = (state: ChatState): Chat => {
+    return state.chats[state.selectedChat];
+};
 
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
-        chats: emptyStateChats as { [key: string]: Chat },
+        chats: emptyStateChats,
         chatLocalId: 1,
-        selectedChat: 'EMPTY' as string,
-        contexts: undefined as (ChatContext[] | undefined),
-        addedContexts: [{ type: 'repoMap' }] as ChatContext[],
-        uniqueContexts: {} as { [key: string]: ChatContext },
-        commands: undefined as (ChatCommand[] | undefined),
-    },
+        selectedChat: 'EMPTY',
+        contexts: undefined,
+        uniqueContexts: {},
+        commands: undefined,
+    } as ChatState,
     reducers: {
         incRequestId: (state, action) => {
             const chatId = action.payload.chatId;
@@ -109,7 +130,7 @@ export const chatSlice = createSlice({
             let chat;
             if (isNewChat) {
                 state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
-                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++ };
+                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: [{ type: 'repoMap' }] } as Chat;
                 state.selectedChat = chatId;
             } else {
                 chat = state.chats[chatId];
@@ -248,6 +269,11 @@ export const chatSlice = createSlice({
             state.contexts = action.payload.contexts;
         },
         setUniqueContext: (state, action) => {
+            const curChat = getCurrentChat(state);
+            if (curChat.messages.length != 0) {
+                return;
+            }
+
             const context = action.payload.context as ChatContext;
             const uniqueType = action.payload.uniqueType as string;
 
@@ -261,7 +287,7 @@ export const chatSlice = createSlice({
             const nextUniqueValues = Object.values(state.uniqueContexts);
 
             // Remove any previous unique contexts from addedContexts
-            const filteredAdded = state.addedContexts.filter(existing =>
+            const filteredAdded = curChat.addedContexts.filter(existing =>
                 !prevUniqueValues.some(prev => JSON.stringify(prev) === JSON.stringify(existing))
             );
 
@@ -274,15 +300,17 @@ export const chatSlice = createSlice({
                 }
             }
 
-            state.addedContexts = deduped;
+            curChat.addedContexts = deduped;
         },
         addContext: (state, action) => {
-            state.addedContexts = [...state.addedContexts, action.payload];
+            const currentChat = getCurrentChat(state);
+            currentChat.addedContexts = [...currentChat.addedContexts, action.payload];
         },
         removeContext: (state, action) => {
+            const currentChat = getCurrentChat(state);
             const toRemove = JSON.stringify(action.payload);
-            const i = state.addedContexts.findIndex(context => JSON.stringify(context) === toRemove);
-            state.addedContexts = [...state.addedContexts.slice(0, i), ...state.addedContexts.slice(i + 1)];
+            const i = currentChat.addedContexts.findIndex(context => JSON.stringify(context) === toRemove);
+            currentChat.addedContexts = [...currentChat.addedContexts.slice(0, i), ...currentChat.addedContexts.slice(i + 1)];
         },
         setCommands: (state, action) => {
             state.commands = action.payload.commands;

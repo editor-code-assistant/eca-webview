@@ -108,7 +108,7 @@ function fileChangeToolCall({ path, diff, linesAdded, linesRemoved }: FileChange
 
 
 interface Props {
-    chatId?: string,
+    chatId: string,
     toolCallId: string,
     name: string,
     status: string,
@@ -126,11 +126,11 @@ export const ChatToolCall = memo((props: Props) => {
     const waitingApproval = props.manualApproval && props.status === 'run';
 
     const rejectToolCall = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        dispatch(toolCallReject({ chatId: props.chatId!, toolCallId: props.toolCallId }));
+        dispatch(toolCallReject({ chatId: props.chatId, toolCallId: props.toolCallId }));
     }
 
     const approveToolCall = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        dispatch(toolCallApprove({ chatId: props.chatId!, toolCallId: props.toolCallId }));
+        dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId }));
     }
 
     let iconClass: string;

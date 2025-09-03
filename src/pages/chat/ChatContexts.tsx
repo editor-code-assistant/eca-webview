@@ -9,7 +9,7 @@ import { ToolTip } from "../components/ToolTip";
 import './ChatContexts.scss';
 
 interface Props {
-    chatId?: string,
+    chatId: string,
     enabled: boolean,
 }
 
@@ -77,7 +77,7 @@ function contextIcon(context: ChatContext): React.ReactNode {
 export const ChatContexts = memo(({ chatId, enabled }: Props) => {
     const [query, setQuery] = useState('');
     const contexts = useSelector((state: State) => state.chat.contexts);
-    const addedContexts = useSelector((state: State) => state.chat.addedContexts);
+    const addedContexts = useSelector((state: State) => state.chat.chats[chatId].addedContexts);
     const workspaceFolders = useSelector((state: State) => state.server.workspaceFolders);
     const dispatch = useEcaDispatch();
 

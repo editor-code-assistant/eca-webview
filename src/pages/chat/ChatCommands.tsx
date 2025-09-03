@@ -9,7 +9,7 @@ import './ChatCommands.scss';
 import './ChatContexts.scss';
 
 interface Props {
-    chatId?: string,
+    chatId: string,
     input: HTMLTextAreaElement | null,
     onCommandSelected: (cmd: ChatCommand) => void,
     onCompleting: (completing: boolean) => void,

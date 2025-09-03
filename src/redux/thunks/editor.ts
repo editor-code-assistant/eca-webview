@@ -12,13 +12,10 @@ type FocusChanged = FileFocusChanged;
 
 export const focusChanged = createAsyncThunk<void, FocusChanged, ThunkApiType>(
     "editor/focusChanged",
-    async ({ type, path }, { dispatch, getState }) => {
-        const state = getState();
+    async ({ type, path }, { dispatch }) => {
         switch (type) {
             case 'fileFocused':
-                if (Object.keys(state.chat.chats).length === 0) {
-                    dispatch(setUniqueContext({ uniqueType: type, context: { type: 'file', path: path } }));
-                }
+                dispatch(setUniqueContext({ uniqueType: type, context: { type: 'file', path: path } }));
                 break;
         }
     }

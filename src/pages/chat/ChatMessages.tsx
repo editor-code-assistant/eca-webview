@@ -9,11 +9,11 @@ import { ChatToolCall } from './ChatToolCall';
 
 interface ChatMessagesProps {
     children: React.ReactNode,
-    chatId?: string,
+    chatId: string,
 }
 
 export function ChatMessages({ chatId, children }: ChatMessagesProps) {
-    const messages = useSelector((state: State) => chatId && state.chat.chats[chatId].messages || []);
+    const messages = useSelector((state: State) => state.chat.chats[chatId].messages);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     useAutoScroll(scrollRef, messages);

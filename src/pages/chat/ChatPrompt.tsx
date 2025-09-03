@@ -9,7 +9,7 @@ import './ChatPrompt.scss';
 
 interface ChatPromptProps {
     enabled: boolean,
-    chatId?: string,
+    chatId: string,
 }
 
 export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
