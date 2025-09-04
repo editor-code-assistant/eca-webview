@@ -3,7 +3,7 @@ import './ChatCollapsableMessage.scss';
 
 interface Props {
     className: string,
-    header: (toggleOpen: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) => React.ReactNode[],
+    header: (toggleOpen: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) => React.ReactNode,
     content?: React.ReactNode,
     defaultOpen?: boolean,
 }

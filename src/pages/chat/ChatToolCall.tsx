@@ -45,14 +45,16 @@ function genericToolCall(
     return (
         <ChatCollapsableMessage
             className="tool-call"
-            header={(toggleOpen) => [
-                <span onClick={toggleOpen} className="description">{description}</span>,
-                !summary ?
-                    <span onClick={toggleOpen} className="name">{name}</span> : null,
-                <span onClick={toggleOpen} className="spacing"></span>,
-                <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>,
-                approvalComp
-            ]}
+            header={(toggleOpen) => (
+                <div className="header-content">
+                    <span onClick={toggleOpen} className="description">{description}</span>
+                    {!summary &&
+                        <span onClick={toggleOpen} className="name">{name}</span>}
+                    <span onClick={toggleOpen} className="spacing"></span>
+                    <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
+                    {approvalComp}
+                </div>
+            )}
             content={
                 <div style={{ display: 'inline' }}>
                     <p>Parameters:</p>
@@ -82,14 +84,16 @@ function fileChangeToolCall(toolName: string, { path, diff, linesAdded, linesRem
         <ChatCollapsableMessage
             className="tool-call"
             defaultOpen={true}
-            header={(toggleOpen) => [
-                <span onClick={openFile} className="file-change-name">{fileName}</span>,
-                <span onClick={toggleOpen} className="file-change-lines-added">+{linesAdded}</span>,
-                <span onClick={toggleOpen} className="file-change-lines-removed">-{linesRemoved}</span>,
-                <span onClick={toggleOpen} className="spacing"></span>,
-                <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>,
-                approvalComp
-            ]}
+            header={(toggleOpen) => (
+                <div className="header-content">
+                    <span onClick={openFile} className="file-change-name">{fileName}</span>
+                    <span onClick={toggleOpen} className="file-change-lines-added">+{linesAdded}</span>
+                    <span onClick={toggleOpen} className="file-change-lines-removed">-{linesRemoved}</span>
+                    <span onClick={toggleOpen} className="spacing"></span>
+                    <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
+                    {approvalComp}
+                </div>
+            )}
             content={
                 <div>
                     <span>Tool: </span>
