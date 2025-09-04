@@ -9,7 +9,7 @@ interface Props {
     content?: string,
 }
 
-export const ChatReason = memo(({ id, status, content }: Props) => {
+function chatReason({ id, status, content }: Props) {
     let label;
     let extraIconClass;
     if (status === 'done') {
@@ -33,4 +33,16 @@ export const ChatReason = memo(({ id, status, content }: Props) => {
         />
     );
 
+};
+
+const ChatReasonMemo = memo((props: Props) => {
+    return chatReason(props);
 });
+
+export function ChatReason(props: Props) {
+    if (props.status !== 'done') {
+        return chatReason(props);
+    }
+
+    return (<div> <ChatReasonMemo {...props} /> </div>);
+}
