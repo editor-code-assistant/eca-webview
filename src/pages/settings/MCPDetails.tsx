@@ -40,6 +40,8 @@ export function MCPDetails() {
                 <p className="description">MCPs are extra tools that can offer more power to ECA, for more details check <a href="https://eca.dev/configuration/#mcp">ECA MCP docs.</a></p>
                 {anyFailed &&
                     <p className="server-logs">For more details of failed MCPs, check ECA <a href="#" onClick={onOpenServerLogs}>server Logs</a></p>}
+                {mcpServers.length === 0 &&
+                    <p className="empty-servers">No MCP servers configured yet</p>}
                 {mcpServers.map((server, index) => {
                     let commandTxt;
                     if (server.type === 'mcp') {

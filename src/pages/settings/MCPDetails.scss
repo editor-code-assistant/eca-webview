@@ -30,6 +30,13 @@
     }
   }
 
+  .empty-servers {
+     display: flex;
+     height: 100%;
+     align-items: center;
+     justify-content: center;
+  }
+
   .servers {
       .title {
           font-size: 1.5em;

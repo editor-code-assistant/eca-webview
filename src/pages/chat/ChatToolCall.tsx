@@ -70,7 +70,7 @@ function genericToolCall(
         />
     );
 }
-function fileChangeToolCall({ path, diff, linesAdded, linesRemoved }: FileChangeDetails, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch) {
+function fileChangeToolCall(toolName: string, { path, diff, linesAdded, linesRemoved }: FileChangeDetails, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch) {
     const fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
     const fileName = path.split('/').pop();
 
@@ -92,6 +92,8 @@ function fileChangeToolCall({ path, diff, linesAdded, linesRemoved }: FileChange
             ]}
             content={
                 <div>
+                    <span>Tool: </span>
+                    <span>{toolName}</span>
                     {fileDiffs.map(({ oldRevision, newRevision, type, hunks }) => {
                         return (
                             <Diff key={oldRevision + '-' + newRevision} viewType="unified" gutterType='none' diffType={type} hunks={hunks}>
@@ -119,7 +121,7 @@ interface Props {
     summary?: string,
 }
 
-export const ChatToolCall = memo((props: Props) => {
+function chatToolCall(props: Props) {
     const dispatch = useEcaDispatch();
 
     const waitingApproval = props.manualApproval && props.status === 'run';
@@ -161,8 +163,20 @@ export const ChatToolCall = memo((props: Props) => {
     )
 
     if (props.details?.type === 'fileChange') {
-        return fileChangeToolCall(props.details, iconClass, approvalComp, dispatch);
+        return fileChangeToolCall(props.name, props.details, iconClass, approvalComp, dispatch);
     } else {
         return genericToolCall(props, iconClass, approvalComp);
     }
+}
+
+const ChatToolCallMemo = memo((props: Props) => {
+    return chatToolCall(props);
 });
+
+export function ChatToolCall(props: Props) {
+    if (props.status === 'preparing') {
+        return chatToolCall(props);
+    }
+
+    return (<div> <ChatToolCallMemo {...props} /> </div>);
+}
