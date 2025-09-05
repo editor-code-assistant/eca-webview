@@ -22,9 +22,12 @@ function genericToolCall(
     let verb: string;
     switch (status) {
         case 'preparing':
-            verb = 'Calling';
+            verb = 'Will call';
             break;
         case 'run':
+            verb = 'Will call';
+            break;
+        case 'running':
             verb = 'Calling';
             break;
         case 'succeeded':
@@ -144,6 +147,9 @@ function chatToolCall(props: Props) {
             iconClass = 'codicon-loading codicon-modifier-spin';
             break;
         case 'run':
+            iconClass = 'codicon-loading codicon-modifier-spin';
+            break;
+        case 'running':
             iconClass = 'codicon-loading codicon-modifier-spin';
             break;
         case 'succeeded':
