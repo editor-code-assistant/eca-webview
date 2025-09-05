@@ -192,6 +192,7 @@ interface ToolCalledContent {
     arguments: string[];
     error: boolean;
     outputs: ToolCallOutput[];
+    totalTimeMs: number;
     details?: ToolCallDetails;
     summary?: string;
 }
@@ -227,6 +228,7 @@ interface ReasonTextContent {
 interface ReasonFinishedContent {
     type: 'reasonFinished';
     id: string;
+    totalTimeMs: number;
 }
 
 export interface ChatQueryContextParams {

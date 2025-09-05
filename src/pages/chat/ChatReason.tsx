@@ -1,15 +1,17 @@
 import { memo } from "react";
 import { ChatCollapsableMessage } from "./ChatCollapsableMessage";
 import './ChatReason.scss';
+import { ChatTime } from "./ChatTime";
 import { MarkdownContent } from "./MarkdownContent";
 
 interface Props {
     id: string,
     status: string,
     content?: string,
+    totalTimeMs?: number,
 }
 
-function chatReason({ id, status, content }: Props) {
+function chatReason({ id, status, content, totalTimeMs }: Props) {
     let label;
     let extraIconClass;
     if (status === 'done') {
@@ -23,10 +25,13 @@ function chatReason({ id, status, content }: Props) {
     return (
         <ChatCollapsableMessage
             className="reason"
-            header={(toggleOpen) => [
-                <span key={`reason-${id}-label`} onClick={toggleOpen}>{label}</span>,
-                <i key={`reason-${id}-icon`} onClick={toggleOpen} className={`icon codicon ${extraIconClass}`}></i>
-            ]}
+            header={(toggleOpen) => (
+                <div className="header-content">
+                    <span key={`reason-${id}-label`} onClick={toggleOpen}>{label}</span>
+                    <i key={`reason-${id}-icon`} onClick={toggleOpen} className={`icon codicon ${extraIconClass}`}></i>
+                    {totalTimeMs && <ChatTime ms={totalTimeMs} />}
+                </div>
+            )}
             content={
                 <MarkdownContent content={content} />
             }

@@ -6,11 +6,12 @@ import { EcaDispatch, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
 import { ChatCollapsableMessage } from './ChatCollapsableMessage';
+import { ChatTime } from './ChatTime';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
 
 function genericToolCall(
-    { toolCallId, name, summary, status, origin, argumentsText, outputs }: Props,
+    { toolCallId, name, summary, status, origin, argumentsText, outputs, totalTimeMs }: Props,
     iconClass: string,
     approvalComp: React.ReactNode,
 ) {
@@ -53,6 +54,7 @@ function genericToolCall(
                     <span onClick={toggleOpen} className="description">{description}</span>
                     {!summary &&
                         <span onClick={toggleOpen} className="name">{name}</span>}
+                    {totalTimeMs && <ChatTime ms={totalTimeMs} />}
                     <span onClick={toggleOpen} className="spacing"></span>
                     <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
                     {approvalComp}
@@ -75,7 +77,8 @@ function genericToolCall(
         />
     );
 }
-function fileChangeToolCall(toolName: string, { path, diff, linesAdded, linesRemoved }: FileChangeDetails, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch) {
+function fileChangeToolCall({ name, details }: Props, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch, totalTimeMs?: number) {
+    const { path, diff, linesAdded, linesRemoved } = details as FileChangeDetails;
     const fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
     const fileName = path.split('/').pop();
 
@@ -92,6 +95,7 @@ function fileChangeToolCall(toolName: string, { path, diff, linesAdded, linesRem
                     <span onClick={openFile} className="file-change-name">{fileName}</span>
                     <span onClick={toggleOpen} className="file-change-lines-added">+{linesAdded}</span>
                     <span onClick={toggleOpen} className="file-change-lines-removed">-{linesRemoved}</span>
+                    {totalTimeMs && <ChatTime ms={totalTimeMs} />}
                     <span onClick={toggleOpen} className="spacing"></span>
                     <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
                     {approvalComp}
@@ -100,7 +104,7 @@ function fileChangeToolCall(toolName: string, { path, diff, linesAdded, linesRem
             content={
                 <div>
                     <span>Tool: </span>
-                    <span>{toolName}</span>
+                    <span>{name}</span>
                     {fileDiffs.map(({ oldRevision, newRevision, type, hunks }) => {
                         return (
                             <Diff key={oldRevision + '-' + newRevision} viewType="unified" gutterType='none' diffType={type} hunks={hunks}>
@@ -123,6 +127,7 @@ interface Props {
     origin: string,
     argumentsText?: string,
     manualApproval: boolean,
+    totalTimeMs?: number,
     outputs?: ToolCallOutput[],
     details?: ToolCallDetails,
     summary?: string,
@@ -173,7 +178,7 @@ function chatToolCall(props: Props) {
     )
 
     if (props.details?.type === 'fileChange') {
-        return fileChangeToolCall(props.name, props.details, iconClass, approvalComp, dispatch);
+        return fileChangeToolCall(props, iconClass, approvalComp, dispatch);
     } else {
         return genericToolCall(props, iconClass, approvalComp);
     }

@@ -17,6 +17,7 @@ interface ChatMessageToolCall {
     outputs?: ToolCallOutput[],
     origin: ToolCallOrigin,
     manualApproval: boolean,
+    totalTimeMs?: number,
     details?: ToolCallDetails,
     summary?: string,
 }
@@ -26,6 +27,7 @@ interface ChatMessageReason {
     role: ChatContentRole,
     id: string,
     status: 'thinking' | 'done',
+    totalTimeMs?: number,
     content?: string,
 }
 
@@ -242,6 +244,7 @@ export const chatSlice = createSlice({
                     chat.messages[existingIndex] = tool;
                     tool.details = content.details;
                     tool.summary = content.summary;
+                    tool.totalTimeMs = content.totalTimeMs;
                     break;
                 }
                 case 'reasonStarted': {
@@ -266,6 +269,7 @@ export const chatSlice = createSlice({
                     let reason = chat.messages[existingIndex] as ChatMessageReason;
                     const newReason = { ...reason } as ChatMessageReason;
                     newReason.status = 'done';
+                    newReason.totalTimeMs = content.totalTimeMs;
                     chat.messages[existingIndex] = newReason;
                     break;
                 }

@@ -42,6 +42,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     status={message.status}
                                     outputs={message.outputs}
                                     details={message.details}
+                                    totalTimeMs={message.totalTimeMs}
                                     manualApproval={message.manualApproval}
                                     summary={message.summary}
                                     argumentsText={message.argumentsText}
@@ -54,6 +55,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                 <ChatReason
                                     id={message.id}
                                     status={message.status}
+                                    totalTimeMs={message.totalTimeMs}
                                     content={message.content} />
                             </div>
                         );
