@@ -11,7 +11,8 @@ html[data-editor="vscode"] {
   --eca-input-fg: var(--vscode-input-foreground, #cccccc);
   --eca-input-placeholder-fg: var(--vscode-input-placeholderForeground, #767676);
 
-  --eca-highlight-bg: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+  --eca-base-border: var(--vscode-toolbar-hoverBackground, #3c3c3c);
+  --eca-base-hover: var(--vscode-toolbar-hoverBackground, #3c3c3c);
 
   --eca-link-fg: var(--vscode-textLink-foreground , #4daafc);
 
@@ -55,7 +56,8 @@ html[data-editor="intellij"] {
   --eca-input-fg: var(--intellij-input-fg, #cccccc);
   --eca-input-placeholder-fg: var(--intellij-input-placeholder-fg, #767676);
 
-  --eca-highlight-bg: var(--intellij-highlight-bg, #3c3c3c);
+  --eca-base-border: var(--intellij-base-border, #3c3c3c);
+  --eca-base-hover: var(--intellij-base-hover, #3c3c3c);
 
   --eca-link-fg: var(--intellij-link-fg , #589df6);
 

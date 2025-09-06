@@ -3,7 +3,7 @@
     padding: 0.6em;
     flex-wrap: wrap;
     gap: 0.4em;
-    border-top: 1px solid var(--eca-panel-border);
+    border-top: 1px solid var(--eca-base-border);
     background-color: var(--eca-input-bg);
 
     .field {
@@ -39,7 +39,7 @@
             border-radius: 0.3em;
 
             &:hover {
-                background-color: var(--eca-highlight-bg);
+                background-color: var(--eca-base-hover);
             }
         }
     }

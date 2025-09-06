@@ -26,12 +26,12 @@
 
     &:active, &:focus {
         outline: none;
-        border: 1px solid var(--eca-highlight-bg);
+        border: 1px solid var(--eca-base-border);
     }
 
     &:hover {
         color: var(--eca-input-fg);
-        background-color: var(--eca-highlight-bg);
+        background-color: var(--eca-base-hover);
         opacity: 1;
     }
 }
@@ -39,7 +39,7 @@
 .select-tooltip {
     padding: 0 !important;
     background-color: var(--eca-tooltip-bg) !important;
-    border: 1px solid var(--eca-input-bg);
+    border: 1px solid var(--eca-base-border);
     min-width: 8em;
 
     .option {
