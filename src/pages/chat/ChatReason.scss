@@ -1,4 +1,13 @@
 .reason {
+
+    &.empty {
+        border: 0.1em solid var(--eca-base-border);
+        border-radius: 0.4em;
+        padding: 0.5em 0.8em;
+        opacity: 0.8;
+        padding-left: 2.5em;
+    }
+
     .icon {
         vertical-align: middle;
         margin-left: 0.5em;

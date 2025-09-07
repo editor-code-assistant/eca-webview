@@ -15,14 +15,14 @@ function chatReason({ id, status, content, totalTimeMs }: Props) {
     let label;
     let extraIconClass;
     if (status === 'done') {
-        label = 'Thoughts';
+        label = 'Thought';
         extraIconClass = 'codicon-sparkle';
     } else {
         label = 'Thinking';
         extraIconClass = 'codicon-loading codicon-modifier-spin';
     }
 
-    return (
+    return content ? (
         <ChatCollapsableMessage
             className="reason"
             header={(toggleOpen) => (
@@ -36,6 +36,12 @@ function chatReason({ id, status, content, totalTimeMs }: Props) {
                 <MarkdownContent content={content} />
             }
         />
+    ) : (
+        <div className="reason empty">
+            <span key={`reason-${id}-label`}>{label}</span>
+            <i key={`reason-${id}-icon`} className={`icon codicon ${extraIconClass}`}></i>
+            {totalTimeMs && <ChatTime ms={totalTimeMs} />}
+        </div>
     );
 
 };
