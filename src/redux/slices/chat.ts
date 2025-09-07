@@ -211,7 +211,7 @@ export const chatSlice = createSlice({
                     tool.manualApproval = content.manualApproval;
                     tool.summary = content.summary;
                     tool.details = content.details;
-                    tool.argumentsText = JSON.stringify(content.arguments);
+                    tool.argumentsText = JSON.stringify(content.arguments, null, 2);
 
                     chat.messages[existingIndex] = tool;
                     break;
@@ -222,7 +222,7 @@ export const chatSlice = createSlice({
                     tool.status = 'running';
                     tool.summary = content.summary;
                     tool.details = content.details;
-                    tool.argumentsText = JSON.stringify(content.arguments);
+                    tool.argumentsText = JSON.stringify(content.arguments, null, 2);
 
                     chat.messages[existingIndex] = tool;
                     break;

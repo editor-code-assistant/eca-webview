@@ -63,13 +63,13 @@ function genericToolCall(
             content={
                 <div style={{ display: 'inline' }}>
                     <p>Parameters:</p>
-                    <MarkdownContent content={argsTxt} />
+                    <MarkdownContent codeClassName='args' content={argsTxt} />
                     {showOutput &&
                         <div>
                             <p>Result:</p>
                             {outputs!.map((output, index) => {
                                 const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
-                                return (<MarkdownContent key={toolCallId + index} content={outputTxt} />)
+                                return (<MarkdownContent codeClassName='output' key={toolCallId + index} content={outputTxt} />)
                             })}
                         </div>}
                 </div>

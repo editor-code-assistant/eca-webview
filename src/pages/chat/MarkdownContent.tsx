@@ -5,9 +5,10 @@ import remarkGfm from 'remark-gfm';
 
 interface Props {
     content?: string,
+    codeClassName?: string,
 }
 
-export function MarkdownContent({ content }: Props) {
+export function MarkdownContent({ content, codeClassName }: Props) {
     return (
         <Markdown
             remarkPlugins={[remarkGfm]}
@@ -18,14 +19,16 @@ export function MarkdownContent({ content }: Props) {
                     const match = /language-(\w+)/.exec(className || '')
                     return match ? (
                         <SyntaxHighlighter
-                            customStyle={{scrollbarWidth: 'thin'}}
+                            customStyle={{ scrollbarWidth: 'thin' }}
+                            wrapLines={true}
+                            wrapLongLines={true}
                             PreTag="div"
                             children={String(children).replace(/\n$/, '')}
                             language={match[1]}
                             style={dracula}
                         />
                     ) : (
-                        <code {...rest} className={className}>
+                        <code {...rest} className={`${className} ${codeClassName ? codeClassName : ''}`}>
                             {children}
                         </code>
                     )
