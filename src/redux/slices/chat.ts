@@ -33,13 +33,19 @@ interface ChatMessageReason {
 
 export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall;
 
+interface CursorPreContext {
+    type: 'cursor';
+}
+
+export type ChatPreContext = (ChatContext | CursorPreContext);
+
 export interface Chat {
     id: string,
     localId: number,
     lastRequestId: number,
     progress?: string,
     messages: ChatMessage[],
-    addedContexts: ChatContext[],
+    addedContexts: ChatPreContext[],
     usage?: ChatUsage,
 }
 
@@ -53,23 +59,33 @@ interface ChatUsage {
     }
 }
 
+const defaultContexts = [{ type: 'repoMap' }, { type: 'cursor' }];
+
 const emptyStateChats = {
     'EMPTY': {
         id: 'EMPTY',
         lastRequestId: 0,
         messages: [],
-        addedContexts: [{ type: 'repoMap' }],
+        addedContexts: defaultContexts,
         localId: 1
     }
 } as { [key: string]: Chat };
+
+export interface CursorFocus {
+    path: string,
+    position: {
+        start: { line: number, character: number },
+        end: { line: number, character: number }
+    }
+}
 
 interface ChatState {
     chats: { [key: string]: Chat },
     chatLocalId: number,
     selectedChat: string,
     contexts?: ChatContext[],
-    uniqueContexts: { [key: string]: ChatContext },
     commands?: ChatCommand[],
+    cursorFocus?: CursorFocus,
 }
 
 const getCurrentChat = (state: ChatState): Chat => {
@@ -83,8 +99,8 @@ export const chatSlice = createSlice({
         chatLocalId: 1,
         selectedChat: 'EMPTY',
         contexts: undefined,
-        uniqueContexts: {},
         commands: undefined,
+        cursorFocus: undefined,
     } as ChatState,
     reducers: {
         incRequestId: (state, action) => {
@@ -132,7 +148,7 @@ export const chatSlice = createSlice({
             let chat;
             if (isNewChat) {
                 state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
-                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: [{ type: 'repoMap' }] } as Chat;
+                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: defaultContexts } as Chat;
                 state.selectedChat = chatId;
             } else {
                 chat = state.chats[chatId];
@@ -280,42 +296,11 @@ export const chatSlice = createSlice({
             }
             state.chats[chatId] = chat;
         },
+        setCursorFocus: (state, action) => {
+            state.cursorFocus = action.payload as CursorFocus;
+        },
         setContexts: (state, action) => {
             state.contexts = action.payload.contexts;
-        },
-        setUniqueContext: (state, action) => {
-            const curChat = getCurrentChat(state);
-            if (curChat.messages.length != 0) {
-                return;
-            }
-
-            const context = action.payload.context as ChatContext;
-            const uniqueType = action.payload.uniqueType as string;
-
-            // Snapshot previous unique contexts before updating
-            const prevUniqueValues = Object.values(state.uniqueContexts);
-
-            // Update unique context for the given type
-            state.uniqueContexts[uniqueType] = context;
-
-            // Unique contexts after the update
-            const nextUniqueValues = Object.values(state.uniqueContexts);
-
-            // Remove any previous unique contexts from addedContexts
-            const filteredAdded = curChat.addedContexts.filter(existing =>
-                !prevUniqueValues.some(prev => JSON.stringify(prev) === JSON.stringify(existing))
-            );
-
-            // Merge current unique contexts into addedContexts without duplicates
-            const deduped = [...filteredAdded];
-            for (const u of nextUniqueValues) {
-                const exists = deduped.some(e => JSON.stringify(e) === JSON.stringify(u));
-                if (!exists) {
-                    deduped.push(u);
-                }
-            }
-
-            curChat.addedContexts = deduped;
         },
         addContext: (state, action) => {
             const currentChat = getCurrentChat(state);
@@ -334,13 +319,13 @@ export const chatSlice = createSlice({
 });
 
 export const {
-    setUniqueContext,
     incRequestId,
     addContentReceived,
     resetChat,
     clearChat,
     resetChats,
     newChat,
+    setCursorFocus,
     selectChat,
     setContexts,
     addContext,

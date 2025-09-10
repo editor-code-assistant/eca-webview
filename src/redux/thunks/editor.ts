@@ -1,21 +1,28 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend } from "../../hooks";
-import { setUniqueContext } from "../slices/chat";
+import { setCursorFocus } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 interface FileFocusChanged {
     type: 'fileFocused';
     path: string;
+    position?: {
+        start: { line: number; character: number };
+        end: { line: number; character: number };
+    };
 }
 
 type FocusChanged = FileFocusChanged;
 
 export const focusChanged = createAsyncThunk<void, FocusChanged, ThunkApiType>(
     "editor/focusChanged",
-    async ({ type, path }, { dispatch }) => {
+    async ({ type, path, position }, { dispatch }) => {
         switch (type) {
             case 'fileFocused':
-                dispatch(setUniqueContext({ uniqueType: type, context: { type: 'file', path: path } }));
+                dispatch(setCursorFocus({
+                    path: path,
+                    position: position,
+                }));
                 break;
         }
     }

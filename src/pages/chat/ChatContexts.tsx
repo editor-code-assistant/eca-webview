@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { ChatContext, WorkspaceFolder } from "../../protocol";
-import { addContext, removeContext } from "../../redux/slices/chat";
+import { WorkspaceFolder } from "../../protocol";
+import { addContext, ChatPreContext, removeContext } from "../../redux/slices/chat";
 import { State, useEcaDispatch } from "../../redux/store";
 import { queryContext } from "../../redux/thunks/chat";
 import { relativizeFromRoot } from "../../util";
@@ -13,7 +13,7 @@ interface Props {
     enabled: boolean,
 }
 
-function contextLabel(context: ChatContext): string {
+function contextLabel(context: ChatPreContext): string {
     switch (context.type) {
         case 'file':
             const path = context.path.split('/').pop() || context.path;
@@ -27,6 +27,8 @@ function contextLabel(context: ChatContext): string {
             return context.url;
         case 'repoMap':
             return 'repoMap';
+        case 'cursor':
+            return 'cursor';
         case 'mcpResource':
             return context.server + ':' + context.name;
         default:
@@ -34,13 +36,15 @@ function contextLabel(context: ChatContext): string {
     }
 }
 
-function contextDescription(context: ChatContext, workspaceFolders: WorkspaceFolder[]): string {
+function contextDescription(context: ChatPreContext, workspaceFolders: WorkspaceFolder[]): string {
     switch (context.type) {
         case 'file':
         case 'directory':
             return relativizeFromRoot(context.path, workspaceFolders) || context.path;
         case 'repoMap':
             return 'Summary view of workspaces files';
+        case 'cursor':
+            return 'Cursor path + position/selection';
         case 'mcpResource':
             return context.description;
         default:
@@ -48,7 +52,7 @@ function contextDescription(context: ChatContext, workspaceFolders: WorkspaceFol
     }
 }
 
-function contextIcon(context: ChatContext): React.ReactNode {
+function contextIcon(context: ChatPreContext): React.ReactNode {
     let icon = '';
     switch (context.type) {
         case 'file':
@@ -62,6 +66,9 @@ function contextIcon(context: ChatContext): React.ReactNode {
             break;
         case 'repoMap':
             icon = 'sparkle-filled';
+            break;
+        case 'cursor':
+            icon = 'circle-filled';
             break;
         case 'mcpResource':
             icon = 'file-code';
@@ -93,11 +100,11 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
         setQuery(e.target.value);
     }
 
-    const onContextAdded = (context: ChatContext) => {
+    const onContextAdded = (context: ChatPreContext) => {
         dispatch(addContext(context));
     }
 
-    const onContextRemoved = (context: ChatContext) => {
+    const onContextRemoved = (context: ChatPreContext) => {
         dispatch(removeContext(context));
     }
 

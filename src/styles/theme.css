@@ -39,9 +39,10 @@ html[data-editor="vscode"] {
 
   --eca-icon-font-family: var(--vscode-icon-close-font-family, codicon);
   --eca-context-file-fg: var(--vscode-terminalSymbolIcon-flagForeground, #ee9d28);
-  --eca-context-directory-fg: var(--vscode-terminalSymbolIcon-fileForeground, #cccccc);
+  --eca-context-directory-fg: var(--vscode-terminal-ansiYellow, #d18f52);
   --eca-context-web-fg: var(--vscode-terminalSymbolIcon-argumentForeground, #75beff);
   --eca-context-repo-map-fg: var(--vscode-terminalSymbolIcon-methodForeground, #b180d7);
+  --eca-context-cursor-fg: var(--vscode-terminal-ansiWhite, #dcdcdc);
   --eca-context-mcp-resource-fg: var(--vscode-terminal-ansiBrightGreen, #23d18b);
 }
 
@@ -87,5 +88,6 @@ html[data-editor="intellij"] {
   --eca-context-directory-fg: var(--intellij-context-directory-fg, #cccccc);
   --eca-context-web-fg: var(--intellij-web-fg, #75beff);
   --eca-context-repo-map-fg: var(--intellij-repo-map-fg, #b180d7);
+  --eca-context-cursor-fg: var(--intellij-cursor-fg, #dcdcdc);
   --eca-context-mcp-resource-fg: var(--intellij-mcp-resource-fg, #23d18b);
 }

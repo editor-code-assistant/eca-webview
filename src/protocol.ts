@@ -58,6 +58,21 @@ interface RepoMapContext {
     type: 'repoMap';
 }
 
+interface CursorContext {
+    type: 'cursor';
+    path: string;
+    position: {
+        start: {
+            line: number;
+            character: number;
+        },
+        end: {
+            line: number;
+            character: number;
+        }
+    }
+}
+
 interface McpResourceContext {
     type: 'mcpResource';
     uri: string;
@@ -67,7 +82,7 @@ interface McpResourceContext {
     server: string;
 }
 
-export type ChatContext = FileContext | DirectoryContext | WebContext | RepoMapContext | McpResourceContext;
+export type ChatContext = FileContext | DirectoryContext | WebContext | RepoMapContext | CursorContext | McpResourceContext;
 export type ChatBehavior = 'agent' | 'chat';
 
 export interface ChatPromptResult {
