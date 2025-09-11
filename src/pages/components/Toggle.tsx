@@ -20,7 +20,7 @@ export function Toggle({ defaultChecked, onChange, className }: IToggle) {
     }
 
     return (
-        <label className={`toggle ${className}`}>
+        <label className={`toggle ${className ? className : ''}`}>
             <input type="checkbox" checked={checked} onChange={onValueChange}/>
             <span className="slider round"></span>
         </label>

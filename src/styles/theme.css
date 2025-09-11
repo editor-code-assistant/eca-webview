@@ -33,7 +33,7 @@ html[data-editor="vscode"] {
   --eca-tooltip-bg: var(--vscode-sideBar-background, #1e1e1e);
   --eca-tooltip-fg: var(--vscode-sideBar-foreground, #e6e6e6);
 
-  --eca-toggle-slider-bg: var(--vscode-button-secondaryForeground, #cccccc);
+  --eca-toggle-slider-bg: var(--vscode-button-secondaryBackground, #cccccc);
   --eca-toggle-icon-bg: var(--vscode-button-foreground, #ffffff);
   --eca-toggle-bg: var(--vscode-button-background, #0078d4);
 
