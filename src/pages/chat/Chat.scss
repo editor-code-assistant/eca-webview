@@ -23,14 +23,22 @@
   }
 
   .welcome-message {
-      font-size: 0.7em;
-      text-align: center;
-      white-space: pre-wrap;
+      font-size: 1em;
+      margin: 0 auto;
+
+      ul {
+        li {
+        }
+      }
 
       .image {
-        opacity: 0.3;
+        text-align: center;
         margin-top: 10em;
-        width: 10em;
+
+        img {
+          opacity: 0.3;
+          width: 10em;
+        }
       }
   }
 

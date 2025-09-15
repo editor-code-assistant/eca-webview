@@ -8,6 +8,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from './ChatMessages';
 import { ChatPrompt } from "./ChatPrompt";
 import { ChatSubHeader } from './ChatSubHeader';
+import { MarkdownContent } from "./MarkdownContent";
 
 export function Chat() {
     const dispatch = useEcaDispatch();
@@ -48,8 +49,10 @@ export function Chat() {
             <ChatMessages chatId={currentChatId}>
                 {running && (
                     <div className="welcome-message">
-                        <h2>{welcomeMessage}</h2>
-                        <img className="image" src={`${window.mediaUrl}/logo.png`} />
+                        <MarkdownContent content={welcomeMessage} />
+                        <div className="image">
+                            <img src={`${window.mediaUrl}/logo.png`} />
+                        </div>
                     </div>)
                 }
             </ChatMessages>
