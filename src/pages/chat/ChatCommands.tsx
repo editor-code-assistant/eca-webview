@@ -65,6 +65,12 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
         }
     }, [show]);
 
+    const selectCommand = (command: ChatCommand, event: any) => {
+        setShow(false);
+        event.preventDefault();
+        onCommandSelected(command);
+    }
+
     useEffect(() => {
         setSelectedIndex(0);
     }, [commands?.length]);
@@ -86,9 +92,7 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
                 setSelectedIndex((prev) => (prev - 1 + commands.length) % commands.length);
                 e.preventDefault();
             } else if ((e.key === "Enter" || e.key === "Tab") && commands[selectedIndex]) {
-                onCommandSelected(commands[selectedIndex]);
-                setShow(false);
-                e.preventDefault();
+                selectCommand(commands[selectedIndex], e)
             } else if (e.key === "Escape") {
                 setShow(false);
                 e.preventDefault();
@@ -120,7 +124,8 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
             place="top-start">
             <ul className="commands">
                 {commands && commands.map((command, index) => (
-                    <li onClick={() => onCommandSelected(command)}
+                    <li onClick={(e) => selectCommand(command, e)}
+                        onMouseDown={(e) => selectCommand(command, e)}
                         onMouseEnter={() => setSelectedIndex(index)}
                         key={index}
                         className={`item ${index === selectedIndex ? 'selected' : ''}`}>

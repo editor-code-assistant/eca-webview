@@ -62,9 +62,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
     useEffect(() => {
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
+        inputRef.current?.focus();
     }, [enabled, chatId]);
 
     const onPromptChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
