@@ -117,37 +117,38 @@ export interface ChatContentReceivedParams {
 export type ChatContentRole = 'user' | 'system' | 'assistant';
 
 type ChatContent =
-    | TextContent
-    | URLContent
-    | ProgressContent
-    | UsageContent
-    | ToolCallPrepareContent
-    | ToolCallRunContent
-    | ToolCallRunningContent
-    | ToolCallRejectedContent
-    | ToolCalledContent
-    | ReasonStartedContent
-    | ReasonTextContent
-    | ReasonFinishedContent;
+    | ChatTextContent
+    | ChatURLContent
+    | ChatProgressContent
+    | ChatUsageContent
+    | ChatToolCallPrepareContent
+    | ChatToolCallRunContent
+    | ChatToolCallRunningContent
+    | ChatToolCallRejectedContent
+    | ChatToolCalledContent
+    | ChatReasonStartedContent
+    | ChatReasonTextContent
+    | ChatReasonFinishedContent
+    | ChatMetadataContent;
 
-interface TextContent {
+interface ChatTextContent {
     type: 'text';
     text: string;
 }
 
-interface URLContent {
+interface ChatURLContent {
     type: 'url';
     title: string;
     url: string;
 }
 
-interface ProgressContent {
+interface ChatProgressContent {
     type: 'progress';
     state: 'running' | 'finished';
     text?: string;
 }
 
-interface UsageContent {
+interface ChatUsageContent {
     type: 'usage';
     sessionTokens: number;
     lastMessageCost?: string;
@@ -158,7 +159,7 @@ interface UsageContent {
     }
 }
 
-interface ToolCallPrepareContent {
+interface ChatToolCallPrepareContent {
     type: 'toolCallPrepare';
     origin: ToolCallOrigin;
     id: string;
@@ -168,7 +169,7 @@ interface ToolCallPrepareContent {
     summary?: string;
 }
 
-interface ToolCallRunContent {
+interface ChatToolCallRunContent {
     type: 'toolCallRun';
     origin: ToolCallOrigin;
     id: string;
@@ -179,7 +180,7 @@ interface ToolCallRunContent {
     summary?: string;
 }
 
-interface ToolCallRunningContent {
+interface ChatToolCallRunningContent {
     type: 'toolCallRunning';
     origin: ToolCallOrigin;
     id: string;
@@ -189,7 +190,7 @@ interface ToolCallRunningContent {
     summary?: string;
 }
 
-interface ToolCallRejectedContent {
+interface ChatToolCallRejectedContent {
     type: 'toolCallRejected';
     origin: ToolCallOrigin;
     id: string;
@@ -199,7 +200,7 @@ interface ToolCallRejectedContent {
     summary?: string;
 }
 
-interface ToolCalledContent {
+interface ChatToolCalledContent {
     type: 'toolCalled';
     origin: ToolCallOrigin;
     id: string;
@@ -229,21 +230,26 @@ export interface FileChangeDetails {
     linesRemoved: number;
 }
 
-interface ReasonStartedContent {
+interface ChatReasonStartedContent {
     type: 'reasonStarted';
     id: string;
 }
 
-interface ReasonTextContent {
+interface ChatReasonTextContent {
     type: 'reasonText';
     id: string;
     text: string;
 }
 
-interface ReasonFinishedContent {
+interface ChatReasonFinishedContent {
     type: 'reasonFinished';
     id: string;
     totalTimeMs: number;
+}
+
+interface ChatMetadataContent {
+    type: 'metadata';
+    title?: string;
 }
 
 export interface ChatQueryContextParams {

@@ -9,6 +9,13 @@ interface Props {
     chats: Chat[];
 }
 
+function chatTitle(chat: Chat): string {
+    if (chat.title) {
+        return chat.title;
+    }
+    return `Chat ${chat.localId}`;
+}
+
 export const ChatHeader = memo(({ chats }: Props) => {
     const dispatch = useEcaDispatch();
     const selectedChat = useSelector((state: State) => state.chat.selectedChat);
@@ -29,7 +36,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
 
     return (
         <div className="chat-header">
-            <section className="chats">
+            <section className="chats scrollable">
                 {chats.map(chat => {
                     const isEmpty = chat.id === emptyChat?.id;
                     const isSelected = chat.id === selectedChat;
@@ -46,7 +53,8 @@ export const ChatHeader = memo(({ chats }: Props) => {
                         <span onClick={() => selectTab(chat.id)}
                             key={`chat-${chat.id}`}
                             className={`chat ${isSelected ? 'selected' : ''}`}>
-                            Chat {chat.localId} <i onClick={(e) => {
+                            {chatTitle(chat)}
+                            <i onClick={(e) => {
                                 e.stopPropagation();
                                 chatDelete(chat);
                             }} className="close codicon codicon-close"></i>

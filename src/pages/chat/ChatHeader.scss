@@ -4,6 +4,8 @@
         display: flex;
         background-color: var(--eca-panel-bg);
         width: 100%;
+        white-space: nowrap;
+        overflow-x: auto;
 
         .chat {
             display: flex;

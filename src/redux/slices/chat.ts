@@ -41,6 +41,7 @@ export type ChatPreContext = (ChatContext | CursorPreContext);
 
 export interface Chat {
     id: string,
+    title?: string,
     localId: number,
     lastRequestId: number,
     progress?: string,
@@ -292,6 +293,9 @@ export const chatSlice = createSlice({
                 case 'usage': {
                     chat.usage = content;
                     break;
+                }
+                case 'metadata': {
+                    chat.title = content.title;
                 }
             }
             state.chats[chatId] = chat;
