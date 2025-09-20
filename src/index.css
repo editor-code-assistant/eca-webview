@@ -1,6 +1,11 @@
 @import 'styles/codicon.css';
 @import './styles/theme.css';
 
+/* Base font size (scales entire UI). Adjusted via --eca-font-size */
+html {
+  font-size: var(--eca-font-size, 1em);
+}
+
 html,
 body,
 #root {

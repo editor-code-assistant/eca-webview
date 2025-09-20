@@ -1,6 +1,8 @@
 
 type LocalStorageTypes = {
   editor: "vscode" | "jetbrains";
+  // Base UI font scale multiplier (em units), e.g., 1, 1.1
+  fontScale: number;
 };
 
 export function getLocalStorage<T extends keyof LocalStorageTypes>(
