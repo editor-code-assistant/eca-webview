@@ -60,7 +60,7 @@ interface ChatUsage {
     }
 }
 
-const defaultContexts = [{ type: 'repoMap' }, { type: 'cursor' }];
+const defaultContexts = [{ type: 'cursor' }];
 
 const emptyStateChats = {
     'EMPTY': {
