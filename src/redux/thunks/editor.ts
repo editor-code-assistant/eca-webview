@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { webviewSend } from "../../hooks";
+import { webviewSend, webviewSendAndGet } from "../../hooks";
 import { setCursorFocus } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
@@ -32,5 +32,12 @@ export const editorOpenFile = createAsyncThunk<void, { path: string }, ThunkApiT
     "editor/openFile",
     async ({ path }, _) => {
         webviewSend('editor/openFile', { path });
+    }
+);
+
+export const editorReadInput = createAsyncThunk<string | null, { message: string }, ThunkApiType>(
+    "editor/readInput",
+    async ({ message }, _) => {
+        return await webviewSendAndGet('editor/readInput', { message });
     }
 );

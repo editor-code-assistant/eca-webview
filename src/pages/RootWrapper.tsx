@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useWebviewListener, webviewSend } from "../hooks";
+import { respondRequest as respondWebviewRequest, useWebviewListener, webviewSend } from "../hooks";
 import { ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, addContext, setCommands, setContexts, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
@@ -68,6 +68,10 @@ const RootWrapper = () => {
 
     useWebviewListener('editor/focusChanged', (focus: any) => {
         dispatch(focusChanged(focus))
+    });
+
+    useWebviewListener('editor/readInput', (data: { requestId: string, value: string | null }) => {
+        respondWebviewRequest(data.requestId, data.value);
     });
 
     useEffect(() => {

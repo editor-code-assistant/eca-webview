@@ -46,3 +46,38 @@ export function webviewSend<T>(
     }
     console.error("No webview provider found to send message");
 }
+
+const pendingSyncRequests = new Map<string, {
+    resolve: (value: any | null) => void;
+    reject: (error: Error) => void;
+}>();
+
+export function respondRequest(requestId: string, value: any | null) {
+    const pending = pendingSyncRequests.get(requestId);
+    if (pending) {
+        pending.resolve(value);
+        pendingSyncRequests.delete(requestId);
+    }
+}
+
+export function webviewSendAndGet<T>(
+    type: string, data: T,
+): Promise<any> {
+    const requestId = Date.now().toString();
+    const promise = new Promise<any | null>((resolve, reject) => {
+        pendingSyncRequests.set(requestId, { resolve, reject });
+
+        // Set a timeout to prevent hanging forever (30 seconds)
+        setTimeout(() => {
+            const pending = pendingSyncRequests.get(requestId);
+            if (pending) {
+                pending.reject(new Error('Wait webview response timeout'));
+                pendingSyncRequests.delete(requestId);
+            }
+        }, 30000);
+    });
+
+    webviewSend(type, { ...data, requestId });
+
+    return promise;
+}

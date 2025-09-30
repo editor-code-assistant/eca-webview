@@ -6,6 +6,8 @@ import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
 import './ChatPrompt.scss';
+import { ChatCommand } from "../../protocol";
+import { editorReadInput } from "../../redux/thunks/editor";
 
 interface ChatPromptProps {
     enabled: boolean,
@@ -69,16 +71,36 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         setPromptValue(event.target.value);
     }
 
+    const onCommandSelected = async (command: ChatCommand) => {
+        inputRef.current?.focus();
+        let prompt = `/${command.name}`;
+        setPromptValue(prompt)
+
+        for (let i = 0; i < command.arguments.length; i++) {
+            const arg = command.arguments[i];
+            prompt += " ";
+            const message = `Arg: ${arg.name}\nDescription: ${arg.description}\n\nInput value:`;
+            const userArgInput = (await dispatch(editorReadInput({ message: message }))).payload as (string | null);
+
+            if (userArgInput) {
+                if (userArgInput.indexOf(' ') >= 0) {
+                    prompt += `"${userArgInput}"`;
+                } else {
+                    prompt += userArgInput;
+                }
+                setPromptValue(prompt)
+            }
+        }
+        setPromptValue(prompt);
+    }
+
     return (
         <div className="prompt-area">
             <ChatContexts enabled={enabled} chatId={chatId} />
             <ChatCommands
                 input={inputRef.current}
                 chatId={chatId}
-                onCommandSelected={(command) => {
-                    setPromptValue(`/${command.name} `);
-                    inputRef.current?.focus();
-                }}
+                onCommandSelected={onCommandSelected}
                 onCompleting={setInputCompleting}
             />
             <textarea
