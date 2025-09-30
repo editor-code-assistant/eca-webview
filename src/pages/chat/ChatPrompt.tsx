@@ -92,6 +92,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
             }
         }
         setPromptValue(prompt);
+        inputRef.current?.focus();
     }
 
     return (
