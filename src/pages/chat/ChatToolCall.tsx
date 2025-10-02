@@ -173,7 +173,7 @@ function chatToolCall(props: Props) {
     const approvalComp = waitingApproval && (
         <div className="approval-actions">
             <button onClick={rejectToolCall} className="cancel">Reject</button>
-            <button onClick={approveToolCall} className="run">Run</button>
+            <button onClick={approveToolCall} className="accept">Accept</button>
         </div>
     )
 

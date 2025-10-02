@@ -4,84 +4,92 @@
     .header {
         display: flex;
         flex-wrap: wrap;
-        align-items: center;
 
-        .spacing {
+        .header-content {
             flex: 1;
-        }
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
 
-        .name {
-            margin: 0 0.5em;
-            font-style: italic;
-            border-radius: 0.2em;
-            padding: 0.2em 0.4em;
-            color: var(--eca-input-fg);
-            background-color: var(--eca-input-bg);
-        }
-
-        .status {
-            vertical-align: middle;
-
-            &.succeeded {
-                color: var(--eca-success-fg);
+            .spacing {
+                flex: 1;
             }
-            &.failed {
-                color: var(--eca-error-fg);
-            }
-        }
 
-        .file-change-name {
-            margin: 0 0.2em;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
-
-        .file-change-lines-added {
-            color: var(--eca-success-fg);
-            margin: 0 0.1em;
-        }
-        .file-change-lines-removed {
-            color: var(--eca-error-fg);
-            margin: 0 0.1em;
-        }
-
-        .approval-actions {
-            display: block;
-            padding-top: 0.6em;
-            text-align: right;
-
-            .cancel {
-                opacity: 0.8;
-                border: none;
-                background: none;
-                cursor: pointer;
-                transition: opacity 0.1s;
-                color: var(--eca-input-placeholder-fg);
+            .name {
                 margin: 0 0.5em;
+                font-style: italic;
+                border-radius: 0.2em;
+                padding: 0.2em 0.4em;
+                color: var(--eca-input-fg);
+                background-color: var(--eca-input-bg);
+            }
 
-                &:hover {
-                    opacity: 1;
+            .status {
+                vertical-align: middle;
+                height: 1em;
+
+                &.succeeded {
+                    color: var(--eca-success-fg);
+                }
+                &.failed {
+                    color: var(--eca-error-fg);
                 }
             }
 
-            .run {
-                opacity: 0.8;
-                border: none;
-                border-radius: 0.3em;
-                background: var(--eca-confirm-action-bg);
-                cursor: pointer;
-                transition: opacity 0.1s;
-                color: var(--eca-confirm-action-fg);
+            .file-change-name {
+                margin: 0 0.2em;
 
                 &:hover {
-                    opacity: 1;
+                    text-decoration: underline;
+                }
+            }
+
+            .file-change-lines-added {
+                color: var(--eca-success-fg);
+                margin: 0 0.1em;
+            }
+            .file-change-lines-removed {
+                color: var(--eca-error-fg);
+                margin: 0 0.1em;
+            }
+
+            .approval-actions {
+                display: block;
+                flex-grow: 1;
+                flex-basis: 100%;
+                padding-top: 0.6em;
+
+                .cancel {
+                    opacity: 0.8;
+                    border: none;
+                    background: none;
+                    cursor: pointer;
+                    transition: opacity 0.1s;
+                    color: var(--eca-input-placeholder-fg);
+                    margin: 0 0.5em;
+
+                    &:hover {
+                        opacity: 1;
+                    }
                 }
 
+                .accept {
+                    opacity: 0.8;
+                    border: none;
+                    border-radius: 0.3em;
+                    background: var(--eca-confirm-action-bg);
+                    cursor: pointer;
+                    transition: opacity 0.1s;
+                    color: var(--eca-confirm-action-fg);
+
+                    &:hover {
+                        opacity: 1;
+                    }
+
+                }
             }
+
         }
-
     }
 
     .args {
