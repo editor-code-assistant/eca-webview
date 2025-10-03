@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { WorkspaceFolder } from "../../protocol";
-import { addContext, ChatPreContext, removeContext } from "../../redux/slices/chat";
+import { addContext, ChatPreContext, CursorFocus, removeContext } from "../../redux/slices/chat";
 import { State, useEcaDispatch } from "../../redux/store";
 import { queryContext } from "../../redux/thunks/chat";
 import { relativizeFromRoot } from "../../util";
@@ -13,10 +13,14 @@ interface Props {
     enabled: boolean,
 }
 
-function contextLabel(context: ChatPreContext): string {
+function absPathToFilename(path: string) {
+    return path.split('/').pop() || path;
+}
+
+function contextLabel(context: ChatPreContext, cursorFocus: CursorFocus | undefined): string {
     switch (context.type) {
         case 'file':
-            const path = context.path.split('/').pop() || context.path;
+            const path = absPathToFilename(context.path);
             if (context.linesRange) {
                 return `${path} (${context.linesRange.start}-${context.linesRange.end})`;
             }
@@ -28,7 +32,11 @@ function contextLabel(context: ChatPreContext): string {
         case 'repoMap':
             return 'repoMap';
         case 'cursor':
-            return 'cursor';
+            const filename = cursorFocus ? absPathToFilename(cursorFocus?.path) : '';
+            const startLine = cursorFocus?.position.start.line;
+            const startCharacter = cursorFocus?.position.start.character;
+
+            return `cursor (${filename}:${startLine}:${startCharacter})`;
         case 'mcpResource':
             return context.server + ':' + context.name;
         default:
@@ -88,6 +96,8 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
     const workspaceFolders = useSelector((state: State) => state.server.workspaceFolders);
     const dispatch = useEcaDispatch();
 
+    const cursorFocus = useSelector((state: State) => state.chat.cursorFocus);
+
     useEffect(() => {
         dispatch(queryContext({
             chatId,
@@ -114,7 +124,7 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
             {enabled && addedContexts.map((context, index) => (
                 <span onClick={() => onContextRemoved(context)} key={index} className="added-context">
                     {contextIcon(context)}
-                    {contextLabel(context)}
+                    {contextLabel(context, cursorFocus)}
                 </span>
             ))}
             <ToolTip id="add-context"
@@ -138,7 +148,7 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
                             {contexts.map((context, index) => (
                                 <li onClick={() => onContextAdded(context)} key={index} className="context-item">
                                     {contextIcon(context)}
-                                    <span className="label">{contextLabel(context)}</span>
+                                    <span className="label">{contextLabel(context, cursorFocus)}</span>
                                     <span className="description">{contextDescription(context, workspaceFolders)}</span>
                                 </li>
                             ))}
