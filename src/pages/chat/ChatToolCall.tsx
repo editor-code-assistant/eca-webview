@@ -47,34 +47,36 @@ function genericToolCall(
     const description = summary || `${verb} ${originTxt} tool`;
 
     return (
-        <ChatCollapsableMessage
-            className="tool-call"
-            header={(toggleOpen) => (
-                <div className="header-content">
-                    <span onClick={toggleOpen} className="description">{description}</span>
-                    {!summary &&
-                        <span onClick={toggleOpen} className="name">{name}</span>}
-                    {totalTimeMs && <ChatTime ms={totalTimeMs} />}
-                    <span onClick={toggleOpen} className="spacing"></span>
-                    <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
-                    {approvalComp}
-                </div>
-            )}
-            content={
-                <div style={{ display: 'inline' }}>
-                    <p>Parameters:</p>
-                    <MarkdownContent codeClassName='args' content={argsTxt} />
-                    {showOutput &&
-                        <div>
-                            <p>Result:</p>
-                            {outputs!.map((output, index) => {
-                                const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
-                                return (<MarkdownContent codeClassName='output' key={toolCallId + index} content={outputTxt} />)
-                            })}
-                        </div>}
-                </div>
-            }
-        />
+        <div className="tool-call-wrapper">
+            <ChatCollapsableMessage
+                className="tool-call"
+                header={(toggleOpen) => (
+                    <div className="header-content">
+                        <span onClick={toggleOpen} className="description">{description}</span>
+                        {!summary &&
+                            <span onClick={toggleOpen} className="name">{name}</span>}
+                        {totalTimeMs && <ChatTime ms={totalTimeMs} />}
+                        <span onClick={toggleOpen} className="spacing"></span>
+                        <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
+                    </div>
+                )}
+                content={
+                    <div style={{ display: 'inline' }}>
+                        <p>Parameters:</p>
+                        <MarkdownContent codeClassName='args' content={argsTxt} />
+                        {showOutput &&
+                            <div>
+                                <p>Result:</p>
+                                {outputs!.map((output, index) => {
+                                    const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
+                                    return (<MarkdownContent codeClassName='output' key={toolCallId + index} content={outputTxt} />)
+                                })}
+                            </div>}
+                    </div>
+                }
+            />
+            {approvalComp}
+        </div>
     );
 }
 function fileChangeToolCall({ name, details }: Props, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch, totalTimeMs?: number) {
@@ -87,34 +89,36 @@ function fileChangeToolCall({ name, details }: Props, iconClass: string, approva
     }
 
     return (
-        <ChatCollapsableMessage
-            className="tool-call"
-            defaultOpen={true}
-            header={(toggleOpen) => (
-                <div className="header-content">
-                    <span onClick={openFile} className="file-change-name">{fileName}</span>
-                    <span onClick={toggleOpen} className="file-change-lines-added">+{linesAdded}</span>
-                    <span onClick={toggleOpen} className="file-change-lines-removed">-{linesRemoved}</span>
-                    {totalTimeMs && <ChatTime ms={totalTimeMs} />}
-                    <span onClick={toggleOpen} className="spacing"></span>
-                    <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
-                    {approvalComp}
-                </div>
-            )}
-            content={
-                <div>
-                    <span>Tool: </span>
-                    <span>{name}</span>
-                    {fileDiffs.map(({ oldRevision, newRevision, type, hunks }) => {
-                        return (
-                            <Diff key={oldRevision + '-' + newRevision} viewType="unified" gutterType='none' diffType={type} hunks={hunks}>
-                                {hunks => hunks.map(hunk => <Hunk key={hunk.content} hunk={hunk} />)}
-                            </Diff>
-                        );
-                    })}
-                </div>
-            }
-        />
+        <div className="tool-call-wrapper">
+            <ChatCollapsableMessage
+                className="tool-call"
+                defaultOpen={true}
+                header={(toggleOpen) => (
+                    <div className="header-content">
+                        <span onClick={openFile} className="file-change-name">{fileName}</span>
+                        <span onClick={toggleOpen} className="file-change-lines-added">+{linesAdded}</span>
+                        <span onClick={toggleOpen} className="file-change-lines-removed">-{linesRemoved}</span>
+                        {totalTimeMs && <ChatTime ms={totalTimeMs} />}
+                        <span onClick={toggleOpen} className="spacing"></span>
+                        <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
+                    </div>
+                )}
+                content={
+                    <div>
+                        <span>Tool: </span>
+                        <span>{name}</span>
+                        {fileDiffs.map(({ oldRevision, newRevision, type, hunks }) => {
+                            return (
+                                <Diff key={oldRevision + '-' + newRevision} viewType="unified" gutterType='none' diffType={type} hunks={hunks}>
+                                    {hunks => hunks.map(hunk => <Hunk key={hunk.content} hunk={hunk} />)}
+                                </Diff>
+                            );
+                        })}
+                    </div>
+                }
+            />
+            {approvalComp}
+        </div>
     );
 }
 
@@ -146,6 +150,10 @@ function chatToolCall(props: Props) {
         dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId }));
     }
 
+    const approveToolCallAndRemember = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId, save: 'session' }));
+    }
+
     let iconClass: string;
     switch (props.status) {
         case 'preparing':
@@ -172,8 +180,18 @@ function chatToolCall(props: Props) {
 
     const approvalComp = waitingApproval && (
         <div className="approval-actions">
-            <button onClick={rejectToolCall} className="cancel">Reject</button>
-            <button onClick={approveToolCall} className="accept">Accept</button>
+            <div className="approval-option">
+                <button onClick={approveToolCall} className="approve-btn">Accept</button>
+                <span className="approval-description">for this session</span>
+            </div>
+            <div className="approval-option">
+                <button onClick={approveToolCallAndRemember} className="approve-remember-btn">Accept and remember</button>
+                <span className="approval-description">for this session</span>
+            </div>
+            <div className="approval-option">
+                <button onClick={rejectToolCall} className="reject-btn">Reject</button>
+                <span className="approval-description">and tell ECA what to do differently</span>
+            </div>
         </div>
     )
 

@@ -1,5 +1,81 @@
 @use '../components/diff';
 
+.tool-call-wrapper {
+    .approval-actions {
+        display: flex;
+        flex-direction: column;
+        padding: 0.6em 0 0.6em 1.5em;
+        gap: 0.4em;
+
+        .approval-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+
+            button {
+                padding: 0.3em 0.6em;
+                border: 1px solid transparent;
+                border-radius: 0.2em;
+                cursor: pointer;
+                font-size: 0.85em;
+                font-weight: 400;
+                transition: all 0.1s ease;
+                white-space: nowrap;
+                min-width: fit-content;
+            }
+
+            .approval-description {
+                color: var(--vscode-descriptionForeground);
+                font-size: 0.85em;
+                opacity: 0.8;
+            }
+        }
+
+        .reject-btn {
+            background: transparent;
+            color: var(--vscode-button-secondaryForeground);
+            border-color: var(--vscode-button-secondaryBorder);
+
+            &:hover {
+                background: var(--vscode-button-secondaryHoverBackground);
+                color: var(--vscode-button-secondaryForeground);
+            }
+
+            &:active {
+                background: var(--vscode-button-secondaryActiveBackground);
+            }
+        }
+
+        .approve-btn {
+            background: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border-color: var(--vscode-button-border);
+
+            &:hover {
+                background: var(--vscode-button-hoverBackground);
+            }
+
+            &:active {
+                background: var(--vscode-button-activeBackground);
+            }
+        }
+
+        .approve-remember-btn {
+            background: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border-color: var(--vscode-button-border);
+
+            &:hover {
+                background: var(--vscode-button-hoverBackground);
+            }
+
+            &:active {
+                background: var(--vscode-button-activeBackground);
+            }
+        }
+    }
+}
+
 .tool-call {
     .header {
         display: flex;
@@ -31,6 +107,7 @@
                 &.succeeded {
                     color: var(--eca-success-fg);
                 }
+
                 &.failed {
                     color: var(--eca-error-fg);
                 }
@@ -48,46 +125,12 @@
                 color: var(--eca-success-fg);
                 margin: 0 0.1em;
             }
+
             .file-change-lines-removed {
                 color: var(--eca-error-fg);
                 margin: 0 0.1em;
             }
 
-            .approval-actions {
-                display: block;
-                flex-grow: 1;
-                flex-basis: 100%;
-                padding-top: 0.6em;
-
-                .cancel {
-                    opacity: 0.8;
-                    border: none;
-                    background: none;
-                    cursor: pointer;
-                    transition: opacity 0.1s;
-                    color: var(--eca-input-placeholder-fg);
-                    margin: 0 0.5em;
-
-                    &:hover {
-                        opacity: 1;
-                    }
-                }
-
-                .accept {
-                    opacity: 0.8;
-                    border: none;
-                    border-radius: 0.3em;
-                    background: var(--eca-confirm-action-bg);
-                    cursor: pointer;
-                    transition: opacity 0.1s;
-                    color: var(--eca-confirm-action-fg);
-
-                    &:hover {
-                        opacity: 1;
-                    }
-
-                }
-            }
 
         }
     }

@@ -44,10 +44,10 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
     }
 );
 
-export const toolCallApprove = createAsyncThunk<void, { chatId: string, toolCallId: string }, ThunkApiType>(
+export const toolCallApprove = createAsyncThunk<void, { chatId: string, toolCallId: string, save?: string }, ThunkApiType>(
     "chat/toolCallApprove",
-    async ({ chatId, toolCallId }, _) => {
-        webviewSend('chat/toolCallApprove', { chatId, toolCallId });
+    async ({ chatId, toolCallId, save }, _) => {
+        webviewSend('chat/toolCallApprove', { chatId, toolCallId, save });
     }
 );
 
