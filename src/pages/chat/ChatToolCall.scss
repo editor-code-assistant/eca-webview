@@ -1,5 +1,79 @@
 @use '../components/diff';
 
+.tool-call-wrapper {
+    .approval-actions {
+        display: flex;
+        flex-direction: column;
+        padding: 0.6em 0 0.6em 1.5em;
+        gap: 0.4em;
+
+        .approval-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+
+            button {
+                padding: 0.3em 0.6em;
+                border: 1px solid transparent;
+                border-radius: 0.2em;
+                cursor: pointer;
+                font-size: 0.85em;
+                font-weight: 400;
+                transition: all 0.1s ease;
+                white-space: nowrap;
+                min-width: fit-content;
+            }
+
+            .approval-description {
+                font-size: 0.85em;
+                opacity: 0.8;
+            }
+        }
+
+        .reject-btn {
+            background: var(--eca-button-secondary-bg);
+            color: var(--eca-button-secondary-fg);
+            border-color: var(--eca-button-secondary-border);
+
+            &:hover {
+                background: var(--eca-button-secondary-hover-bg);
+            }
+
+            &:active {
+                background: var(--eca-button-secondary-active-bg);
+            }
+        }
+
+        .approve-btn {
+            background: var(--eca-button-primary-bg);
+            color: var(--eca-button-primary-fg);
+            border-color: var(--eca-button-primary-border);
+
+            &:hover {
+                background: var(--eca-button-primary-hover-bg);
+            }
+
+            &:active {
+                background: var(--eca-button-primary-active-bg);
+            }
+        }
+
+        .approve-remember-btn {
+            background: var(--eca-button-primary-bg);
+            color: var(--eca-button-primary-fg);
+            border-color: var(--eca-button-primary-border);
+
+            &:hover {
+                background: var(--eca-button-primary-hover-bg);
+            }
+
+            &:active {
+                background: var(--eca-button-primary-active-bg);
+            }
+        }
+    }
+}
+
 .tool-call {
     .header {
         display: flex;
@@ -31,6 +105,7 @@
                 &.succeeded {
                     color: var(--eca-success-fg);
                 }
+
                 &.failed {
                     color: var(--eca-error-fg);
                 }
@@ -48,46 +123,12 @@
                 color: var(--eca-success-fg);
                 margin: 0 0.1em;
             }
+
             .file-change-lines-removed {
                 color: var(--eca-error-fg);
                 margin: 0 0.1em;
             }
 
-            .approval-actions {
-                display: block;
-                flex-grow: 1;
-                flex-basis: 100%;
-                padding-top: 0.6em;
-
-                .cancel {
-                    opacity: 0.8;
-                    border: none;
-                    background: none;
-                    cursor: pointer;
-                    transition: opacity 0.1s;
-                    color: var(--eca-input-placeholder-fg);
-                    margin: 0 0.5em;
-
-                    &:hover {
-                        opacity: 1;
-                    }
-                }
-
-                .accept {
-                    opacity: 0.8;
-                    border: none;
-                    border-radius: 0.3em;
-                    background: var(--eca-confirm-action-bg);
-                    cursor: pointer;
-                    transition: opacity 0.1s;
-                    color: var(--eca-confirm-action-fg);
-
-                    &:hover {
-                        opacity: 1;
-                    }
-
-                }
-            }
 
         }
     }
