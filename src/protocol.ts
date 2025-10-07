@@ -93,6 +93,7 @@ export interface ChatPromptResult {
 export interface ChatToolCallApproveParams {
     chatId: string;
     toolCallId: string;
+    save?: string;
 }
 
 export interface ChatToolCallRejectParams {

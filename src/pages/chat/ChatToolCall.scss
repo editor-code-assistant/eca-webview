@@ -25,52 +25,50 @@
             }
 
             .approval-description {
-                color: var(--vscode-descriptionForeground);
                 font-size: 0.85em;
                 opacity: 0.8;
             }
         }
 
         .reject-btn {
-            background: transparent;
-            color: var(--vscode-button-secondaryForeground);
-            border-color: var(--vscode-button-secondaryBorder);
+            background: var(--eca-button-secondary-bg);
+            color: var(--eca-button-secondary-fg);
+            border-color: var(--eca-button-secondary-border);
 
             &:hover {
-                background: var(--vscode-button-secondaryHoverBackground);
-                color: var(--vscode-button-secondaryForeground);
+                background: var(--eca-button-secondary-hover-bg);
             }
 
             &:active {
-                background: var(--vscode-button-secondaryActiveBackground);
+                background: var(--eca-button-secondary-active-bg);
             }
         }
 
         .approve-btn {
-            background: var(--vscode-button-background);
-            color: var(--vscode-button-foreground);
-            border-color: var(--vscode-button-border);
+            background: var(--eca-button-primary-bg);
+            color: var(--eca-button-primary-fg);
+            border-color: var(--eca-button-primary-border);
 
             &:hover {
-                background: var(--vscode-button-hoverBackground);
+                background: var(--eca-button-primary-hover-bg);
             }
 
             &:active {
-                background: var(--vscode-button-activeBackground);
+                background: var(--eca-button-primary-active-bg);
             }
         }
 
         .approve-remember-btn {
-            background: var(--vscode-button-background);
-            color: var(--vscode-button-foreground);
-            border-color: var(--vscode-button-border);
+            background: var(--eca-button-primary-bg);
+            color: var(--eca-button-primary-fg);
+            border-color: var(--eca-button-primary-border);
 
             &:hover {
-                background: var(--vscode-button-hoverBackground);
+                background: var(--eca-button-primary-hover-bg);
             }
 
             &:active {
-                background: var(--vscode-button-activeBackground);
+                background: var(--eca-button-primary-active-bg);
             }
         }
     }

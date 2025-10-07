@@ -37,6 +37,18 @@ html[data-editor="vscode"] {
   --eca-toggle-icon-bg: var(--vscode-button-foreground, #ffffff);
   --eca-toggle-bg: var(--vscode-button-background, #0078d4);
 
+  --eca-button-primary-fg: var(--vscode-button-foreground, #ffffff);
+  --eca-button-primary-bg: var(--vscode-button-background, #0078d4);
+  --eca-button-primary-border: var(--vscode-button-border, rgba(255, 255, 255, 0.07));
+  --eca-button-primary-hover-bg: var(--vscode-button-hoverBackground, #026ec1);
+  --eca-button-primary-active-bg: var(--vscode-button-activeBackground, #026ec1);
+
+  --eca-button-secondary-fg: var(--vscode-button-secondaryForeground, #cccccc);
+  --eca-button-secondary-bg: transparent;
+  --eca-button-secondary-border: var(--vscode-button-secondaryBorder, rgba(255, 255, 255, 0.07));
+  --eca-button-secondary-hover-bg: var(--vscode-button-secondaryHoverBackground, #026ec1);
+  --eca-button-secondary-active-bg: var(--vscode-button-secondaryActiveBackground, #026ec1);
+
   --eca-icon-font-family: var(--vscode-icon-close-font-family, codicon);
   --eca-context-file-fg: var(--vscode-terminalSymbolIcon-flagForeground, #ee9d28);
   --eca-context-directory-fg: var(--vscode-terminal-ansiYellow, #d18f52);
