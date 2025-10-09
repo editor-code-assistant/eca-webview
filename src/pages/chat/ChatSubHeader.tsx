@@ -5,6 +5,7 @@ import { clearChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
+import { editorOpenGlobalConfig } from '../../redux/thunks/editor';
 
 interface Props {
     chatId: string,
@@ -16,6 +17,10 @@ export function ChatSubHeader({ chatId }: Props) {
 
     const clearHistoryChat = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         dispatch(clearChat({ chatId: chatId }));
+    }
+
+    const openConfig = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        dispatch(editorOpenGlobalConfig({}));
     }
 
     const mcpServers = useSelector((state: State) => state.mcp.servers.filter((server) => server.type === 'mcp'));
@@ -92,6 +97,7 @@ export function ChatSubHeader({ chatId }: Props) {
             </div>
             <div className="actions">
                 <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash"></i></div>
+                <div className="action"><i onClick={openConfig} className="codicon codicon-settings-gear"></i></div>
             </div>
         </div>
     );
