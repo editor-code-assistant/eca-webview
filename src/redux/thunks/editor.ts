@@ -35,6 +35,13 @@ export const editorOpenFile = createAsyncThunk<void, { path: string }, ThunkApiT
     }
 );
 
+export const editorOpenGlobalConfig = createAsyncThunk<void, {}, ThunkApiType>(
+    "editor/openGlobalConfig",
+    async (_) => {
+        webviewSend('editor/openGlobalConfig', {});
+    }
+);
+
 export const editorReadInput = createAsyncThunk<string | null, { message: string }, ThunkApiType>(
     "editor/readInput",
     async ({ message }, _) => {
