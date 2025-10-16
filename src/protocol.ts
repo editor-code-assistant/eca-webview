@@ -130,6 +130,8 @@ type ChatContent =
     | ChatReasonStartedContent
     | ChatReasonTextContent
     | ChatReasonFinishedContent
+    | ChatHookActionStartedContent 
+    | ChatHookActionFinishedContent 
     | ChatMetadataContent;
 
 interface ChatTextContent {
@@ -246,6 +248,23 @@ interface ChatReasonFinishedContent {
     type: 'reasonFinished';
     id: string;
     totalTimeMs: number;
+}
+
+interface ChatHookActionStartedContent {
+    type: 'hookActionStarted';
+    id: string; 
+    name: string;
+    actionType: string;
+}
+
+interface ChatHookActionFinishedContent {
+    type: 'hookActionFinished';
+    id: string; 
+    name: string;
+    actionType: string;
+    status: number;
+    output?: string;
+    error?: string;
 }
 
 interface ChatMetadataContent {

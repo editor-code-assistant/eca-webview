@@ -31,7 +31,18 @@ interface ChatMessageReason {
     content?: string,
 }
 
-export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall;
+interface ChatMessageHook {
+    type: 'hook',
+    role: ChatContentRole,
+    id: string,
+    status: 'started' | 'finished',
+    name: string,
+    statusCode?: number,
+    output?: string,
+    error?: string,
+}
+
+export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall | ChatMessageHook;
 
 interface CursorPreContext {
     type: 'cursor';
@@ -288,6 +299,28 @@ export const chatSlice = createSlice({
                     newReason.status = 'done';
                     newReason.totalTimeMs = content.totalTimeMs;
                     chat.messages[existingIndex] = newReason;
+                    break;
+                }
+                case 'hookActionStarted': {
+                    chat.messages.push({
+                        type: 'hook',
+                        role: role,
+                        id: content.id,
+                        name: content.name,
+                        status: 'started',
+                    });
+                    break;
+                }
+                case 'hookActionFinished': {
+                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'hook' && msg.id === content.id);
+                    let hook = chat.messages[existingIndex] as ChatMessageHook;
+                    const newHook = { ...hook } as ChatMessageHook;
+
+                    newHook.status = 'finished';
+                    newHook.statusCode = content.status;
+                    newHook.output = content.output;
+                    newHook.error = content.error;
+                    chat.messages[existingIndex] = newHook;
                     break;
                 }
                 case 'usage': {

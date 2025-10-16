@@ -2,6 +2,7 @@ import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ChatMessage } from '../../redux/slices/chat';
 import { State } from '../../redux/store';
+import { ChatHook } from './ChatHook';
 import './ChatMessages.scss';
 import { ChatReason } from './ChatReason';
 import { ChatTextMessage } from './ChatTextMessage';
@@ -57,6 +58,19 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     status={message.status}
                                     totalTimeMs={message.totalTimeMs}
                                     content={message.content} />
+                            </div>
+                        );
+                    case 'hook':
+                        return (
+                            <div key={`chat-hook-${index}`}>
+                                <ChatHook
+                                    id={message.id}
+                                    status={message.status}
+                                    name={message.name}
+                                    statusCode={message.statusCode}
+                                    output={message.output}
+                                    error={message.error}
+                                />
                             </div>
                         );
                     default:
