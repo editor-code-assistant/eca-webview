@@ -27,6 +27,8 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [selectedModel, setSelectedModel] = useState<string>();
     const [selectedBehavior, setSelectedBehavior] = useState<string>();
 
+    const loading = useSelector((state: State) => state.chat.chats[chatId]?.progress != undefined);
+
     useEffect(() => {
         if (selectedModel === undefined && selectModel !== undefined) {
             setSelectedModel(selectModel);
@@ -41,7 +43,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
-        if (prompt && !inputCompleting && selectedModel && selectedBehavior) {
+        if (prompt && !inputCompleting && selectedModel && selectedBehavior && !loading) {
             dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, behavior: selectedBehavior }));
             setPromptValue('')
         }
