@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
-import { FileChangeDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
+import { FileChangeDetails, JsonOutputsDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { EcaDispatch, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
@@ -10,10 +10,11 @@ import { ChatTime } from './ChatTime';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
 
-function genericToolCall(
-    { toolCallId, name, summary, status, origin, argumentsText, outputs, totalTimeMs }: Props,
+function baseToolCall(
+    { name, summary, status, origin, argumentsText, totalTimeMs }: Props,
     iconClass: string,
     approvalComp: React.ReactNode,
+    outputCompFn: () => React.ReactNode,
 ) {
     const argsTxt = '```javascript\n' + argumentsText + '\n```';
 
@@ -64,14 +65,7 @@ function genericToolCall(
                     <div style={{ display: 'inline' }}>
                         <p>Parameters:</p>
                         <MarkdownContent codeClassName='args' content={argsTxt} />
-                        {showOutput &&
-                            <div>
-                                <p>Result:</p>
-                                {outputs!.map((output, index) => {
-                                    const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
-                                    return (<MarkdownContent codeClassName='output' key={toolCallId + index} content={outputTxt} />)
-                                })}
-                            </div>}
+                        {showOutput && outputCompFn()}
                     </div>
                 }
             />
@@ -79,6 +73,40 @@ function genericToolCall(
         </div>
     );
 }
+
+function genericToolCall(
+    props: Props,
+    iconClass: string,
+    approvalComp: React.ReactNode,
+) {
+    return baseToolCall(props, iconClass, approvalComp, () => (
+        <div>
+            <p>Result:</p>
+            {props.outputs!.map((output, index) => {
+                const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
+                return (<MarkdownContent codeClassName='output' key={props.toolCallId + index} content={outputTxt} />)
+            })}
+        </div>
+    ));
+}
+
+function jsonOutputsToolCall(
+    props: Props,
+    iconClass: string,
+    approvalComp: React.ReactNode,
+) {
+    const details = props.details as JsonOutputsDetails;
+    return baseToolCall(props, iconClass, approvalComp, () => (
+        <div>
+            <p>Json output:</p>
+            {details.jsons.map((json, index) => {
+                const outputTxt = '```javascript\n' + json + '\n```';
+                return (<MarkdownContent codeClassName='output' key={props.toolCallId + index} content={outputTxt} />)
+            })}
+        </div>
+    ));
+}
+
 function fileChangeToolCall({ name, details }: Props, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch, totalTimeMs?: number) {
     const { path, diff, linesAdded, linesRemoved } = details as FileChangeDetails;
     const fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
@@ -195,10 +223,13 @@ function chatToolCall(props: Props) {
         </div>
     )
 
-    if (props.details?.type === 'fileChange') {
-        return fileChangeToolCall(props, iconClass, approvalComp, dispatch);
-    } else {
-        return genericToolCall(props, iconClass, approvalComp);
+    switch (props.details?.type) {
+        case 'fileChange':
+            return fileChangeToolCall(props, iconClass, approvalComp, dispatch);
+        case 'jsonOutputs':
+            return jsonOutputsToolCall(props, iconClass, approvalComp);
+        default:
+            return genericToolCall(props, iconClass, approvalComp);
     }
 }
 
