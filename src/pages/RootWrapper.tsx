@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { respondRequest as respondWebviewRequest, useWebviewListener, webviewSend } from "../hooks";
+import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
+import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, addContext, setCommands, setContexts, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
@@ -8,7 +9,6 @@ import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/se
 import { useEcaDispatch } from "../redux/store";
 import { focusChanged } from "../redux/thunks/editor";
 import { statusChanged } from "../redux/thunks/server";
-import { getLocalStorage, setLocalStorage } from "../localStorage";
 
 interface NavigateTo {
     path: string,
@@ -96,47 +96,42 @@ const RootWrapper = () => {
         document.documentElement.style.setProperty("--eca-font-size", `${base}em`);
     }, []);
 
+    const getCurrent = () => {
+        const v = getComputedStyle(document.documentElement).getPropertyValue("--eca-font-size").trim();
+        const n = parseFloat(v || "1");
+        return Number.isFinite(n) && n > 0 ? n : 1;
+    };
+
+    const setScale = (em: number) => {
+        const clamped = Math.max(0.8, Math.min(1.6, em));
+        const rounded = Math.round(clamped * 100) / 100; // avoid float drift
+        document.documentElement.style.setProperty("--eca-font-size", `${rounded}em`);
+        setLocalStorage("fontScale", rounded);
+    };
+
     // Global shortcut: Alt+Shift+(+/-) to zoom font size by 0.1em, Alt+Shift+0 to reset
-    useEffect(() => {
-        const getCurrent = () => {
-            const v = getComputedStyle(document.documentElement).getPropertyValue("--eca-font-size").trim();
-            const n = parseFloat(v || "1");
-            return Number.isFinite(n) && n > 0 ? n : 1;
-        };
+    useKeyPressedListener((e) => {
+        const isMac = navigator.platform.toLowerCase().includes('mac');
+        const isJBCombo = (isMac && e.metaKey && !e.ctrlKey && !e.altKey) || (!isMac && e.ctrlKey && !e.metaKey && !e.altKey);
+        const isAltShiftCombo = e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey;
 
-        const setScale = (em: number) => {
-            const clamped = Math.max(0.8, Math.min(1.6, em));
-            const rounded = Math.round(clamped * 100) / 100; // avoid float drift
-            document.documentElement.style.setProperty("--eca-font-size", `${rounded}em`);
-            setLocalStorage("fontScale", rounded);
-        };
+        if (isJBCombo || isAltShiftCombo) {
+            const isIncreaseKey = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd';
+            const isDecreaseKey = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract';
+            const isResetKey = e.key === '0' || e.code === 'Numpad0';
 
-        const onKeyDown = (e: KeyboardEvent) => {
-            const isMac = navigator.platform.toLowerCase().includes('mac');
-            const isJBCombo = (isMac && e.metaKey && !e.ctrlKey && !e.altKey) || (!isMac && e.ctrlKey && !e.metaKey && !e.altKey);
-            const isAltShiftCombo = e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey;
-
-            if (isJBCombo || isAltShiftCombo) {
-                const isIncreaseKey = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd';
-                const isDecreaseKey = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract';
-                const isResetKey = e.key === '0' || e.code === 'Numpad0';
-
-                if (isIncreaseKey) {
-                    e.preventDefault();
-                    setScale(getCurrent() + 0.1);
-                } else if (isDecreaseKey) {
-                    e.preventDefault();
-                    setScale(getCurrent() - 0.1);
-                } else if (isResetKey) {
-                    e.preventDefault();
-                    setScale(1);
-                }
+            if (isIncreaseKey) {
+                e.preventDefault();
+                setScale(getCurrent() + 0.1);
+            } else if (isDecreaseKey) {
+                e.preventDefault();
+                setScale(getCurrent() - 0.1);
+            } else if (isResetKey) {
+                e.preventDefault();
+                setScale(1);
             }
-        };
-
-        window.addEventListener("keydown", onKeyDown);
-        return () => window.removeEventListener("keydown", onKeyDown);
-    }, []);
+        }
+    });
 
     return (
         <Outlet />

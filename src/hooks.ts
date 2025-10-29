@@ -21,6 +21,22 @@ export function useWebviewListener<T>(
     );
 }
 
+export function useKeyPressedListener(
+    handle: (event: KeyboardEvent) => any,
+    dependencies: any[] = [],
+) {
+    useEffect(
+        () => {
+            const onKeyDown = (e: KeyboardEvent) => {
+                return handle(e);
+            };
+            document.addEventListener("keydown", onKeyDown);
+            return () => document.removeEventListener("keydown", onKeyDown);
+        },
+        dependencies,
+    );
+}
+
 interface vscode {
     postMessage(message: any): vscode;
 }

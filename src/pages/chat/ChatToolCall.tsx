@@ -9,6 +9,7 @@ import { ChatCollapsableMessage } from './ChatCollapsableMessage';
 import { ChatTime } from './ChatTime';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
+import { useKeyPressedListener } from '../../hooks';
 
 function baseToolCall(
     { name, summary, status, origin, argumentsText, totalTimeMs }: Props,
@@ -170,15 +171,15 @@ function chatToolCall(props: Props) {
 
     const waitingApproval = props.manualApproval && props.status === 'run';
 
-    const rejectToolCall = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const rejectToolCall = () => {
         dispatch(toolCallReject({ chatId: props.chatId, toolCallId: props.toolCallId }));
     }
 
-    const approveToolCall = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const approveToolCall = () => {
         dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId }));
     }
 
-    const approveToolCallAndRemember = (_: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const approveToolCallAndRemember = () => {
         dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId, save: 'session' }));
     }
 
@@ -210,18 +211,44 @@ function chatToolCall(props: Props) {
         <div className="approval-actions">
             <div className="approval-option">
                 <button onClick={approveToolCall} className="approve-btn">Accept</button>
-                <span className="approval-description">for this session</span>
+                <span className="approval-description">for this session (Enter)</span>
             </div>
             <div className="approval-option">
                 <button onClick={approveToolCallAndRemember} className="approve-remember-btn">Accept and remember</button>
-                <span className="approval-description">for this session</span>
+                <span className="approval-description">for this session (Shift + Enter)</span>
             </div>
             <div className="approval-option">
                 <button onClick={rejectToolCall} className="reject-btn">Reject</button>
-                <span className="approval-description">and tell ECA what to do differently</span>
+                <span className="approval-description">and tell ECA what to do differently (Esc)</span>
             </div>
         </div>
     )
+
+    if (waitingApproval) {
+        useKeyPressedListener((e) => {
+            const isEnter = e.key === 'Enter' && !e.shiftKey;
+            const isShiftEnter = e.key === 'Enter' && e.shiftKey;
+            const isEsc = e.key === 'Escape';
+
+            if (isEnter) {
+                e.preventDefault();
+                approveToolCall();
+                return;
+            }
+
+            if (isShiftEnter) {
+                e.preventDefault();
+                approveToolCallAndRemember();
+                return;
+            }
+
+            if (isEsc) {
+                e.preventDefault();
+                rejectToolCall();
+                return;
+            }
+        }, []);
+    }
 
     switch (props.details?.type) {
         case 'fileChange':
