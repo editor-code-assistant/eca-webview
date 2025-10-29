@@ -211,15 +211,18 @@ function chatToolCall(props: Props) {
         <div className="approval-actions">
             <div className="approval-option">
                 <button onClick={approveToolCall} className="approve-btn">Accept</button>
-                <span className="approval-description">for this session (Enter)</span>
+                <span className="approval-description">for this session</span>
+                <span className="approval-shortcut">(Enter)</span>
             </div>
             <div className="approval-option">
                 <button onClick={approveToolCallAndRemember} className="approve-remember-btn">Accept and remember</button>
-                <span className="approval-description">for this session (Shift + Enter)</span>
+                <span className="approval-description">for this session</span>
+                <span className="approval-shortcut">(Shift + Enter)</span>
             </div>
             <div className="approval-option">
                 <button onClick={rejectToolCall} className="reject-btn">Reject</button>
-                <span className="approval-description">and tell ECA what to do differently (Esc)</span>
+                <span className="approval-description">and tell ECA what to do differently</span>
+                <span className="approval-shortcut">(Esc)</span>
             </div>
         </div>
     )
