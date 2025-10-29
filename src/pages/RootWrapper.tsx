@@ -41,7 +41,18 @@ const RootWrapper = () => {
 
     useWebviewListener('chat/contentReceived', (contentReceived: ChatContentReceivedParams) => {
         dispatch(addContentReceived(contentReceived))
+
+        let isMcpTool = false;
+        let anyWriteTool = false;
+
         if (contentReceived.content.type === 'toolCalled') {
+            isMcpTool = contentReceived.content.origin === 'mcp';
+            anyWriteTool = contentReceived.content.name === "eca_edit_file"
+                || contentReceived.content.name === "eca_write_file"
+                || contentReceived.content.name === "eca_shell_command";
+        }
+
+        if (isMcpTool || anyWriteTool) {
             webviewSend('editor/refresh', {});
         }
     });
