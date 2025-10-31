@@ -61,8 +61,8 @@ const RootWrapper = () => {
         dispatch(setContexts(result));
     });
 
-    useWebviewListener('chat/addContext', (context: ChatContext) => {
-        dispatch(addContext(context));
+    useWebviewListener('chat/addContextToSystemPrompt', (context: ChatContext) => {
+        dispatch(addContext({ context: context, prompt: 'system' }));
     });
 
     useWebviewListener('chat/queryCommands', (result: ChatQueryCommandsResponse) => {

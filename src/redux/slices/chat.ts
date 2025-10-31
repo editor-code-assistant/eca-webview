@@ -340,8 +340,14 @@ export const chatSlice = createSlice({
             state.contexts = action.payload.contexts;
         },
         addContext: (state, action) => {
+            const context = action.payload.context as ChatContext;
+            const prompt = action.payload.prompt as string;
             const currentChat = getCurrentChat(state);
-            currentChat.addedContexts = [...currentChat.addedContexts, action.payload];
+            if (prompt === 'system') {
+                currentChat.addedContexts = [...currentChat.addedContexts, context];
+            } else {
+                // TODO add to user prompt.
+            }
         },
         removeContext: (state, action) => {
             const currentChat = getCurrentChat(state);

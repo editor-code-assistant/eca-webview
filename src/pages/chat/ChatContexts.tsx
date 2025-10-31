@@ -111,7 +111,7 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
     }
 
     const onContextAdded = (context: ChatPreContext) => {
-        dispatch(addContext(context));
+        dispatch(addContext({ context: context, prompt: 'system' }));
     }
 
     const onContextRemoved = (context: ChatPreContext) => {
