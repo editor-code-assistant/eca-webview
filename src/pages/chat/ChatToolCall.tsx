@@ -183,6 +183,32 @@ function chatToolCall(props: Props) {
         dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId, save: 'session' }));
     }
 
+    useKeyPressedListener((e) => {
+        if(!waitingApproval) return;
+
+        const isEnter = e.key === 'Enter' && !e.shiftKey;
+        const isShiftEnter = e.key === 'Enter' && e.shiftKey;
+        const isEsc = e.key === 'Escape';
+
+        if (isEnter) {
+            e.preventDefault();
+            approveToolCall();
+            return;
+        }
+
+        if (isShiftEnter) {
+            e.preventDefault();
+            approveToolCallAndRemember();
+            return;
+        }
+
+        if (isEsc) {
+            e.preventDefault();
+            rejectToolCall();
+            return;
+        }
+    }, [waitingApproval]);
+
     let iconClass: string;
     switch (props.status) {
         case 'preparing':
@@ -226,32 +252,6 @@ function chatToolCall(props: Props) {
             </div>
         </div>
     )
-
-    if (waitingApproval) {
-        useKeyPressedListener((e) => {
-            const isEnter = e.key === 'Enter' && !e.shiftKey;
-            const isShiftEnter = e.key === 'Enter' && e.shiftKey;
-            const isEsc = e.key === 'Escape';
-
-            if (isEnter) {
-                e.preventDefault();
-                approveToolCall();
-                return;
-            }
-
-            if (isShiftEnter) {
-                e.preventDefault();
-                approveToolCallAndRemember();
-                return;
-            }
-
-            if (isEsc) {
-                e.preventDefault();
-                rejectToolCall();
-                return;
-            }
-        }, []);
-    }
 
     switch (props.details?.type) {
         case 'fileChange':
