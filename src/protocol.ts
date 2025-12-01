@@ -137,6 +137,7 @@ type ChatContent =
 interface ChatTextContent {
     type: 'text';
     text: string;
+    contentId?: string;
 }
 
 interface ChatURLContent {
@@ -307,6 +308,11 @@ export interface ChatCommand {
         description?: string;
         required: boolean;
     }];
+}
+
+export interface ChatClearedParams {
+    chatId: string;
+    messages: boolean;
 }
 
 export type ToolServerStatus = 'running' | 'starting' | 'stopped' | 'failed' | 'disabled';

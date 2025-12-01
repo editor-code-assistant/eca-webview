@@ -12,10 +12,30 @@
       padding: 0.1em 0.8em;
       background-color: var(--eca-input-bg);
       border-radius: 0.4em;
+      display: flex;
+      flex-direction: column;
     }
 
     .system-message {
       color: var(--eca-warning-message-fg);
       white-space: pre-wrap;
+    }
+
+    .actions {
+        text-align: right;
+        
+        .rollback {
+            background: none;
+            border: none;
+            cursor:pointer;
+            font-size: 1.2em;
+            color: var(--eca-confirm-action-fg);
+            opacity: 0.4;
+            transition: opacity 0.1s;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 }

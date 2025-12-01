@@ -73,6 +73,13 @@ export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiTyp
     }
 );
 
+export const rollbackChat = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
+    "chat/rollback",
+    async ({ chatId, contentId }, _) => {
+        webviewSend('chat/rollback', { chatId, contentId });
+    }
+);
+
 export const queryContext = createAsyncThunk<void, { chatId?: string, query: string, contexts: ChatPreContext[] }, ThunkApiType>(
     "chat/queryContext",
     async ({ chatId, query, contexts }, _) => {

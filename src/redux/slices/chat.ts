@@ -5,6 +5,7 @@ interface ChatMessageText {
     type: 'text',
     role: string,
     value: string,
+    contentId?: string,
 }
 
 interface ChatMessageToolCall {
@@ -128,6 +129,13 @@ export const chatSlice = createSlice({
             const chatId = action.payload.chatId;
             state.chats[chatId].messages = [];
         },
+        cleared: (state, action) => {
+            const chatId = action.payload.chatId;
+            const isMessages = action.payload.messages;
+            if (isMessages) {
+                state.chats[chatId].messages = [];
+            }
+        },
         resetChat: (state, action) => {
             const chatId = action.payload;
             const { [chatId]: oldChat, ...newChats } = state.chats;
@@ -188,6 +196,7 @@ export const chatSlice = createSlice({
                                 type: 'text',
                                 role: role,
                                 value: content.text,
+                                contentId: content.contentId,
                             }];
                             break;
                         }
@@ -366,6 +375,7 @@ export const {
     addContentReceived,
     resetChat,
     clearChat,
+    cleared,
     resetChats,
     newChat,
     setCursorFocus,

@@ -1,7 +1,8 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ChatMessage } from '../../redux/slices/chat';
-import { State } from '../../redux/store';
+import { State, useEcaDispatch } from '../../redux/store';
+import { rollbackChat } from '../../redux/thunks/chat';
 import { ChatHook } from './ChatHook';
 import './ChatMessages.scss';
 import { ChatReason } from './ChatReason';
@@ -14,10 +15,15 @@ interface ChatMessagesProps {
 }
 
 export function ChatMessages({ chatId, children }: ChatMessagesProps) {
+    const dispatch = useEcaDispatch();
     const messages = useSelector((state: State) => state.chat.chats[chatId].messages);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     useAutoScroll(scrollRef, messages);
+
+    const onRollbackClicked = (contentId: string) => {
+        dispatch(rollbackChat({ chatId, contentId }));
+    }
 
     return (
         <div className="messages-container scrollable" ref={scrollRef} >
@@ -29,7 +35,8 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                             <div key={`chat-message-${index}`}>
                                 <ChatTextMessage
                                     text={message.value}
-                                    role={message.role} />
+                                    role={message.role}
+                                    onRollbackClicked={() => onRollbackClicked(message.contentId!)} />
                             </div>
                         );
                     case 'toolCall':
