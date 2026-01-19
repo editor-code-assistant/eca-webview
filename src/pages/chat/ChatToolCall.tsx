@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
+import { useKeyPressedListener } from '../../hooks';
 import { FileChangeDetails, JsonOutputsDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { EcaDispatch, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
@@ -9,7 +10,6 @@ import { ChatCollapsableMessage } from './ChatCollapsableMessage';
 import { ChatTime } from './ChatTime';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
-import { useKeyPressedListener } from '../../hooks';
 
 function baseToolCall(
     { name, summary, status, origin, argumentsText, totalTimeMs }: Props,
@@ -110,7 +110,12 @@ function jsonOutputsToolCall(
 
 function fileChangeToolCall({ name, details }: Props, iconClass: string, approvalComp: React.ReactNode, dispatch: EcaDispatch, totalTimeMs?: number) {
     const { path, diff, linesAdded, linesRemoved } = details as FileChangeDetails;
-    const fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
+    let fileDiffs
+    if (diff.startsWith('---')) {
+        fileDiffs = parseDiff(diff);
+    } else {
+        fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
+    }
     const fileName = path.split('/').pop();
 
     const openFile = (_event: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
@@ -184,7 +189,7 @@ function chatToolCall(props: Props) {
     }
 
     useKeyPressedListener((e) => {
-        if(!waitingApproval) return;
+        if (!waitingApproval) return;
 
         const isEnter = e.key === 'Enter' && !e.shiftKey;
         const isShiftEnter = e.key === 'Enter' && e.shiftKey;
