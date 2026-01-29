@@ -48,3 +48,10 @@ export const editorReadInput = createAsyncThunk<string | null, { message: string
         return await webviewSendAndGet('editor/readInput', { message });
     }
 );
+
+export const editorOpenUrl = createAsyncThunk<void, { url: string }, ThunkApiType>(
+    "editor/openUrl",
+    async ({ url }, _) => {
+        webviewSend('editor/openUrl', { url });
+    }
+);
