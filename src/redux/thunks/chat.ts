@@ -93,3 +93,17 @@ export const queryCommands = createAsyncThunk<void, { chatId?: string, query: st
         webviewSend('chat/queryCommands', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query });
     }
 );
+
+export const sendPromptToCurrentChat = createAsyncThunk<void, { prompt: string }, ThunkApiType>(
+    "chat/sendPromptToCurrentChat",
+    async ({ prompt }, { dispatch, getState }) => {
+        const state = getState();
+        const chatId = state.chat.selectedChat;
+        const model = state.server.config.chat.selectModel || state.server.config.chat.models[0];
+        const behavior = state.server.config.chat.selectBehavior || state.server.config.chat.behaviors[0];
+
+        if (model && behavior) {
+            dispatch(sendPrompt({ prompt, chatId, model, behavior }));
+        }
+    }
+);

@@ -3,10 +3,11 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, addContext, cleared, setCommands, setContexts, } from "../redux/slices/chat";
+import { addContentReceived, addContext, cleared, newChat, setCommands, setContexts, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
+import { sendPromptToCurrentChat } from "../redux/thunks/chat";
 import { focusChanged } from "../redux/thunks/editor";
 import { statusChanged } from "../redux/thunks/server";
 
@@ -87,6 +88,14 @@ const RootWrapper = () => {
 
     useWebviewListener('editor/readInput', (data: { requestId: string, value: string | null }) => {
         respondWebviewRequest(data.requestId, data.value);
+    });
+
+    useWebviewListener('chat/createNewChat', () => {
+        dispatch(newChat());
+    });
+
+    useWebviewListener('chat/sendPromptToCurrentChat', (data: { prompt: string }) => {
+        dispatch(sendPromptToCurrentChat({ prompt: data.prompt }));
     });
 
     useEffect(() => {
