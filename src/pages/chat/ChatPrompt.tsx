@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { useWebviewListener } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { sendPrompt } from "../../redux/thunks/chat";
 import { SelectBox } from "../components/SelectBox";
@@ -68,6 +69,10 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     useEffect(() => {
         inputRef.current?.focus();
     }, [enabled, chatId]);
+
+    useWebviewListener('chat/focusPrompt', () => {
+        inputRef.current?.focus();
+    });
 
     const onPromptChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setPromptValue(event.target.value);
