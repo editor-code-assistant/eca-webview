@@ -7,6 +7,18 @@ import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
 import { editorOpenGlobalConfig } from '../../redux/thunks/editor';
 
+function formatNumber(n: number): string {
+    if (n >= 1_000_000) {
+        const val = n / 1_000_000;
+        return val % 1 === 0 ? `${val}M` : `${parseFloat(val.toFixed(1))}M`;
+    }
+    if (n >= 1_000) {
+        const val = n / 1_000;
+        return val % 1 === 0 ? `${val}k` : `${parseFloat(val.toFixed(1))}k`;
+    }
+    return n.toString();
+}
+
 interface Props {
     chatId: string,
 }
@@ -31,9 +43,9 @@ export function ChatSubHeader({ chatId }: Props) {
     let usageString;
     if (usage && usageStringFormat) {
         usageString = usageStringFormat
-            .replace('{sessionTokens}', usage.sessionTokens.toString())
-            .replace('{contextLimit}', usage.limit?.context?.toString() || '')
-            .replace('{outputLimit}', usage.limit?.output?.toString() || '')
+            .replace('{sessionTokens}', formatNumber(usage.sessionTokens))
+            .replace('{contextLimit}', usage.limit?.context != null ? formatNumber(usage.limit.context) : '')
+            .replace('{outputLimit}', usage.limit?.output != null ? formatNumber(usage.limit.output) : '')
             .replace('{lastMessageCost}', usage.lastMessageCost ? `$${usage.lastMessageCost}` : '')
             .replace('{sessionCost}', usage.sessionCost ? `$${usage.sessionCost}` : '');
     }
@@ -85,11 +97,11 @@ export function ChatSubHeader({ chatId }: Props) {
                         </div>
                         {usage && (
                             <ToolTip id="details-usage" className="details-tooltip">
-                                <p>Session tokens: {usage.sessionTokens}</p>
+                                <p>Session tokens: {usage.sessionTokens.toLocaleString()}</p>
                                 <p>Last message cost: ${usage.lastMessageCost}</p>
                                 <p>Session cost: ${usage.sessionCost}</p>
-                                <p>Context limit: ${usage.limit?.context}</p>
-                                <p>Output limit: ${usage.limit?.output}</p>
+                                <p>Context limit: {usage.limit?.context?.toLocaleString()}</p>
+                                <p>Output limit: {usage.limit?.output?.toLocaleString()}</p>
                             </ToolTip>
                         )}
                     </div>
