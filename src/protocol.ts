@@ -21,8 +21,8 @@ export interface WorkspaceFolder {
 export interface InitializeResult {
     models: string[];
     chatDefaultModel: string;
-    chatBehaviors: string[];
-    chatDefaultBehavior: ChatBehavior;
+    chatAgents: string[];
+    chatDefaultAgent: ChatAgent;
     chatWelcomeMessage: string;
 }
 
@@ -31,7 +31,7 @@ export interface ChatPromptParams {
     requestId: string;
     message: string;
     model?: string;
-    behavior?: ChatBehavior;
+    agent?: ChatAgent;
     contexts?: ChatContext[];
 }
 
@@ -83,7 +83,7 @@ interface McpResourceContext {
 }
 
 export type ChatContext = FileContext | DirectoryContext | WebContext | RepoMapContext | CursorContext | McpResourceContext;
-export type ChatBehavior = 'agent' | 'chat';
+export type ChatAgent = 'agent' | 'chat';
 
 export interface ChatPromptResult {
     chatId: string;

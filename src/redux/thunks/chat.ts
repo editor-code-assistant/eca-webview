@@ -21,9 +21,9 @@ function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): Chat
     }
 }
 
-export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: string, model: string, behavior: string, }, ThunkApiType>(
+export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: string, model: string, agent: string, }, ThunkApiType>(
     "chat/sendPrompt",
-    async ({ prompt, chatId, model, behavior }, { dispatch, getState }) => {
+    async ({ prompt, chatId, model, agent }, { dispatch, getState }) => {
         const state = getState();
         let requestId = state.chat.chats[chatId].lastRequestId;
 
@@ -38,7 +38,7 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
                 prompt,
                 contexts: contexts.map((c) => refineContext(c, state.chat.cursorFocus)).filter(x => x !== null),
                 model,
-                behavior,
+                agent,
             },
         );
     }
@@ -100,10 +100,10 @@ export const sendPromptToCurrentChat = createAsyncThunk<void, { prompt: string }
         const state = getState();
         const chatId = state.chat.selectedChat;
         const model = state.server.config.chat.selectModel || state.server.config.chat.models[0];
-        const behavior = state.server.config.chat.selectBehavior || state.server.config.chat.behaviors[0];
+        const agent = state.server.config.chat.selectAgent || state.server.config.chat.agents[0];
 
-        if (model && behavior) {
-            dispatch(sendPrompt({ prompt, chatId, model, behavior }));
+        if (model && agent) {
+            dispatch(sendPrompt({ prompt, chatId, model, agent }));
         }
     }
 );

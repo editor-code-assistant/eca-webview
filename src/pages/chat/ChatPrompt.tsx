@@ -20,13 +20,13 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [inputCompleting, setInputCompleting] = useState(false);
     const dispatch = useEcaDispatch();
 
-    const selectBehavior = useSelector((state: State) => state.server.config.chat.selectBehavior);
-    const behaviors = useSelector((state: State) => state.server.config.chat.behaviors || []);
+    const selectAgent = useSelector((state: State) => state.server.config.chat.selectAgent);
+    const agents = useSelector((state: State) => state.server.config.chat.agents || []);
     const selectModel = useSelector((state: State) => state.server.config.chat.selectModel);
     const models = useSelector((state: State) => state.server.config.chat.models || []);
 
     const [selectedModel, setSelectedModel] = useState<string>();
-    const [selectedBehavior, setSelectedBehavior] = useState<string>();
+    const [selectedAgent, setSelectedAgent] = useState<string>();
 
     const loading = useSelector((state: State) => state.chat.chats[chatId]?.progress != undefined);
 
@@ -37,15 +37,15 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     }, [selectModel]);
 
     useEffect(() => {
-        if (selectedBehavior === undefined && selectBehavior !== undefined) {
-            setSelectedBehavior(selectBehavior);
+        if (selectedAgent === undefined && selectAgent !== undefined) {
+            setSelectedAgent(selectAgent);
         }
-    }, [selectBehavior]);
+    }, [selectAgent]);
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
-        if (prompt && !inputCompleting && selectedModel && selectedBehavior && !loading) {
-            dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, behavior: selectedBehavior }));
+        if (prompt && !inputCompleting && selectedModel && selectedAgent && !loading) {
+            dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent }));
             setPromptValue('')
         }
     }
@@ -54,8 +54,8 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         setSelectedModel(newModel);
     }
 
-    const handleBehaviorChanged = (newBehavior: string) => {
-        setSelectedBehavior(newBehavior);
+    const handleAgentChanged = (newAgent: string) => {
+        setSelectedAgent(newAgent);
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -123,10 +123,10 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
             {enabled && (
                 <div>
                     <SelectBox
-                        id="select-behavior"
-                        defaultOption={selectedBehavior}
-                        onSelected={handleBehaviorChanged}
-                        options={behaviors}
+                        id="select-agent"
+                        defaultOption={selectedAgent}
+                        onSelected={handleAgentChanged}
+                        options={agents}
                     />
                     <SelectBox
                         id="select-model"

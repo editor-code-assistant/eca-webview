@@ -12,9 +12,9 @@ interface EcaConfig {
     usageStringFormat?: string;
     chat: {
         models: string[];
-        behaviors: string[];
+        agents: string[];
         selectModel?: string;
-        selectBehavior?: string;
+        selectAgent?: string;
         welcomeMessage: string;
     }
 }
@@ -27,7 +27,7 @@ export const serverSlice = createSlice({
         config: {
             chat: {
                 models: [],
-                behaviors: [],
+                agents: [],
                 welcomeMessage: "",
             }
         } as EcaConfig,
@@ -50,11 +50,11 @@ export const serverSlice = createSlice({
                 if (action.payload.chat.selectModel !== undefined) {
                     state.config.chat.selectModel = action.payload.chat.selectModel;
                 }
-                if (action.payload.chat.behaviors !== undefined) {
-                    state.config.chat.behaviors = action.payload.chat.behaviors;
+                if (action.payload.chat.agents !== undefined) {
+                    state.config.chat.agents = action.payload.chat.agents;
                 }
-                if (action.payload.chat.selectBehavior !== undefined) {
-                    state.config.chat.selectBehavior = action.payload.chat.selectBehavior;
+                if (action.payload.chat.selectAgent !== undefined) {
+                    state.config.chat.selectAgent = action.payload.chat.selectAgent;
                 }
                 if (action.payload.chat.welcomeMessage !== undefined) {
                     state.config.chat.welcomeMessage = action.payload.chat.welcomeMessage;
