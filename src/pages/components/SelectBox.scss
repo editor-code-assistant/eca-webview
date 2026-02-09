@@ -41,6 +41,8 @@
     background-color: var(--eca-tooltip-bg) !important;
     border: 1px solid var(--eca-base-border);
     min-width: 8em;
+    max-height: 30em;
+    overflow-y: auto;
 
     .option {
         cursor: pointer;
