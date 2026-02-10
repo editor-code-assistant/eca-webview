@@ -83,7 +83,7 @@ function genericToolCall(
     return baseToolCall(props, iconClass, approvalComp, () => (
         <div>
             <p>Result:</p>
-            {props.outputs!.map((output, index) => {
+            {(props.outputs ?? []).filter(Boolean).map((output, index) => {
                 const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
                 return (<MarkdownContent codeClassName='output' key={props.toolCallId + index} content={outputTxt} />)
             })}
@@ -100,7 +100,7 @@ function jsonOutputsToolCall(
     return baseToolCall(props, iconClass, approvalComp, () => (
         <div>
             <p>Json output:</p>
-            {details.jsons.map((json, index) => {
+            {(details.jsons ?? []).filter(Boolean).map((json, index) => {
                 const outputTxt = '```javascript\n' + json + '\n```';
                 return (<MarkdownContent codeClassName='output' key={props.toolCallId + index} content={outputTxt} />)
             })}
