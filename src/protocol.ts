@@ -111,13 +111,14 @@ export interface ChatDeleteParams {
 
 export interface ChatContentReceivedParams {
     chatId: string;
+    parentChatId?: string;
     role: ChatContentRole;
     content: ChatContent;
 }
 
 export type ChatContentRole = 'user' | 'system' | 'assistant';
 
-type ChatContent =
+export type ChatContent =
     | ChatTextContent
     | ChatURLContent
     | ChatProgressContent
@@ -171,6 +172,7 @@ interface ChatToolCallPrepareContent {
     argumentsText: string;
     manualApproval: boolean;
     summary?: string;
+    details?: ToolCallDetails;
 }
 
 interface ChatToolCallRunContent {
@@ -224,7 +226,7 @@ export interface ToolCallOutput {
 
 export type ToolCallOrigin = 'mcp' | 'native';
 
-export type ToolCallDetails = FileChangeDetails | JsonOutputsDetails;
+export type ToolCallDetails = FileChangeDetails | JsonOutputsDetails | SubagentDetails;
 
 export interface FileChangeDetails {
     type: 'fileChange';
@@ -237,6 +239,14 @@ export interface FileChangeDetails {
 export interface JsonOutputsDetails {
     type: 'jsonOutputs';
     jsons: string[];
+}
+
+export interface SubagentDetails {
+    type: 'subagent';
+    subagentChatId: string;
+    agentName?: string;
+    step?: number;
+    maxSteps?: number;
 }
 
 interface ChatReasonStartedContent {

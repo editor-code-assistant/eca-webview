@@ -2,11 +2,13 @@ import { memo } from 'react';
 import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 import { useKeyPressedListener } from '../../hooks';
-import { FileChangeDetails, JsonOutputsDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
+import { FileChangeDetails, JsonOutputsDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
+import { ChatMessage } from '../../redux/slices/chat';
 import { EcaDispatch, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
 import { ChatCollapsableMessage } from './ChatCollapsableMessage';
+import { ChatSubagentToolCall } from './ChatSubagentToolCall';
 import { ChatTime } from './ChatTime';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
@@ -169,6 +171,8 @@ interface Props {
     outputs?: ToolCallOutput[],
     details?: ToolCallDetails,
     summary?: string,
+    subagentMessages?: ChatMessage[],
+    subagentChatId?: string,
 }
 
 function chatToolCall(props: Props) {
@@ -263,6 +267,23 @@ function chatToolCall(props: Props) {
             return fileChangeToolCall(props, iconClass, approvalComp, dispatch);
         case 'jsonOutputs':
             return jsonOutputsToolCall(props, iconClass, approvalComp);
+        case 'subagent':
+            return (
+                <ChatSubagentToolCall
+                    chatId={props.chatId}
+                    toolCallId={props.toolCallId}
+                    name={props.name}
+                    status={props.status}
+                    argumentsText={props.argumentsText}
+                    manualApproval={props.manualApproval}
+                    totalTimeMs={props.totalTimeMs}
+                    outputs={props.outputs}
+                    details={props.details as SubagentDetails}
+                    summary={props.summary}
+                    subagentMessages={props.subagentMessages}
+                    subagentChatId={props.subagentChatId}
+                />
+            );
         default:
             return genericToolCall(props, iconClass, approvalComp);
     }

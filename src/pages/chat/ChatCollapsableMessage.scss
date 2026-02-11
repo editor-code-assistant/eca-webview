@@ -3,13 +3,13 @@
     border-radius: 0.4em;
 
     &.open {
-        .header {
-            .chrevron {
+        > .header {
+            > .chrevron {
                 transform: rotate(90deg);
             }
         }
-        .content {
-            max-height: 100%;
+        > .content {
+            max-height: none;
         }
     }
 

@@ -4,10 +4,11 @@ import { MarkdownContent } from "./MarkdownContent";
 interface Props {
     role: string,
     text: string,
-    onRollbackClicked: () => void;
+    onRollbackClicked?: () => void;
+    showRollback?: boolean;
 }
 
-export const ChatTextMessage = memo(({ role, text, onRollbackClicked }: Props) => {
+export const ChatTextMessage = memo(({ role, text, onRollbackClicked, showRollback = true }: Props) => {
     return (
         <div className={`${role}-message`}>
             {role === 'system' && (
@@ -16,7 +17,7 @@ export const ChatTextMessage = memo(({ role, text, onRollbackClicked }: Props) =
             {role != 'system' && (
                 <MarkdownContent content={text} />
             )}
-            {role === 'user' && (
+            {role === 'user' && showRollback && (
                 <div className="actions">
                     <button onClick={onRollbackClicked} className="rollback">↶</button>
                 </div>

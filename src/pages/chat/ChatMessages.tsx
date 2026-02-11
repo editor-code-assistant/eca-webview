@@ -54,6 +54,8 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     manualApproval={message.manualApproval}
                                     summary={message.summary}
                                     argumentsText={message.argumentsText}
+                                    subagentMessages={message.subagentMessages}
+                                    subagentChatId={message.subagentChatId}
                                 />
                             </div>
                         );

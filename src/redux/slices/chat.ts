@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatCommand, ChatContentReceivedParams, ChatContentRole, ChatContext, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, SubagentDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 
 interface ChatMessageText {
     type: 'text',
@@ -21,6 +21,8 @@ interface ChatMessageToolCall {
     totalTimeMs?: number,
     details?: ToolCallDetails,
     summary?: string,
+    subagentMessages?: ChatMessage[],
+    subagentChatId?: string,
 }
 
 interface ChatMessageReason {
@@ -92,6 +94,11 @@ export interface CursorFocus {
     }
 }
 
+interface SubagentMapping {
+    parentChatId: string;
+    toolCallId: string;
+}
+
 interface ChatState {
     chats: { [key: string]: Chat },
     chatLocalId: number,
@@ -99,11 +106,178 @@ interface ChatState {
     contexts?: ChatContext[],
     commands?: ChatCommand[],
     cursorFocus?: CursorFocus,
+    subagentChatIdToToolCallId: { [subagentChatId: string]: SubagentMapping },
 }
 
 const getCurrentChat = (state: ChatState): Chat => {
     return state.chats[state.selectedChat];
 };
+
+/**
+ * Apply a content event to a messages array (mutating).
+ * Shared between normal chat and subagent routing.
+ */
+function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, content: ChatContent) {
+    switch (content.type) {
+        case 'text': {
+            switch (role) {
+                case 'user':
+                case 'system': {
+                    messages.push({
+                        type: 'text',
+                        role: role,
+                        value: content.text,
+                        contentId: content.contentId,
+                    });
+                    break;
+                }
+                case 'assistant': {
+                    const lastMessage = messages[messages.length - 1];
+                    if (lastMessage && lastMessage.type === 'text' && lastMessage.role === 'assistant') {
+                        const newMsg = { ...lastMessage } as ChatMessageText;
+                        newMsg.value += content.text;
+                        messages[messages.length - 1] = newMsg;
+                    } else {
+                        messages.push({
+                            type: 'text',
+                            role: role,
+                            value: content.text,
+                        });
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+        case 'toolCallPrepare': {
+            const tool: ChatMessageToolCall = {
+                type: 'toolCall',
+                status: 'preparing',
+                role: role,
+                id: content.id,
+                name: content.name,
+                origin: content.origin,
+                argumentsText: content.argumentsText,
+                manualApproval: content.manualApproval,
+                summary: content.summary,
+                details: content.details,
+            };
+
+            const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+            if (existingIndex === -1) {
+                messages.push(tool);
+            } else {
+                const existingTool = messages[existingIndex] as ChatMessageToolCall;
+                tool.argumentsText = existingTool.argumentsText + content.argumentsText;
+                messages[existingIndex] = tool;
+            }
+            break;
+        }
+        case 'toolCallRun': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let tool = messages[existingIndex] as ChatMessageToolCall;
+                tool.status = 'run';
+                tool.manualApproval = content.manualApproval;
+                tool.summary = content.summary;
+                tool.details = content.details;
+                tool.argumentsText = JSON.stringify(content.arguments, null, 2);
+                messages[existingIndex] = tool;
+            }
+            break;
+        }
+        case 'toolCallRunning': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let tool = messages[existingIndex] as ChatMessageToolCall;
+                tool.status = 'running';
+                tool.summary = content.summary;
+                tool.details = content.details;
+                tool.argumentsText = JSON.stringify(content.arguments, null, 2);
+                messages[existingIndex] = tool;
+            }
+            break;
+        }
+        case 'toolCallRejected': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let tool = messages[existingIndex] as ChatMessageToolCall;
+                tool.status = 'rejected';
+                tool.details = content.details;
+                tool.summary = content.summary;
+                messages[existingIndex] = tool;
+            }
+            break;
+        }
+        case 'toolCalled': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let tool = messages[existingIndex] as ChatMessageToolCall;
+                tool.outputs = content.outputs;
+                tool.status = content.error ? 'failed' : 'succeeded';
+                tool.details = content.details;
+                tool.summary = content.summary;
+                tool.totalTimeMs = content.totalTimeMs;
+                messages[existingIndex] = tool;
+            }
+            break;
+        }
+        case 'reasonStarted': {
+            messages.push({
+                type: 'reason',
+                role: role,
+                status: 'thinking',
+                id: content.id,
+            });
+            break;
+        }
+        case 'reasonText': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'reason' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let reason = messages[existingIndex] as ChatMessageReason;
+                const newReason = { ...reason } as ChatMessageReason;
+                newReason.content = (newReason.content || '') + content.text;
+                messages[existingIndex] = newReason;
+            }
+            break;
+        }
+        case 'reasonFinished': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'reason' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let reason = messages[existingIndex] as ChatMessageReason;
+                const newReason = { ...reason } as ChatMessageReason;
+                newReason.status = 'done';
+                newReason.totalTimeMs = content.totalTimeMs;
+                messages[existingIndex] = newReason;
+            }
+            break;
+        }
+        case 'hookActionStarted': {
+            messages.push({
+                type: 'hook',
+                role: role,
+                id: content.id,
+                name: content.name,
+                status: 'started',
+            });
+            break;
+        }
+        case 'hookActionFinished': {
+            const existingIndex = messages.findIndex(msg => msg.type === 'hook' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                let hook = messages[existingIndex] as ChatMessageHook;
+                const newHook = { ...hook } as ChatMessageHook;
+                newHook.status = 'finished';
+                newHook.statusCode = content.status;
+                newHook.output = content.output;
+                newHook.error = content.error;
+                messages[existingIndex] = newHook;
+            }
+            break;
+        }
+        // progress, usage, metadata, url are not message-level — handled separately
+    }
+}
 
 export const chatSlice = createSlice({
     name: 'chat',
@@ -114,6 +288,7 @@ export const chatSlice = createSlice({
         contexts: undefined,
         commands: undefined,
         cursorFocus: undefined,
+        subagentChatIdToToolCallId: {},
     } as ChatState,
     reducers: {
         incRequestId: (state, action) => {
@@ -162,7 +337,43 @@ export const chatSlice = createSlice({
             state.selectedChat = action.payload;
         },
         addContentReceived: (state, action) => {
-            const { chatId, role, content } = action.payload as ChatContentReceivedParams;
+            const { chatId, parentChatId, role, content } = action.payload as ChatContentReceivedParams;
+
+            // --- Subagent content: route into parent chat's tool call ---
+            if (parentChatId) {
+                const mapping = state.subagentChatIdToToolCallId[chatId];
+                if (!mapping) return;
+
+                const parentChat = state.chats[mapping.parentChatId];
+                if (!parentChat) return;
+
+                const toolCallIndex = parentChat.messages.findIndex(
+                    msg => msg.type === 'toolCall' && msg.id === mapping.toolCallId
+                );
+                if (toolCallIndex === -1) return;
+
+                const toolCall = parentChat.messages[toolCallIndex] as ChatMessageToolCall;
+                const msgs = toolCall.subagentMessages ? [...toolCall.subagentMessages] : [];
+
+                applyContentToMessages(msgs, role, content);
+
+                parentChat.messages[toolCallIndex] = { ...toolCall, subagentMessages: msgs };
+
+                // Update the parent tool call's details with step info from subagent tool calls
+                if (content.type === 'toolCallRunning' || content.type === 'toolCallRun') {
+                    if (content.details?.type === 'subagent') {
+                        const details = content.details as SubagentDetails;
+                        if (details.step !== undefined && toolCall.details?.type === 'subagent') {
+                            (toolCall.details as SubagentDetails).step = details.step;
+                            (toolCall.details as SubagentDetails).maxSteps = details.maxSteps;
+                        }
+                    }
+                }
+
+                return;
+            }
+
+            // --- Normal (non-subagent) content ---
             const isNewChat = state.chats[chatId] === undefined;
 
             let chat;
@@ -172,6 +383,44 @@ export const chatSlice = createSlice({
                 state.selectedChat = chatId;
             } else {
                 chat = state.chats[chatId];
+            }
+
+            // Register subagent mapping for spawn_agent tool calls.
+            // We register on all lifecycle events (including toolCallPrepare) because
+            // during chat resume the server may replay events grouped by chatId,
+            // so toolCalled can fire before the subagent's own content arrives.
+            if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
+                || content.type === 'toolCallRunning'
+                || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
+                if (content.details?.type === 'subagent') {
+                    const details = content.details as SubagentDetails;
+                    if (details.subagentChatId) {
+                        state.subagentChatIdToToolCallId[details.subagentChatId] = {
+                            parentChatId: chatId,
+                            toolCallId: content.id,
+                        };
+                    }
+                }
+            }
+
+            applyContentToMessages(chat.messages, role, content);
+
+            // Store subagentChatId on the tool call message for rendering.
+            // Must run after applyContentToMessages so the message exists.
+            if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
+                || content.type === 'toolCallRunning'
+                || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
+                if (content.details?.type === 'subagent') {
+                    const details = content.details as SubagentDetails;
+                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+                    if (existingIndex !== -1) {
+                        const tool = chat.messages[existingIndex] as ChatMessageToolCall;
+                        tool.subagentChatId = details.subagentChatId;
+                        if (!tool.subagentMessages) {
+                            tool.subagentMessages = [];
+                        }
+                    }
+                }
             }
 
             switch (content.type) {
@@ -188,156 +437,13 @@ export const chatSlice = createSlice({
                     }
                     break;
                 }
-                case 'text': {
-                    switch (role) {
-                        case 'user':
-                        case 'system': {
-                            chat.messages = [...chat.messages, {
-                                type: 'text',
-                                role: role,
-                                value: content.text,
-                                contentId: content.contentId,
-                            }];
-                            break;
-                        }
-                        case 'assistant': {
-                            const lastMessage = chat.messages[chat.messages.length - 1];
-                            if (lastMessage && lastMessage.type === 'text' && lastMessage.role === 'assistant') {
-                                const newMsg = { ...lastMessage } as ChatMessageText;
-                                newMsg.value += content.text;
-                                chat.messages[chat.messages.length - 1] = newMsg;
-                            } else {
-                                chat.messages = [...chat.messages, {
-                                    type: 'text',
-                                    role: role,
-                                    value: content.text,
-                                }];
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case 'toolCallPrepare': {
-                    const tool: ChatMessageToolCall = {
-                        type: 'toolCall',
-                        status: 'preparing',
-                        role: role,
-                        id: content.id,
-                        name: content.name,
-                        origin: content.origin,
-                        argumentsText: content.argumentsText,
-                        manualApproval: content.manualApproval,
-                        summary: content.summary,
-                    };
-
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
-                    if (existingIndex === -1) {
-                        chat.messages.push(tool);
-                    } else {
-                        const existingTool = chat.messages[existingIndex] as ChatMessageToolCall;
-                        tool.argumentsText = existingTool.argumentsText + content.argumentsText;
-                        chat.messages[existingIndex] = tool;
-                    }
-                    break;
-                }
-                case 'toolCallRun': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
-                    let tool = chat.messages[existingIndex] as ChatMessageToolCall;
-                    tool.status = 'run';
-                    tool.manualApproval = content.manualApproval;
-                    tool.summary = content.summary;
-                    tool.details = content.details;
-                    tool.argumentsText = JSON.stringify(content.arguments, null, 2);
-
-                    chat.messages[existingIndex] = tool;
-                    break;
-                }
-                case 'toolCallRunning': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
-                    let tool = chat.messages[existingIndex] as ChatMessageToolCall;
-                    tool.status = 'running';
-                    tool.summary = content.summary;
-                    tool.details = content.details;
-                    tool.argumentsText = JSON.stringify(content.arguments, null, 2);
-
-                    chat.messages[existingIndex] = tool;
-                    break;
-                }
-                case 'toolCallRejected': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
-                    let tool = chat.messages[existingIndex] as ChatMessageToolCall;
-                    tool.status = 'rejected';
-                    chat.messages[existingIndex] = tool;
-                    tool.details = content.details;
-                    tool.summary = content.summary;
-                    break;
-                }
-                case 'toolCalled': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
-                    let tool = chat.messages[existingIndex] as ChatMessageToolCall;
-                    tool.outputs = content.outputs
-                    tool.status = content.error ? 'failed' : 'succeeded';
-                    chat.messages[existingIndex] = tool;
-                    tool.details = content.details;
-                    tool.summary = content.summary;
-                    tool.totalTimeMs = content.totalTimeMs;
-                    break;
-                }
-                case 'reasonStarted': {
-                    chat.messages.push({
-                        type: 'reason',
-                        role: role,
-                        status: 'thinking',
-                        id: content.id,
-                    });
-                    break;
-                }
-                case 'reasonText': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'reason' && msg.id === content.id);
-                    let reason = chat.messages[existingIndex] as ChatMessageReason;
-                    const newReason = { ...reason } as ChatMessageReason;
-                    newReason.content = (newReason.content || '') + content.text;
-                    chat.messages[existingIndex] = newReason;
-                    break;
-                }
-                case 'reasonFinished': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'reason' && msg.id === content.id);
-                    let reason = chat.messages[existingIndex] as ChatMessageReason;
-                    const newReason = { ...reason } as ChatMessageReason;
-                    newReason.status = 'done';
-                    newReason.totalTimeMs = content.totalTimeMs;
-                    chat.messages[existingIndex] = newReason;
-                    break;
-                }
-                case 'hookActionStarted': {
-                    chat.messages.push({
-                        type: 'hook',
-                        role: role,
-                        id: content.id,
-                        name: content.name,
-                        status: 'started',
-                    });
-                    break;
-                }
-                case 'hookActionFinished': {
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'hook' && msg.id === content.id);
-                    let hook = chat.messages[existingIndex] as ChatMessageHook;
-                    const newHook = { ...hook } as ChatMessageHook;
-
-                    newHook.status = 'finished';
-                    newHook.statusCode = content.status;
-                    newHook.output = content.output;
-                    newHook.error = content.error;
-                    chat.messages[existingIndex] = newHook;
-                    break;
-                }
                 case 'usage': {
                     chat.usage = content;
                     break;
                 }
                 case 'metadata': {
                     chat.title = content.title;
+                    break;
                 }
             }
             state.chats[chatId] = chat;

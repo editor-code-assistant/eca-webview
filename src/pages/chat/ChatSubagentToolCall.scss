@@ -1,0 +1,45 @@
+.subagent-tool-call-wrapper {
+    .subagent-tool-call {
+        .header-content {
+            .subagent-steps-info {
+                font-size: 0.85em;
+                opacity: 0.7;
+                font-style: italic;
+                margin-left: 0.3em;
+            }
+
+            .status.pending-approval {
+                color: var(--eca-warning-fg, #cca700);
+            }
+        }
+    }
+
+    .subagent-content {
+        .subagent-info {
+            padding: 0.4em 0;
+
+            .subagent-info-row {
+                padding: 0.15em 0;
+                font-size: 0.9em;
+
+                .label {
+                    font-weight: 600;
+                    opacity: 0.8;
+                    margin-right: 0.4em;
+                }
+
+                .task {
+                    font-style: italic;
+                    opacity: 0.9;
+                }
+            }
+        }
+
+        .subagent-messages {
+            margin-top: 0.3em;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4em;
+        }
+    }
+}
