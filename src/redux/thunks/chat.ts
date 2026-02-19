@@ -21,7 +21,7 @@ function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): Chat
     }
 }
 
-export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: string, model: string, agent: string, }, ThunkApiType>(
+export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: string, model?: string, agent: string, }, ThunkApiType>(
     "chat/sendPrompt",
     async ({ prompt, chatId, model, agent }, { dispatch, getState }) => {
         const state = getState();
