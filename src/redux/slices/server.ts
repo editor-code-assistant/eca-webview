@@ -16,6 +16,8 @@ interface EcaConfig {
         selectModel?: string;
         selectAgent?: string;
         welcomeMessage: string;
+        variants: string[];
+        selectedVariant: string | null;
     }
 }
 
@@ -29,6 +31,8 @@ export const serverSlice = createSlice({
                 models: [],
                 agents: [],
                 welcomeMessage: "",
+                variants: [],
+                selectedVariant: null,
             }
         } as EcaConfig,
     },
@@ -59,8 +63,17 @@ export const serverSlice = createSlice({
                 if (action.payload.chat.welcomeMessage !== undefined) {
                     state.config.chat.welcomeMessage = action.payload.chat.welcomeMessage;
                 }
+                if (action.payload.chat.variants !== undefined) {
+                    state.config.chat.variants = action.payload.chat.variants;
+                }
+                if (action.payload.chat.selectVariant !== undefined) {
+                    state.config.chat.selectedVariant = action.payload.chat.selectVariant;
+                }
             }
-        }
+        },
+        setSelectedVariant: (state, action) => {
+            state.config.chat.selectedVariant = action.payload;
+        },
     },
 });
 
@@ -68,4 +81,5 @@ export const {
     setStatus,
     setWorkspaceFolders,
     setConfig,
+    setSelectedVariant,
 } = serverSlice.actions

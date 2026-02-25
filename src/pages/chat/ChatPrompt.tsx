@@ -1,8 +1,9 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useWebviewListener } from "../../hooks";
+import { useWebviewListener, webviewSend } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { sendPrompt } from "../../redux/thunks/chat";
+import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
@@ -24,6 +25,8 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const agents = useSelector((state: State) => state.server.config.chat.agents || []);
     const selectModel = useSelector((state: State) => state.server.config.chat.selectModel);
     const models = useSelector((state: State) => state.server.config.chat.models || []);
+    const variants = useSelector((state: State) => state.server.config.chat.variants || []);
+    const selectedVariant = useSelector((state: State) => state.server.config.chat.selectedVariant);
 
     const [selectedModel, setSelectedModel] = useState<string>();
     const [selectedAgent, setSelectedAgent] = useState<string>();
@@ -45,18 +48,28 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
         if (prompt && !inputCompleting && selectedAgent && !loading) {
-            dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent }));
+            dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
             setPromptValue('')
         }
     }
 
     const handleModelChanged = (newModel: string) => {
         setSelectedModel(newModel);
+        webviewSend('chat/selectedModelChanged', {
+            model: newModel,
+            ...(selectedVariant ? { variant: selectedVariant } : {}),
+        });
     }
 
     const handleAgentChanged = (newAgent: string) => {
         setSelectedAgent(newAgent);
     }
+
+    const handleVariantChanged = (newVariant: string) => {
+        dispatch(setSelectedVariant(newVariant === 'No variant' ? null : newVariant));
+    }
+
+    const variantOptions = ['No variant', ...[...variants].sort()];
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey && enabled) {
@@ -133,6 +146,12 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                         defaultOption={selectedModel}
                         onSelected={handleModelChanged}
                         options={models}
+                    />
+                    <SelectBox
+                        id="select-variant"
+                        defaultOption={selectedVariant || 'No variant'}
+                        onSelected={handleVariantChanged}
+                        options={variantOptions}
                     />
                 </div>
             )}

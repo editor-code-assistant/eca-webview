@@ -32,6 +32,7 @@ export interface ChatPromptParams {
     message: string;
     model?: string;
     agent?: ChatAgent;
+    variant?: string;
     contexts?: ChatContext[];
 }
 
