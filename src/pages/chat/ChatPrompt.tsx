@@ -7,6 +7,7 @@ import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
+import { ChatFileMentions } from "./ChatFileMentions";
 import './ChatPrompt.scss';
 import { ChatCommand } from "../../protocol";
 import { editorReadInput } from "../../redux/thunks/editor";
@@ -18,7 +19,9 @@ interface ChatPromptProps {
 
 export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [promptValue, setPromptValue] = useState('');
-    const [inputCompleting, setInputCompleting] = useState(false);
+    const [commandCompleting, setCommandCompleting] = useState(false);
+    const [fileCompleting, setFileCompleting] = useState(false);
+    const inputCompleting = commandCompleting || fileCompleting;
     const dispatch = useEcaDispatch();
 
     const selectAgent = useSelector((state: State) => state.server.config.chat.selectAgent);
@@ -91,6 +94,13 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         setPromptValue(event.target.value);
     }
 
+    const onFileSelected = (path: string, replaceStart: number, replaceEnd: number) => {
+        const before = promptValue.substring(0, replaceStart);
+        const after = promptValue.substring(replaceEnd);
+        setPromptValue(before + path + after);
+        inputRef.current?.focus();
+    };
+
     const onCommandSelected = async (command: ChatCommand) => {
         inputRef.current?.focus();
         let prompt = `/${command.name}`;
@@ -122,7 +132,14 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                 input={inputRef.current}
                 chatId={chatId}
                 onCommandSelected={onCommandSelected}
-                onCompleting={setInputCompleting}
+                onCompleting={setCommandCompleting}
+            />
+            <ChatFileMentions
+                input={inputRef.current}
+                chatId={chatId}
+                promptValue={promptValue}
+                onFileSelected={onFileSelected}
+                onCompleting={setFileCompleting}
             />
             <textarea
                 ref={inputRef}

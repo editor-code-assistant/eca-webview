@@ -310,6 +310,20 @@ export interface ChatQueryCommandsResponse {
     contexts: ChatCommand[];
 }
 
+export interface ChatQueryFilesParams {
+    chatId: string;
+    query: string;
+}
+
+export interface ChatFile {
+    path: string;
+}
+
+export interface ChatQueryFilesResponse {
+    chatId: string;
+    files: ChatFile[];
+}
+
 export interface ChatCommand {
     name: string;
     description: string;

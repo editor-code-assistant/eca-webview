@@ -95,6 +95,13 @@ export const queryCommands = createAsyncThunk<void, { chatId?: string, query: st
     }
 );
 
+export const queryFiles = createAsyncThunk<void, { chatId?: string, query: string }, ThunkApiType>(
+    "chat/queryFiles",
+    async ({ chatId, query }, _) => {
+        webviewSend('chat/queryFiles', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query });
+    }
+);
+
 export const sendPromptToCurrentChat = createAsyncThunk<void, { prompt: string }, ThunkApiType>(
     "chat/sendPromptToCurrentChat",
     async ({ prompt }, { dispatch, getState }) => {

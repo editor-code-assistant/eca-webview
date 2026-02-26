@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
-import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, addContext, cleared, newChat, setCommands, setContexts, } from "../redux/slices/chat";
+import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
+import { addContentReceived, addContext, cleared, newChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
@@ -68,6 +68,10 @@ const RootWrapper = () => {
 
     useWebviewListener('chat/queryCommands', (result: ChatQueryCommandsResponse) => {
         dispatch(setCommands(result));
+    });
+
+    useWebviewListener('chat/queryFiles', (result: ChatQueryFilesResponse) => {
+        dispatch(setFiles(result));
     });
 
     useWebviewListener('chat/cleared', (result: ChatClearedParams) => {

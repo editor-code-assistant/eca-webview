@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, SubagentDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, SubagentDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 
 interface ChatMessageText {
     type: 'text',
@@ -105,6 +105,7 @@ interface ChatState {
     selectedChat: string,
     contexts?: ChatContext[],
     commands?: ChatCommand[],
+    files?: ChatFile[],
     cursorFocus?: CursorFocus,
     subagentChatIdToToolCallId: { [subagentChatId: string]: SubagentMapping },
 }
@@ -287,6 +288,7 @@ export const chatSlice = createSlice({
         selectedChat: 'EMPTY',
         contexts: undefined,
         commands: undefined,
+        files: undefined,
         cursorFocus: undefined,
         subagentChatIdToToolCallId: {},
     } as ChatState,
@@ -473,6 +475,9 @@ export const chatSlice = createSlice({
         setCommands: (state, action) => {
             state.commands = action.payload.commands;
         },
+        setFiles: (state, action) => {
+            state.files = action.payload.files;
+        },
     },
 });
 
@@ -490,4 +495,5 @@ export const {
     addContext,
     removeContext,
     setCommands,
+    setFiles,
 } = chatSlice.actions

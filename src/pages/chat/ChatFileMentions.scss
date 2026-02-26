@@ -1,0 +1,30 @@
+.file-mentions-container {
+    padding: 0 !important;
+    background-color: var(--eca-panel-bg);
+    max-width: 90vw;
+
+    .file-mentions {
+        background-color: var(--eca-panel-bg);
+        .item {
+            padding: 0.3em 0.6em;
+            overflow: auto;
+            opacity: 0.6;
+            cursor: pointer;
+
+            &.selected {
+                opacity: 1;
+                background-color: var(--eca-input-bg);
+            }
+
+            .icon {
+                font-size: 1em !important;
+                vertical-align: middle;
+                margin: 0 0.2em;
+            }
+
+            .label {
+                color: var(--eca-input-fg);
+            }
+        }
+    }
+}
