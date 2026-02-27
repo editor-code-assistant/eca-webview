@@ -1,0 +1,74 @@
+.chat-timeline {
+    position: relative;
+    display: inline-block;
+
+    > i {
+        cursor: pointer;
+        padding: 0.2em;
+        margin: 0.3em 0.1em;
+        border-radius: 0.3em;
+
+        &:hover {
+            background-color: var(--eca-base-hover);
+        }
+    }
+
+    .timeline-dropdown {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        z-index: 10;
+        background-color: var(--eca-panel-bg);
+        border: 1px solid var(--eca-base-border);
+        border-radius: 0.4em;
+        min-width: 18em;
+        max-width: 28em;
+        max-height: 20em;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+        .timeline-header {
+            padding: 0.4em 0.6em;
+            font-size: 0.85em;
+            opacity: 0.6;
+            border-bottom: 1px solid var(--eca-base-border);
+        }
+
+        .timeline-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto;
+            flex: 1;
+
+            .timeline-item {
+                display: flex;
+                gap: 0.6em;
+                padding: 0.35em 0.6em;
+                cursor: pointer;
+                font-size: 0.9em;
+                transition: background-color 0.1s;
+                align-items: baseline;
+
+                &:hover {
+                    background-color: var(--eca-base-hover);
+                }
+
+                .timeline-time {
+                    flex-shrink: 0;
+                    opacity: 0.5;
+                    font-size: 0.85em;
+                    font-variant-numeric: tabular-nums;
+                }
+
+                .timeline-text {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+}

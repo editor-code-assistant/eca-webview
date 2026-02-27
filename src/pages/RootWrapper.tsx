@@ -94,6 +94,10 @@ const RootWrapper = () => {
         respondWebviewRequest(data.requestId, data.value);
     });
 
+    useWebviewListener('editor/saveClipboardImage', (data: { requestId: string, path: string }) => {
+        respondWebviewRequest(data.requestId, { path: data.path });
+    });
+
     useWebviewListener('chat/createNewChat', () => {
         dispatch(newChat());
     });

@@ -9,9 +9,10 @@ interface ISelectBox {
     options: string[];
     defaultOption?: string;
     onSelected: (option: string) => void;
+    title?: string;
 }
 
-export const SelectBox = memo(({ id, options, defaultOption, onSelected, className }: ISelectBox) => {
+export const SelectBox = memo(({ id, options, defaultOption, onSelected, className, title }: ISelectBox) => {
     const ref = useRef<TooltipRefProps>(null);
     const [selected, setSelected] = useState(false);
 
@@ -23,7 +24,7 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
 
     return (
         <div style={{ display: 'inline-block' }} className={className}>
-            <button onClick={() => setSelected(!selected)} data-tooltip-id={id} className={`select-box-button ${selected ? 'selected' : ''}`}>{defaultOption || options[0]}</button>
+            <button onClick={() => setSelected(!selected)} data-tooltip-id={id} title={title} className={`select-box-button ${selected ? 'selected' : ''}`}>{defaultOption || options[0]}</button>
             <ToolTip id={id}
                 ref={ref}
                 delayHide={0}

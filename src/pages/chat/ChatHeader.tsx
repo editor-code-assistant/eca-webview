@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Chat, newChat, selectChat } from '../../redux/slices/chat';
+import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { deleteChat } from '../../redux/thunks/chat';
 import './ChatHeader.scss';
@@ -19,6 +19,16 @@ function chatTitle(chat: Chat): string {
 export const ChatHeader = memo(({ chats }: Props) => {
     const dispatch = useEcaDispatch();
     const selectedChat = useSelector((state: State) => state.chat.selectedChat);
+    const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
+    const [renameValue, setRenameValue] = useState('');
+    const renameInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (renamingChatId && renameInputRef.current) {
+            renameInputRef.current.focus();
+            renameInputRef.current.select();
+        }
+    }, [renamingChatId]);
 
     const chatDelete = (chat: Chat) => {
         dispatch(deleteChat({ chatId: chat.id }));
@@ -32,6 +42,34 @@ export const ChatHeader = memo(({ chats }: Props) => {
         dispatch(selectChat(chatId));
     };
 
+    const startRename = (chat: Chat) => {
+        setRenamingChatId(chat.id);
+        setRenameValue(chatTitle(chat));
+    };
+
+    const commitRename = () => {
+        if (renamingChatId && renameValue.trim()) {
+            dispatch(renameChat({ chatId: renamingChatId, title: renameValue.trim() }));
+        }
+        setRenamingChatId(null);
+        setRenameValue('');
+    };
+
+    const cancelRename = () => {
+        setRenamingChatId(null);
+        setRenameValue('');
+    };
+
+    const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            commitRename();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelRename();
+        }
+    };
+
     const emptyChat = chats.find(c => c.id === 'EMPTY');
 
     return (
@@ -40,6 +78,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
                 {chats.map(chat => {
                     const isEmpty = chat.id === emptyChat?.id;
                     const isSelected = chat.id === selectedChat;
+                    const isRenaming = renamingChatId === chat.id;
 
                     if (isEmpty) {
                         return (
@@ -51,9 +90,25 @@ export const ChatHeader = memo(({ chats }: Props) => {
 
                     return (
                         <span onClick={() => selectTab(chat.id)}
+                            onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                startRename(chat);
+                            }}
                             key={`chat-${chat.id}`}
                             className={`chat ${isSelected ? 'selected' : ''}`}>
-                            {chatTitle(chat)}
+                            {isRenaming ? (
+                                <input
+                                    ref={renameInputRef}
+                                    className="rename-input"
+                                    value={renameValue}
+                                    onChange={(e) => setRenameValue(e.target.value)}
+                                    onKeyDown={handleRenameKeyDown}
+                                    onBlur={commitRename}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                chatTitle(chat)
+                            )}
                             <i onClick={(e) => {
                                 e.stopPropagation();
                                 chatDelete(chat);

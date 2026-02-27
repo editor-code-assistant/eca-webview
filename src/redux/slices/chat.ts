@@ -6,6 +6,7 @@ interface ChatMessageText {
     role: string,
     value: string,
     contentId?: string,
+    timestamp?: number,
 }
 
 interface ChatMessageToolCall {
@@ -62,6 +63,7 @@ export interface Chat {
     messages: ChatMessage[],
     addedContexts: ChatPreContext[],
     usage?: ChatUsage,
+    pendingPrompts: string[],
 }
 
 interface ChatUsage {
@@ -82,7 +84,8 @@ const emptyStateChats = {
         lastRequestId: 0,
         messages: [],
         addedContexts: defaultContexts,
-        localId: 1
+        localId: 1,
+        pendingPrompts: [],
     }
 } as { [key: string]: Chat };
 
@@ -108,6 +111,7 @@ interface ChatState {
     files?: ChatFile[],
     cursorFocus?: CursorFocus,
     subagentChatIdToToolCallId: { [subagentChatId: string]: SubagentMapping },
+    promptHistory: string[],
 }
 
 const getCurrentChat = (state: ChatState): Chat => {
@@ -129,6 +133,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
                         role: role,
                         value: content.text,
                         contentId: content.contentId,
+                        timestamp: Date.now(),
                     });
                     break;
                 }
@@ -291,6 +296,7 @@ export const chatSlice = createSlice({
         files: undefined,
         cursorFocus: undefined,
         subagentChatIdToToolCallId: {},
+        promptHistory: [],
     } as ChatState,
     reducers: {
         incRequestId: (state, action) => {
@@ -381,7 +387,7 @@ export const chatSlice = createSlice({
             let chat;
             if (isNewChat) {
                 state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
-                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: defaultContexts } as Chat;
+                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: defaultContexts, pendingPrompts: [] } as Chat;
                 state.selectedChat = chatId;
             } else {
                 chat = state.chats[chatId];
@@ -478,6 +484,38 @@ export const chatSlice = createSlice({
         setFiles: (state, action) => {
             state.files = action.payload.files;
         },
+        enqueuePendingPrompt: (state, action) => {
+            const { chatId, prompt } = action.payload;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.pendingPrompts.push(prompt);
+            }
+        },
+        dequeuePendingPrompt: (state, action) => {
+            const chatId = action.payload;
+            const chat = state.chats[chatId];
+            if (chat && chat.pendingPrompts.length > 0) {
+                chat.pendingPrompts.shift();
+            }
+        },
+        pushPromptHistory: (state, action) => {
+            const prompt = action.payload as string;
+            // Avoid consecutive duplicates
+            if (state.promptHistory[state.promptHistory.length - 1] !== prompt) {
+                state.promptHistory.push(prompt);
+            }
+            // Keep last 100 entries
+            if (state.promptHistory.length > 100) {
+                state.promptHistory = state.promptHistory.slice(-100);
+            }
+        },
+        renameChat: (state, action) => {
+            const { chatId, title } = action.payload;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.title = title;
+            }
+        },
     },
 });
 
@@ -496,4 +534,8 @@ export const {
     removeContext,
     setCommands,
     setFiles,
+    enqueuePendingPrompt,
+    dequeuePendingPrompt,
+    pushPromptHistory,
+    renameChat,
 } = chatSlice.actions

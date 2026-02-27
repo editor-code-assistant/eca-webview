@@ -1,8 +1,9 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useWebviewListener, webviewSend } from "../../hooks";
+import { useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { sendPrompt } from "../../redux/thunks/chat";
+import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory } from "../../redux/slices/chat";
 import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
@@ -24,6 +25,11 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const inputCompleting = commandCompleting || fileCompleting;
     const dispatch = useEcaDispatch();
 
+    // Prompt history navigation
+    const promptHistory = useSelector((state: State) => state.chat.promptHistory);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+    const [draftPrompt, setDraftPrompt] = useState('');
+
     const selectAgent = useSelector((state: State) => state.server.config.chat.selectAgent);
     const agents = useSelector((state: State) => state.server.config.chat.agents || []);
     const selectModel = useSelector((state: State) => state.server.config.chat.selectModel);
@@ -35,6 +41,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [selectedAgent, setSelectedAgent] = useState<string>();
 
     const loading = useSelector((state: State) => state.chat.chats[chatId]?.progress != undefined);
+    const pendingPrompts = useSelector((state: State) => state.chat.chats[chatId]?.pendingPrompts || []);
 
     useEffect(() => {
         if (selectedModel === undefined && selectModel !== undefined) {
@@ -48,10 +55,26 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         }
     }, [selectAgent]);
 
+    // Auto-send queued prompts when loading finishes
+    useEffect(() => {
+        if (!loading && pendingPrompts.length > 0 && selectedAgent) {
+            const nextPrompt = pendingPrompts[0];
+            dispatch(dequeuePendingPrompt(chatId));
+            dispatch(sendPrompt({ prompt: nextPrompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
+        }
+    }, [loading]);
+
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
-        if (prompt && !inputCompleting && selectedAgent && !loading) {
-            dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
+        if (prompt && !inputCompleting && selectedAgent) {
+            dispatch(pushPromptHistory(prompt));
+            setHistoryIndex(-1);
+            setDraftPrompt('');
+            if (loading) {
+                dispatch(enqueuePendingPrompt({ chatId, prompt }));
+            } else {
+                dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
+            }
             setPromptValue('')
         }
     }
@@ -66,6 +89,9 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
 
     const handleAgentChanged = (newAgent: string) => {
         setSelectedAgent(newAgent);
+        webviewSend('chat/selectedAgentChanged', {
+            agent: newAgent,
+        });
     }
 
     const handleVariantChanged = (newVariant: string) => {
@@ -78,6 +104,37 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         if (e.key === "Enter" && !e.shiftKey && enabled) {
             sendPromptValue();
             e.preventDefault();
+            return;
+        }
+
+        // Prompt history: Up/Down arrows when textarea has no multi-line content
+        const isMultiLine = promptValue.includes('\n');
+        if (e.key === "ArrowUp" && !isMultiLine && promptHistory.length > 0) {
+            e.preventDefault();
+            if (historyIndex === -1) {
+                setDraftPrompt(promptValue);
+                const newIndex = promptHistory.length - 1;
+                setHistoryIndex(newIndex);
+                setPromptValue(promptHistory[newIndex]);
+            } else if (historyIndex > 0) {
+                const newIndex = historyIndex - 1;
+                setHistoryIndex(newIndex);
+                setPromptValue(promptHistory[newIndex]);
+            }
+            return;
+        }
+
+        if (e.key === "ArrowDown" && !isMultiLine && historyIndex !== -1) {
+            e.preventDefault();
+            if (historyIndex < promptHistory.length - 1) {
+                const newIndex = historyIndex + 1;
+                setHistoryIndex(newIndex);
+                setPromptValue(promptHistory[newIndex]);
+            } else {
+                setHistoryIndex(-1);
+                setPromptValue(draftPrompt);
+            }
+            return;
         }
     }
 
@@ -92,7 +149,50 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
 
     const onPromptChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setPromptValue(event.target.value);
+        // Reset history browsing when the user types manually
+        if (historyIndex !== -1) {
+            setHistoryIndex(-1);
+            setDraftPrompt('');
+        }
     }
+
+    const onPaste = useCallback((e: React.ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (!file) continue;
+                const mimeType = item.type;
+
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    const dataUri = reader.result as string;
+                    // Strip the data:image/...;base64, prefix to get raw base64
+                    const base64Data = dataUri.replace(/^data:[^;]+;base64,/, '');
+                    try {
+                        const result = await webviewSendAndGet('editor/saveClipboardImage', {
+                            base64Data,
+                            mimeType,
+                        });
+                        if (result?.path) {
+                            dispatch(addContext({
+                                context: { type: 'file', path: result.path },
+                                prompt: 'system',
+                            }));
+                        }
+                    } catch (err) {
+                        console.error('Failed to save clipboard image:', err);
+                    }
+                };
+                reader.readAsDataURL(file);
+                break; // only handle first image
+            }
+        }
+    }, [dispatch]);
 
     const onFileSelected = (path: string, replaceStart: number, replaceEnd: number) => {
         const before = promptValue.substring(0, replaceStart);
@@ -147,6 +247,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                 value={promptValue}
                 onChange={onPromptChange}
                 onKeyDown={handleKeyDown}
+                onPaste={onPaste}
                 placeholder="Ask, plan, build..."
                 className="field"
             />
@@ -157,18 +258,21 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                         defaultOption={selectedAgent}
                         onSelected={handleAgentChanged}
                         options={agents}
+                        title="Select agent"
                     />
                     <SelectBox
                         id="select-model"
                         defaultOption={selectedModel}
                         onSelected={handleModelChanged}
                         options={models}
+                        title="Select model"
                     />
                     <SelectBox
                         id="select-variant"
                         defaultOption={selectedVariant || 'No variant'}
                         onSelected={handleVariantChanged}
                         options={variantOptions}
+                        title="Select variant"
                     />
                 </div>
             )}

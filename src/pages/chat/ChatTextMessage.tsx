@@ -19,7 +19,7 @@ export const ChatTextMessage = memo(({ role, text, onRollbackClicked, showRollba
             )}
             {role === 'user' && showRollback && (
                 <div className="actions">
-                    <button onClick={onRollbackClicked} className="rollback">↶</button>
+                    <button onClick={onRollbackClicked} className="rollback" title="Rollback to this message">↶</button>
                 </div>
             )}
         </div>);

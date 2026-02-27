@@ -1,11 +1,13 @@
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
-import { clearChat } from '../../redux/slices/chat';
+import { ChatMessage, clearChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
 import { editorOpenGlobalConfig } from '../../redux/thunks/editor';
+import { webviewSend } from '../../hooks';
+import { ChatTimeline } from './ChatTimeline';
 
 function formatNumber(n: number): string {
     if (n >= 1_000_000) {
@@ -17,6 +19,54 @@ function formatNumber(n: number): string {
         return val % 1 === 0 ? `${val}k` : `${parseFloat(val.toFixed(1))}k`;
     }
     return n.toString();
+}
+
+function messagesToMarkdown(messages: ChatMessage[]): string {
+    const parts: string[] = [];
+
+    for (const msg of messages) {
+        switch (msg.type) {
+            case 'text': {
+                const roleLabel = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
+                parts.push(`## ${roleLabel}\n\n${msg.value}`);
+                break;
+            }
+            case 'toolCall': {
+                parts.push(`### Tool Call: ${msg.name} (${msg.status})\n`);
+                if (msg.argumentsText) {
+                    parts.push(`\`\`\`json\n${msg.argumentsText}\n\`\`\``);
+                }
+                if (msg.summary) {
+                    parts.push(`**Summary:** ${msg.summary}`);
+                }
+                if (msg.outputs && msg.outputs.length > 0) {
+                    parts.push(`**Output:**\n\`\`\`\n${msg.outputs.map(o => o.text).join('\n')}\n\`\`\``);
+                }
+                if (msg.subagentMessages && msg.subagentMessages.length > 0) {
+                    parts.push(`#### Subagent Messages\n\n${messagesToMarkdown(msg.subagentMessages)}`);
+                }
+                break;
+            }
+            case 'reason': {
+                if (msg.content) {
+                    parts.push(`### Thinking\n\n${msg.content}`);
+                }
+                break;
+            }
+            case 'hook': {
+                parts.push(`### Hook: ${msg.name} (${msg.status})`);
+                if (msg.output) {
+                    parts.push(`\`\`\`\n${msg.output}\n\`\`\``);
+                }
+                if (msg.error) {
+                    parts.push(`**Error:** ${msg.error}`);
+                }
+                break;
+            }
+        }
+    }
+
+    return parts.join('\n\n');
 }
 
 interface Props {
@@ -33,6 +83,16 @@ export function ChatSubHeader({ chatId }: Props) {
 
     const openConfig = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         dispatch(editorOpenGlobalConfig({}));
+    }
+
+    const chat = useSelector((state: State) => state.chat.chats[chatId]);
+
+    const exportChat = () => {
+        if (!chat || chat.messages.length === 0) return;
+        const title = chat.title || 'Chat Export';
+        const markdown = `# ${title}\n\n${messagesToMarkdown(chat.messages)}`;
+        const defaultName = `${title.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').toLowerCase()}.md`;
+        webviewSend('editor/saveFile', { content: markdown, defaultName });
     }
 
     const mcpServers = useSelector((state: State) => state.mcp.servers.filter((server) => server.type === 'mcp'));
@@ -108,8 +168,10 @@ export function ChatSubHeader({ chatId }: Props) {
                 )}
             </div>
             <div className="actions">
-                <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash"></i></div>
-                <div className="action"><i onClick={openConfig} className="codicon codicon-settings-gear"></i></div>
+                <div className="action"><ChatTimeline chatId={chatId} /></div>
+                <div className="action"><i onClick={exportChat} className="codicon codicon-export" title="Export chat to Markdown"></i></div>
+                <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash" title="Clear chat messages"></i></div>
+                <div className="action"><i onClick={openConfig} className="codicon codicon-settings-gear" title="Open global config"></i></div>
             </div>
         </div>
     );
