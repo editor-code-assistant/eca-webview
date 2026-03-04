@@ -170,6 +170,7 @@ interface ChatToolCallPrepareContent {
     origin: ToolCallOrigin;
     id: string;
     name: string;
+    server?: string;
     argumentsText: string;
     manualApproval: boolean;
     summary?: string;
@@ -181,6 +182,7 @@ interface ChatToolCallRunContent {
     origin: ToolCallOrigin;
     id: string;
     name: string;
+    server?: string;
     arguments: string[];
     manualApproval: boolean;
     details?: ToolCallDetails;
@@ -192,6 +194,7 @@ interface ChatToolCallRunningContent {
     origin: ToolCallOrigin;
     id: string;
     name: string;
+    server?: string;
     arguments: string[];
     details?: ToolCallDetails;
     summary?: string;
@@ -202,6 +205,7 @@ interface ChatToolCallRejectedContent {
     origin: ToolCallOrigin;
     id: string;
     name: string;
+    server?: string;
     arguments: { [key: string]: string };
     details?: ToolCallDetails;
     summary?: string;
@@ -212,6 +216,7 @@ interface ChatToolCalledContent {
     origin: ToolCallOrigin;
     id: string;
     name: string;
+    server?: string;
     arguments: string[];
     error: boolean;
     outputs: ToolCallOutput[];
@@ -227,7 +232,7 @@ export interface ToolCallOutput {
 
 export type ToolCallOrigin = 'mcp' | 'native';
 
-export type ToolCallDetails = FileChangeDetails | JsonOutputsDetails | SubagentDetails;
+export type ToolCallDetails = FileChangeDetails | JsonOutputsDetails | SubagentDetails | TaskDetails;
 
 export interface FileChangeDetails {
     type: 'fileChange';
@@ -248,6 +253,29 @@ export interface SubagentDetails {
     agentName?: string;
     step?: number;
     maxSteps?: number;
+}
+
+export interface TaskDetails {
+    type: 'task';
+    activeSummary?: string;
+    tasks: Task[];
+    inProgressTaskIds: number[];
+    summary: {
+        done: number;
+        inProgress: number;
+        pending: number;
+        total: number;
+    };
+}
+
+export interface Task {
+    id: number;
+    subject: string;
+    description: string;
+    status: 'done' | 'in-progress' | 'pending';
+    priority: string;
+    isBlocked: boolean;
+    blockedBy?: number[];
 }
 
 interface ChatReasonStartedContent {

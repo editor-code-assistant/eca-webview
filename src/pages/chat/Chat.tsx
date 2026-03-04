@@ -8,6 +8,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from './ChatMessages';
 import { ChatPrompt } from "./ChatPrompt";
 import { ChatSubHeader } from './ChatSubHeader';
+import { ChatTask } from './ChatTask';
 import { MarkdownContent } from "./MarkdownContent";
 
 export function Chat() {
@@ -35,6 +36,10 @@ export function Chat() {
                 <ChatHeader chats={chatsList} />)}
             {running && (
                 <ChatSubHeader chatId={currentChatId} />
+            )}
+
+            {running && (
+                <ChatTask key={currentChatId} chatId={currentChatId} />
             )}
 
             {!running &&

@@ -1,0 +1,98 @@
+.chat-task {
+    background-color: var(--eca-panel-bg);
+    margin: 0.2em 0.4em;
+    border-radius: 0.4em;
+    font-size: 0.9em;
+
+    .chat-task-header {
+        display: flex;
+        align-items: center;
+        padding: 0.3em 0.5em;
+        cursor: pointer;
+        opacity: 0.85;
+        transition: opacity 0.1s;
+        gap: 0.3em;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .chat-task-chevron {
+            font-size: 0.85em;
+            flex-shrink: 0;
+        }
+
+        .chat-task-loading {
+            color: var(--eca-input-placeholder-fg);
+            font-style: italic;
+        }
+
+        .chat-task-prefix {
+            font-style: italic;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .chat-task-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+
+            &.in-progress {
+                color: var(--eca-link-fg, var(--vscode-textLink-foreground));
+            }
+        }
+
+        .chat-task-progress {
+            opacity: 0.6;
+            font-style: italic;
+            white-space: nowrap;
+            margin-left: 0.3em;
+        }
+    }
+
+    .chat-task-list {
+        padding: 0.1em 0.5em 0.4em 1.4em;
+        max-height: 15em;
+        overflow-y: auto;
+
+        .chat-task-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4em;
+            padding: 0.1em 0;
+            line-height: 1.4;
+
+            .chat-task-checkbox {
+                flex-shrink: 0;
+                font-size: 0.9em;
+            }
+
+            .chat-task-subject {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            &.done {
+                opacity: 0.5;
+
+                .chat-task-subject {
+                    text-decoration: line-through;
+                }
+            }
+
+            &.in-progress {
+                .chat-task-subject {
+                    font-weight: bold;
+                    color: var(--eca-link-fg, var(--vscode-textLink-foreground));
+                }
+            }
+
+            &.pending {
+                opacity: 0.75;
+            }
+        }
+    }
+}

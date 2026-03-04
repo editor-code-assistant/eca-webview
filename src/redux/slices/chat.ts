@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, SubagentDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 
 interface ChatMessageText {
     type: 'text',
@@ -64,6 +64,8 @@ export interface Chat {
     addedContexts: ChatPreContext[],
     usage?: ChatUsage,
     pendingPrompts: string[],
+    taskState?: TaskDetails | null,
+    taskLoading?: boolean,
 }
 
 interface ChatUsage {
@@ -117,6 +119,18 @@ interface ChatState {
 const getCurrentChat = (state: ChatState): Chat => {
     return state.chats[state.selectedChat];
 };
+
+/**
+ * Check if a content event is a task tool call (server="eca", name="task").
+ */
+function isTaskToolCall(content: ChatContent): boolean {
+    if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
+        || content.type === 'toolCallRunning' || content.type === 'toolCalled'
+        || content.type === 'toolCallRejected') {
+        return content.server === 'eca' && content.name === 'task';
+    }
+    return false;
+}
 
 /**
  * Apply a content event to a messages array (mutating).
@@ -311,12 +325,16 @@ export const chatSlice = createSlice({
         clearChat: (state, action) => {
             const chatId = action.payload.chatId;
             state.chats[chatId].messages = [];
+            state.chats[chatId].taskState = null;
+            state.chats[chatId].taskLoading = false;
         },
         cleared: (state, action) => {
             const chatId = action.payload.chatId;
             const isMessages = action.payload.messages;
             if (isMessages) {
                 state.chats[chatId].messages = [];
+                state.chats[chatId].taskState = null;
+                state.chats[chatId].taskLoading = false;
             }
         },
         resetChat: (state, action) => {
@@ -409,6 +427,41 @@ export const chatSlice = createSlice({
                         };
                     }
                 }
+            }
+
+            // --- Task tool call: intercept and route to task state ---
+            if (isTaskToolCall(content)) {
+                switch (content.type) {
+                    case 'toolCallPrepare': {
+                        if (!chat.taskState) {
+                            chat.taskLoading = true;
+                        }
+                        break;
+                    }
+                    case 'toolCalled': {
+                        if (content.details?.type === 'task') {
+                            const details = content.details as TaskDetails;
+                            if (details.tasks.length === 0) {
+                                chat.taskState = null;
+                            } else {
+                                chat.taskState = details;
+                            }
+                        }
+                        chat.taskLoading = false;
+                        break;
+                    }
+                    case 'toolCallRun':
+                    case 'toolCallRunning': {
+                        // Suppress — don't add to messages
+                        break;
+                    }
+                    case 'toolCallRejected': {
+                        chat.taskLoading = false;
+                        break;
+                    }
+                }
+                state.chats[chatId] = chat;
+                return;
             }
 
             applyContentToMessages(chat.messages, role, content);
