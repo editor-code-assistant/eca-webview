@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
 import { ToolServerUpdatedParams } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
-import { startServer, stopServer } from '../../redux/thunks/mcp';
+import { connectServer, logoutServer, startServer, stopServer } from '../../redux/thunks/mcp';
 import { Toggle } from '../components/Toggle';
 import { ToolTip } from '../components/ToolTip';
 import './MCPDetails.scss';
@@ -50,6 +50,8 @@ export function MCPDetails() {
 
                     const stoppable = server.status === 'running' || server.status === 'starting';
                     const failed = server.status === 'failed';
+                    const requiresAuth = server.status === 'requires-auth';
+                    const hasAuth = server.type === 'mcp' && server.hasAuth;
 
                     return (
                         <div key={index} className="server">
@@ -59,12 +61,23 @@ export function MCPDetails() {
                                 onClick={failed ? onOpenServerLogs : undefined}></i>
                             <ToolTip id={`status-${server.name}`}>
                                 {failed && <span> {server.status} - click to see server logs </span>}
-                                {!failed && <span>{server.status}</span>}
+                                {requiresAuth && <span>{server.status} - click connect to authenticate</span>}
+                                {!failed && !requiresAuth && <span>{server.status}</span>}
                             </ToolTip>
                             <div className="divider"></div>
-                            <Toggle
-                                defaultChecked={stoppable}
-                                onChange={(enabled) => changeServerStatus(enabled, server)} />
+                            {requiresAuth
+                                ? <button className="action-button connect-button"
+                                    onClick={() => dispatch(connectServer({ name: server.name }))}>
+                                    Connect
+                                  </button>
+                                : <Toggle
+                                    defaultChecked={stoppable}
+                                    onChange={(enabled) => changeServerStatus(enabled, server)} />}
+                            {stoppable && hasAuth &&
+                                <button className="action-button logout-button"
+                                    onClick={() => dispatch(logoutServer({ name: server.name }))}>
+                                    Logout
+                                </button>}
                             <dl>
                                 <dt>Tools: </dt>
                                 <dd className="tools">

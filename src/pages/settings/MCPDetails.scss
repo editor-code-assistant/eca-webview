@@ -64,6 +64,7 @@
             &.running {background-color: var(--eca-success-fg);}
             &.starting {background-color: var(--eca-warning-fg);}
             &.failed, &.stopped {background-color: var(--eca-error-fg);}
+            &.requires-auth {background-color: var(--eca-warning-fg);}
 
             &.clickable {
               cursor: pointer;
@@ -72,6 +73,31 @@
 
           .divider {
             flex: 1;
+          }
+
+          .action-button {
+            background: none;
+            border: 1px solid var(--eca-input-fg);
+            color: var(--eca-input-fg);
+            border-radius: 0.3em;
+            padding: 0.1em 0.6em;
+            font-size: 0.8em;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.1s;
+
+            &:hover {
+              opacity: 1;
+            }
+          }
+
+          .connect-button {
+            border-color: var(--eca-warning-fg);
+            color: var(--eca-warning-fg);
+          }
+
+          .logout-button {
+            margin-left: 0.5em;
           }
 
           dl {

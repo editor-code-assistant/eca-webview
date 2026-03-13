@@ -15,3 +15,17 @@ export const stopServer = createAsyncThunk<void, { name: string }, ThunkApiType>
         webviewSend('mcp/stopServer', { name });
     }
 );
+
+export const connectServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
+    "mcp/connectServer",
+    async ({ name }, {}) => {
+        webviewSend('mcp/connectServer', { name });
+    }
+);
+
+export const logoutServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
+    "mcp/logoutServer",
+    async ({ name }, {}) => {
+        webviewSend('mcp/logoutServer', { name });
+    }
+);
