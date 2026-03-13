@@ -373,11 +373,33 @@ export type ToolServerStatus = 'running' | 'starting' | 'stopped' | 'failed' | '
 interface MCPServerUpdatedParams {
     type: 'mcp';
     name: string;
-    command: string;
-    args: string[];
+    command?: string;
+    args?: string[];
+    url?: string;
     status: ToolServerStatus;
     tools?: ServerTool[];
+    prompts?: ServerPrompt[];
+    resources?: ServerResource[];
     hasAuth?: boolean;
+}
+
+export interface ServerPrompt {
+    name: string;
+    description: string;
+    arguments?: PromptArgument[];
+}
+
+export interface PromptArgument {
+    name: string;
+    description: string;
+    required: boolean;
+}
+
+export interface ServerResource {
+    uri: string;
+    name: string;
+    description: string;
+    mimeType: string;
 }
 
 interface EcaServerUpdatedParams {
