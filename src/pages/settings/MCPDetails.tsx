@@ -1,9 +1,10 @@
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
-import { ToolServerUpdatedParams, ToolServerStatus } from '../../protocol';
+import { MCPServerUpdatedParams, ToolServerUpdatedParams, ToolServerStatus } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
-import { connectServer, logoutServer, startServer, stopServer } from '../../redux/thunks/mcp';
+import { connectServer, logoutServer, startServer, stopServer, updateServer } from '../../redux/thunks/mcp';
 import { Toggle } from '../components/Toggle';
 import { ToolTip } from '../components/ToolTip';
 import './MCPDetails.scss';
@@ -17,6 +18,116 @@ const statusLabel: Record<ToolServerStatus, string> = {
     'disabled': 'Disabled',
     'requires-auth': 'Requires auth',
 };
+
+function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }) {
+    const dispatch = useEcaDispatch();
+    const isRemote = !!server.url;
+
+    const [url, setUrl] = useState(server.url ?? '');
+    const [command, setCommand] = useState(server.command ?? '');
+    const [args, setArgs] = useState(server.args?.join(' ') ?? '');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setUrl(server.url ?? '');
+        setCommand(server.command ?? '');
+        setArgs(server.args?.join(' ') ?? '');
+    }, [server.url, server.command, server.args]);
+
+    const originalUrl = server.url ?? '';
+    const originalCommand = server.command ?? '';
+    const originalArgs = server.args?.join(' ') ?? '';
+
+    const hasChanges = isRemote
+        ? url !== originalUrl
+        : command !== originalCommand || args !== originalArgs;
+
+    const onSave = async () => {
+        setSaving(true);
+        try {
+            if (isRemote) {
+                await dispatch(updateServer({ name: server.name, url })).unwrap();
+            } else {
+                const parsedArgs = args.trim() ? args.trim().split(/\s+/) : [];
+                await dispatch(updateServer({ name: server.name, command, args: parsedArgs })).unwrap();
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && hasChanges && !saving) {
+            onSave();
+        } else if (e.key === 'Escape') {
+            setUrl(originalUrl);
+            setCommand(originalCommand);
+            setArgs(originalArgs);
+        }
+    };
+
+    if (isRemote) {
+        return (
+            <div className="section connection-section">
+                <span className="section-label">
+                    <i className="codicon codicon-globe"></i>
+                    URL
+                </span>
+                <div className="editable-row">
+                    <input
+                        className="editable-field url-field"
+                        type="text"
+                        value={url}
+                        onChange={e => setUrl(e.target.value)}
+                        onKeyDown={onKeyDown}
+                        spellCheck={false}
+                    />
+                    {hasChanges &&
+                        <button className="save-btn" onClick={onSave} disabled={saving}>
+                            {saving ? '…' : 'Save'}
+                        </button>}
+                </div>
+            </div>
+        );
+    }
+
+    if (!command && !args) return null;
+
+    return (
+        <div className="section connection-section">
+            <span className="section-label">
+                <i className="codicon codicon-terminal"></i>
+                Command
+            </span>
+            <div className="editable-row">
+                <input
+                    className="editable-field"
+                    type="text"
+                    value={command}
+                    onChange={e => setCommand(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="command"
+                    spellCheck={false}
+                    style={{ width: `${Math.max(6, command.length + 2)}ch` }}
+                />
+                <input
+                    className="editable-field"
+                    type="text"
+                    value={args}
+                    onChange={e => setArgs(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="args"
+                    spellCheck={false}
+                    style={{ width: `${Math.max(4, args.length + 2)}ch` }}
+                />
+                {hasChanges &&
+                    <button className="save-btn" onClick={onSave} disabled={saving}>
+                        {saving ? '…' : 'Save'}
+                    </button>}
+            </div>
+        </div>
+    );
+}
 
 export function MCPDetails() {
     const mcpServers = useSelector((state: State) => state.mcp.servers);
@@ -66,21 +177,17 @@ export function MCPDetails() {
 
             <div className="server-list">
                 {mcpServers.map((server, index) => {
-                    const isRemote = server.type === 'mcp' && !!server.url;
-                    let commandTxt;
-                    if (server.type === 'mcp' && !isRemote && server.command) {
-                        commandTxt = server.command + " " + (server.args?.join(" ") || "");
-                    }
-
+                    const isMcp = server.type === 'mcp';
                     const stoppable = server.status === 'running' || server.status === 'starting';
                     const failed = server.status === 'failed';
                     const requiresAuth = server.status === 'requires-auth';
-                    const hasAuth = server.type === 'mcp' && server.hasAuth;
-                    const prompts = server.type === 'mcp' ? server.prompts : undefined;
-                    const resources = server.type === 'mcp' ? server.resources : undefined;
+                    const hasAuth = isMcp && server.hasAuth;
+                    const prompts = isMcp ? server.prompts : undefined;
+                    const resources = isMcp ? server.resources : undefined;
                     const toolCount = server.tools?.length ?? 0;
                     const promptCount = prompts?.length ?? 0;
                     const resourceCount = resources?.length ?? 0;
+                    const hasConnection = isMcp && (!!server.url || !!server.command);
 
                     return (
                         <div key={index} className={`server-card ${server.status}`}>
@@ -115,7 +222,7 @@ export function MCPDetails() {
                                 </div>
                             </div>
 
-                            {(toolCount > 0 || promptCount > 0 || resourceCount > 0 || commandTxt) &&
+                            {(toolCount > 0 || promptCount > 0 || resourceCount > 0 || hasConnection) &&
                                 <div className="server-body">
                                     {toolCount > 0 &&
                                         <div className="section">
@@ -207,14 +314,8 @@ export function MCPDetails() {
                                             </div>
                                         </div>}
 
-                                    {commandTxt &&
-                                        <div className="section command-section">
-                                            <span className="section-label">
-                                                <i className="codicon codicon-terminal"></i>
-                                                Command
-                                            </span>
-                                            <code className="command-text">{commandTxt}</code>
-                                        </div>}
+                                    {isMcp && hasConnection &&
+                                        <EditableConnectionFields server={server} />}
                                 </div>}
                         </div>
                     );

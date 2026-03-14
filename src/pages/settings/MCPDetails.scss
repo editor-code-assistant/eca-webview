@@ -273,21 +273,62 @@
       }
     }
 
-    // ── Command ──────────────────────────────────────────────
-    .command-section {
+    // ── Connection (editable command / url) ─────────────────
+    .connection-section {
       gap: 0.25em;
     }
 
-    .command-text {
-      display: block;
+    .editable-row {
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+    }
+
+    .editable-field {
       font-size: 0.8em;
       font-family: monospace;
       background-color: var(--eca-panel-bg);
       padding: 0.35em 0.5em;
       border-radius: 0.3em;
-      word-break: break-all;
       color: var(--eca-input-fg);
+      border: 1px solid transparent;
+      outline: none;
+      transition: border-color 0.15s, width 0.1s;
       opacity: 0.85;
+      flex: 0 1 auto;
+      min-width: 4em;
+      max-width: 100%;
+
+      &:focus {
+        border-color: var(--eca-link-fg);
+        opacity: 1;
+      }
+    }
+
+    .url-field {
+      flex: 1 1 auto;
+    }
+
+    .save-btn {
+      flex-shrink: 0;
+      font-size: 0.75em;
+      padding: 0.3em 0.6em;
+      border-radius: 0.3em;
+      border: 1px solid var(--eca-link-fg);
+      background: transparent;
+      color: var(--eca-link-fg);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.15s, opacity 0.15s;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(0, 120, 212, 0.1);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
     }
   }
 

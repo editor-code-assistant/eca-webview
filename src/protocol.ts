@@ -370,7 +370,7 @@ export interface ChatClearedParams {
 
 export type ToolServerStatus = 'running' | 'starting' | 'stopped' | 'failed' | 'disabled' | 'requires-auth';
 
-interface MCPServerUpdatedParams {
+export interface MCPServerUpdatedParams {
     type: 'mcp';
     name: string;
     command?: string;
