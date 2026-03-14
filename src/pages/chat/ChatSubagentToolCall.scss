@@ -1,45 +1,204 @@
-.subagent-tool-call-wrapper {
-    .subagent-tool-call {
-        .header-content {
-            .subagent-steps-info {
-                font-size: 0.85em;
-                opacity: 0.7;
-                font-style: italic;
-                margin-left: 0.3em;
+// Subagent accent — purple, distinct from blue (active) and green (success)
+$subagent-color: #b180d7;
+
+// Depth accent colors — cycles through a palette, starting with purple
+$depth-colors: (
+    0: $subagent-color,
+    1: #d7ba7d,
+    2: #4ec9b0,
+    3: #e06c75,
+    4: $subagent-color,
+);
+
+.subagent-card {
+    border-left: 2px solid $subagent-color;
+    border-radius: 0 0.3em 0.3em 0;
+    background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #{$subagent-color} 5%);
+    margin: 0.2em 0;
+    transition: border-color 0.2s ease, background 0.2s ease;
+
+    // Depth-based accent colors
+    @each $d, $color in $depth-colors {
+        &.depth-#{$d} {
+            border-left-color: $color;
+            background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #{$color} 5%);
+        }
+    }
+
+    &.failed,
+    &.rejected {
+        border-left-color: var(--eca-error-fg, #f14c4c);
+    }
+
+    // Header
+    .subagent-card-header {
+        display: flex;
+        align-items: center;
+        padding: 0.45em 0.6em;
+        cursor: pointer;
+        opacity: 0.85;
+        transition: opacity 100ms;
+        gap: 0.4em;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .chevron {
+            font-size: 0.85em;
+            opacity: 0.6;
+            flex-shrink: 0;
+        }
+
+        .agent-icon {
+            font-size: 0.9em;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        .subagent-description {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .subagent-steps-info {
+            font-size: 0.8em;
+            opacity: 0.55;
+            font-style: italic;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .spacing {
+            flex: 1;
+        }
+
+        .subagent-status {
+            flex-shrink: 0;
+            font-size: 0.9em;
+
+            &.succeeded {
+                color: var(--eca-success-fg);
             }
 
-            .status.pending-approval {
+            &.failed {
+                color: var(--eca-error-fg);
+            }
+
+            &.pending-approval {
                 color: var(--eca-warning-fg, #cca700);
             }
         }
     }
 
-    .subagent-content {
+    // Body
+    .subagent-card-body {
+        padding: 0 0.6em 0.4em 1.6em;
+
         .subagent-info {
-            padding: 0.4em 0;
+            padding: 0.2em 0;
 
-            .subagent-info-row {
-                padding: 0.15em 0;
-                font-size: 0.9em;
+            .subagent-task {
+                font-size: 0.85em;
+                opacity: 0.75;
+                font-style: italic;
+                line-height: 1.4;
+            }
 
-                .label {
-                    font-weight: 600;
-                    opacity: 0.8;
-                    margin-right: 0.4em;
-                }
-
-                .task {
-                    font-style: italic;
-                    opacity: 0.9;
-                }
+            .subagent-agent-name {
+                font-size: 0.85em;
+                opacity: 0.65;
             }
         }
 
         .subagent-messages {
-            margin-top: 0.3em;
             display: flex;
             flex-direction: column;
-            gap: 0.4em;
+            gap: 0.3em;
+
+            // Condensed text messages inside subagent
+            .subagent-text-message {
+                font-size: 0.92em;
+
+                .message {
+                    padding: 0.2em 0;
+                }
+            }
+        }
+    }
+
+    // Approval actions (reuse the same styling from tool-call-wrapper)
+    .approval-actions {
+        display: flex;
+        flex-direction: column;
+        padding: 0.4em 0.6em 0.5em 1.6em;
+        gap: 0.4em;
+
+        .approval-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+
+            button {
+                padding: 0.3em 0.6em;
+                border: 1px solid transparent;
+                border-radius: 0.2em;
+                cursor: pointer;
+                font-size: 0.85em;
+                font-weight: 400;
+                transition: all 0.1s ease;
+                white-space: nowrap;
+                min-width: fit-content;
+            }
+
+            .approval-description {
+                font-size: 0.85em;
+                opacity: 0.8;
+            }
+        }
+
+        .reject-btn {
+            background: var(--eca-button-secondary-bg);
+            color: var(--eca-button-secondary-fg);
+            border-color: var(--eca-button-secondary-border);
+
+            &:hover {
+                background: var(--eca-button-secondary-hover-bg);
+            }
+
+            &:active {
+                background: var(--eca-button-secondary-active-bg);
+            }
+        }
+
+        .approve-btn {
+            background: var(--eca-button-primary-bg);
+            color: var(--eca-button-primary-fg);
+            border-color: var(--eca-button-primary-border);
+
+            &:hover {
+                background: var(--eca-button-primary-hover-bg);
+            }
+
+            &:active {
+                background: var(--eca-button-primary-active-bg);
+            }
+        }
+
+        .approve-remember-btn {
+            background: var(--eca-button-primary-bg);
+            color: var(--eca-button-primary-fg);
+            border-color: var(--eca-button-primary-border);
+
+            &:hover {
+                background: var(--eca-button-primary-hover-bg);
+            }
+
+            &:active {
+                background: var(--eca-button-primary-active-bg);
+            }
         }
     }
 }

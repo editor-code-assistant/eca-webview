@@ -22,6 +22,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [promptValue, setPromptValue] = useState('');
     const [commandCompleting, setCommandCompleting] = useState(false);
     const [fileCompleting, setFileCompleting] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const inputCompleting = commandCompleting || fileCompleting;
     const dispatch = useEcaDispatch();
 
@@ -106,6 +107,9 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
             e.preventDefault();
             return;
         }
+
+        // Don't cycle history while a completion menu is open
+        if (inputCompleting) return;
 
         // Prompt history: Up/Down arrows when textarea has no multi-line content
         const isMultiLine = promptValue.includes('\n');
@@ -225,8 +229,10 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         inputRef.current?.focus();
     }
 
+    const sendDisabled = !enabled || inputCompleting || !promptValue.trim();
+
     return (
-        <div className="prompt-area">
+        <div className={`prompt-area${isFocused ? ' focused' : ''}`}>
             <ChatContexts enabled={enabled} chatId={chatId} />
             <ChatCommands
                 input={inputRef.current}
@@ -248,11 +254,14 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                 onChange={onPromptChange}
                 onKeyDown={handleKeyDown}
                 onPaste={onPaste}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 placeholder="Ask, plan, build..."
                 className="field"
+                aria-label="Chat prompt"
             />
             {enabled && (
-                <div>
+                <div className="toolbar">
                     <SelectBox
                         id="select-agent"
                         defaultOption={selectedAgent}
@@ -277,7 +286,16 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                 </div>
             )}
             <div className="spacing"></div>
-            <div className="send"><i onClick={sendPromptValue} className="codicon codicon-send"></i></div>
+            <div className="send">
+                <i
+                    onClick={sendDisabled ? undefined : sendPromptValue}
+                    className={`codicon codicon-send${sendDisabled ? ' disabled' : ''}`}
+                    role="button"
+                    aria-label="Send message"
+                    aria-disabled={sendDisabled}
+                    tabIndex={sendDisabled ? -1 : 0}
+                />
+            </div>
         </div>
     );
 });

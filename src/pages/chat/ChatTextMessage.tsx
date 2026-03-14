@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { MarkdownContent } from "./MarkdownContent";
+import './ChatTextMessage.scss';
 
 interface Props {
     role: string,
@@ -9,18 +10,33 @@ interface Props {
 }
 
 export const ChatTextMessage = memo(({ role, text, onRollbackClicked, showRollback = true }: Props) => {
-    return (
-        <div className={`${role}-message`}>
-            {role === 'system' && (
+    if (role === 'system') {
+        return (
+            <div className="system-message">
                 <span>{text}</span>
-            )}
-            {role != 'system' && (
-                <MarkdownContent content={text} />
-            )}
-            {role === 'user' && showRollback && (
-                <div className="actions">
-                    <button onClick={onRollbackClicked} className="rollback" title="Rollback to this message">↶</button>
+            </div>
+        );
+    }
+
+    if (role === 'user') {
+        return (
+            <div className="user-message-card">
+                <div className="user-message-content">
+                    <MarkdownContent content={text} />
                 </div>
-            )}
-        </div>);
+                {showRollback && (
+                    <button onClick={onRollbackClicked} className="rollback-btn" title="Rollback to this message">
+                        <i className="codicon codicon-discard" />
+                    </button>
+                )}
+            </div>
+        );
+    }
+
+    // Assistant
+    return (
+        <div className="assistant-message">
+            <MarkdownContent content={text} />
+        </div>
+    );
 });

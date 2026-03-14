@@ -10,6 +10,12 @@
             overflow: auto;
             opacity: 0.6;
             cursor: pointer;
+            transition: opacity 150ms ease, background-color 150ms ease;
+
+            &:hover {
+                opacity: 0.85;
+                background-color: var(--eca-base-hover);
+            }
 
             &.selected {
                 opacity: 1;

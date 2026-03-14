@@ -10,7 +10,7 @@
         border-radius: 0.3em;
         background: none;
         border: 1px solid var(--eca-base-border);
-        transition: opacity 0.1s, background-color 0.1s;
+        transition: opacity 150ms ease, background-color 150ms ease;
         padding: 0.2em;
         margin: 0.2em 0.2em;
         cursor: pointer;
@@ -47,6 +47,7 @@
         .context-item {
             padding: 0.2em 0.5em;
             opacity: 0.7;
+            transition: opacity 150ms ease, background-color 150ms ease;
 
             &:hover {
                 background-color: var(--eca-input-bg);

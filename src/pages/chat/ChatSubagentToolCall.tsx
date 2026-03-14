@@ -1,11 +1,10 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SubagentDetails, ToolCallOutput } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { useKeyPressedListener } from '../../hooks';
-import { ChatCollapsableMessage } from './ChatCollapsableMessage';
 import { ChatTextMessage } from './ChatTextMessage';
 import { ChatToolCall } from './ChatToolCall';
 import { ChatReason } from './ChatReason';
@@ -26,6 +25,7 @@ interface Props {
     summary?: string;
     subagentMessages?: ChatMessage[];
     subagentChatId?: string;
+    depth?: number;
 }
 
 function parseAgentArgs(argumentsText?: string): { agent?: string; task?: string; activity?: string } {
@@ -42,14 +42,14 @@ function parseAgentArgs(argumentsText?: string): { agent?: string; task?: string
     }
 }
 
-function SubagentMessages({ messages, subagentChatId }: { messages: ChatMessage[]; subagentChatId: string }) {
+function SubagentMessages({ messages, subagentChatId, depth }: { messages: ChatMessage[]; subagentChatId: string; depth: number }) {
     return (
         <div className="subagent-messages">
             {messages.map((message, index) => {
                 switch (message.type) {
                     case 'text':
                         return (
-                            <div key={`subagent-msg-${index}`}>
+                            <div key={`subagent-msg-${index}`} className="subagent-text-message">
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
@@ -73,6 +73,7 @@ function SubagentMessages({ messages, subagentChatId }: { messages: ChatMessage[
                                     argumentsText={message.argumentsText}
                                     subagentMessages={message.subagentMessages}
                                     subagentChatId={message.subagentChatId}
+                                    depth={depth}
                                 />
                             </div>
                         );
@@ -109,7 +110,9 @@ function SubagentMessages({ messages, subagentChatId }: { messages: ChatMessage[
 
 function chatSubagentToolCall(props: Props) {
     const dispatch = useEcaDispatch();
+    const depth = props.depth ?? 0;
     const { agent, task, activity } = useMemo(() => parseAgentArgs(props.argumentsText), [props.argumentsText]);
+    const [expanded, setExpanded] = useState(true);
 
     const waitingApproval = props.manualApproval && props.status === 'run';
     const effectiveChatId = props.subagentChatId || props.chatId;
@@ -157,66 +160,83 @@ function chatSubagentToolCall(props: Props) {
         }
     }, [waitingApproval]);
 
-    let iconClass: string;
-    switch (props.status) {
-        case 'preparing':
-        case 'run':
-        case 'running':
-            iconClass = hasChildPendingApproval
-                ? 'codicon-bell-dot pending-approval'
-                : 'codicon-loading codicon-modifier-spin';
-            break;
-        case 'succeeded':
-            iconClass = 'codicon-check succeeded';
-            break;
-        case 'failed':
-            iconClass = 'codicon-error failed';
-            break;
-        case 'rejected':
-            iconClass = 'codicon-error failed';
-            break;
-        default:
-            iconClass = 'codicon-question';
+    const isActive = props.status === 'preparing' || props.status === 'run' || props.status === 'running';
+
+    let statusIconClass: string;
+    if (isActive) {
+        statusIconClass = hasChildPendingApproval
+            ? 'codicon-bell-dot pending-approval'
+            : 'codicon-loading codicon-modifier-spin';
+    } else {
+        switch (props.status) {
+            case 'succeeded':
+                statusIconClass = 'codicon-check succeeded';
+                break;
+            case 'failed':
+            case 'rejected':
+                statusIconClass = 'codicon-error failed';
+                break;
+            default:
+                statusIconClass = 'codicon-question';
+        }
     }
 
     const stepsInfo = props.details?.step !== undefined
-        ? ` (${props.details.step}${props.details.maxSteps ? '/' + props.details.maxSteps : ''} steps)`
+        ? `${props.details.step}${props.details.maxSteps ? '/' + props.details.maxSteps : ''} steps`
         : '';
 
-    const description = props.summary || (activity ? `${agent || 'agent'}: ${activity}` : `Subagent: ${agent || props.name}`);
+    const description = props.summary || (activity ? activity : agent || props.name);
 
     const hasMessages = (props.subagentMessages ?? []).length > 0;
 
+    const toggleExpanded = () => setExpanded(!expanded);
+
     return (
-        <div className="tool-call-wrapper subagent-tool-call-wrapper">
-            <ChatCollapsableMessage
-                className="tool-call subagent-tool-call"
-                header={(toggleOpen) => (
-                    <div className="header-content">
-                        <span onClick={toggleOpen} className="description">{description}</span>
-                        <span onClick={toggleOpen} className="subagent-steps-info">{stepsInfo}</span>
-                        {props.totalTimeMs && <ChatTime ms={props.totalTimeMs} />}
-                        <span onClick={toggleOpen} className="spacing"></span>
-                        <i onClick={toggleOpen} className={`status codicon ${iconClass}`}></i>
-                    </div>
-                )}
-                content={
-                    <div className="subagent-content">
+        <div
+            className={`subagent-card depth-${Math.min(depth, 4)} ${isActive ? 'active' : ''} ${props.status}`}
+            style={{ '--subagent-depth': depth } as React.CSSProperties}
+        >
+            <div className="subagent-card-header" onClick={toggleExpanded}>
+                <motion.i
+                    className="chevron codicon codicon-chevron-right"
+                    animate={{ rotate: expanded ? 90 : 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                />
+                <i className="agent-icon codicon codicon-hubot" />
+                <span className="subagent-description">{description}</span>
+                {stepsInfo && <span className="subagent-steps-info">{stepsInfo}</span>}
+                {props.totalTimeMs && <ChatTime ms={props.totalTimeMs} />}
+                <span className="spacing" />
+                <i className={`subagent-status codicon ${statusIconClass}`} />
+            </div>
+
+            <AnimatePresence initial={false}>
+                {expanded && (
+                    <motion.div
+                        className="subagent-card-body"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
+                        style={{ overflow: "hidden" }}
+                    >
                         {!hasMessages && (
                             <div className="subagent-info">
-                                {agent && <div className="subagent-info-row"><span className="label">Agent:</span> <span>{agent}</span></div>}
-                                {task && <div className="subagent-info-row"><span className="label">Task:</span> <span className="task">{task}</span></div>}
+                                {task && <div className="subagent-task">{task}</div>}
+                                {!task && agent && <div className="subagent-agent-name">Agent: {agent}</div>}
                             </div>
                         )}
                         {hasMessages && (
                             <SubagentMessages
                                 messages={props.subagentMessages!}
                                 subagentChatId={props.subagentChatId || props.chatId}
+                                depth={depth + 1}
                             />
                         )}
-                    </div>
-                }
-            />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {waitingApproval && (
                     <motion.div

@@ -1,15 +1,52 @@
-.reason {
+.reason-card {
+    border-left: 2px solid var(--eca-base-border);
+    border-radius: 0 0.3em 0.3em 0;
+    background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-base-border) 4%);
+    margin: 0.2em 0;
+    transition: border-color 0.2s ease, background 0.2s ease;
 
-    &.empty {
-        border: 0.1em solid var(--eca-base-border);
-        border-radius: 0.4em;
-        padding: 0.5em 0.8em;
-        opacity: 0.8;
-        padding-left: 2.5em;
+    &.active {
+        border-left-color: var(--eca-accent-fg, #007acc);
+        background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-accent-fg, #007acc) 4%);
     }
 
-    .icon {
-        vertical-align: middle;
-        margin-left: 0.5em;
+    // Header
+    .reason-card-header {
+        display: flex;
+        align-items: center;
+        padding: 0.45em 0.6em;
+        cursor: pointer;
+        opacity: 0.75;
+        transition: opacity 100ms;
+        gap: 0.4em;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .chevron {
+            font-size: 0.85em;
+            opacity: 0.6;
+            flex-shrink: 0;
+        }
+
+        .reason-icon {
+            font-size: 0.85em;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        .reason-label {
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+    }
+
+    // Body
+    .reason-card-body {
+        padding: 0 0.6em 0.5em 1.6em;
+        font-size: 0.9em;
+        opacity: 0.85;
+        line-height: 1.5;
     }
 }

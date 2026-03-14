@@ -1,0 +1,61 @@
+// User message — compact left accent card
+.user-message-card {
+    border-left: 2px solid var(--eca-fg, #cccccc);
+    border-radius: 0 0.3em 0.3em 0;
+    background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 94%, var(--eca-fg, #cccccc) 6%);
+    padding: 0.45em 0.6em 0.35em;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.3em;
+    line-height: 1.4;
+    font-size: 0.95em;
+
+    .user-message-content {
+        flex: 1;
+        min-width: 0;
+
+        // Collapse all markdown spacing inside the compact card
+        * {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        p + p {
+            margin-top: 0.3em;
+        }
+    }
+
+    .rollback-btn {
+        flex-shrink: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--eca-fg);
+        opacity: 0.35;
+        padding: 0;
+        border-radius: 0.2em;
+        font-size: 0.7em;
+        line-height: 1;
+        transition: opacity 0.1s, background 0.1s;
+
+        &:hover {
+            opacity: 1;
+            background-color: var(--eca-base-hover);
+        }
+    }
+}
+
+// Assistant message — clean, no decoration
+.assistant-message {
+    line-height: 1.5;
+    padding: 0.1em 0;
+}
+
+// System message — warning-toned
+.system-message {
+    color: var(--eca-warning-message-fg);
+    white-space: pre-wrap;
+    font-size: 0.9em;
+    opacity: 0.85;
+    padding: 0.2em 0;
+}
