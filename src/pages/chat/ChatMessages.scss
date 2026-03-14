@@ -3,13 +3,13 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    padding: 0.2em 0.8em;
+    padding: 0.2em 0.4em;
     padding-bottom: 1.2em;
     gap: 0.6em;
 
     .user-message {
       line-height: 1.4;
-      padding: 0.1em 0.8em;
+      padding: 0.1em 0.6em;
       background-color: var(--eca-input-bg);
       border-radius: 0.4em;
       position: relative;

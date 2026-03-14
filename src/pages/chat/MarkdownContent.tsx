@@ -52,6 +52,14 @@ export function MarkdownContent({ content, codeClassName }: Props) {
                             {children}
                         </a>
                     );
+                },
+                table(props) {
+                    const { children, ...rest } = props;
+                    return (
+                        <div className="table-wrapper scrollable">
+                            <table {...rest}>{children}</table>
+                        </div>
+                    );
                 }
             }}
         />

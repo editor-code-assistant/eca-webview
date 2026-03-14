@@ -23,7 +23,10 @@ body,
     Cantarell,
     "Open Sans",
     "Helvetica Neue",
-    sans-serif;
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Noto Color Emoji";
 }
 
 body {
@@ -68,4 +71,32 @@ ul {
 
 a {
   color: var(--eca-link-fg);
+}
+
+/* Markdown tables */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 0.4em 0;
+}
+
+table {
+  border-collapse: collapse;
+  font-size: 0.9em;
+  min-width: 100%;
+}
+
+th, td {
+  padding: 0.35em 0.6em;
+  text-align: left;
+  border: 1px solid var(--eca-base-border);
+  white-space: nowrap;
+}
+
+th {
+  background-color: var(--eca-panel-bg);
+  font-weight: 600;
+}
+
+tr:nth-child(even) td {
+  background-color: color-mix(in srgb, var(--eca-panel-bg) 40%, transparent);
 }
