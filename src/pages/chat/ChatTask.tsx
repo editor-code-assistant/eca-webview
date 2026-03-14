@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { motion, AnimatePresence } from 'framer-motion';
 import { State } from '../../redux/store';
 import { Task } from '../../protocol';
 import './ChatTask.scss';
@@ -35,7 +36,11 @@ export function ChatTask({ chatId }: Props) {
     return (
         <div className="chat-task">
             <div className="chat-task-header" onClick={toggle}>
-                <i className={`codicon codicon-chevron-${expanded ? 'down' : 'right'} chat-task-chevron`} />
+                <motion.i
+                    className="codicon codicon-chevron-right chat-task-chevron"
+                    animate={{ rotate: expanded ? 90 : 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                />
                 {taskLoading ? (
                     <span className="chat-task-loading">Creating tasks…</span>
                 ) : (
@@ -48,20 +53,29 @@ export function ChatTask({ chatId }: Props) {
                     </>
                 )}
             </div>
-            {expanded && tasks.length > 0 && (
-                <div className="chat-task-list">
-                    {tasks.map((task: Task) => (
-                        <div
-                            key={task.id}
-                            className={`chat-task-item ${task.status}`}
-                            title={task.description || task.subject}
-                        >
-                            <i className={`codicon ${task.status === 'done' ? 'codicon-pass-filled' : 'codicon-circle-large-outline'} chat-task-checkbox`} />
-                            <span className="chat-task-subject">{task.subject}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <AnimatePresence initial={false}>
+                {expanded && tasks.length > 0 && (
+                    <motion.div
+                        className="chat-task-list"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
+                        style={{ overflow: "hidden" }}
+                    >
+                        {tasks.map((task: Task) => (
+                            <div
+                                key={task.id}
+                                className={`chat-task-item ${task.status}`}
+                                title={task.description || task.subject}
+                            >
+                                <i className={`codicon ${task.status === 'done' ? 'codicon-pass-filled' : 'codicon-circle-large-outline'} chat-task-checkbox`} />
+                                <span className="chat-task-subject">{task.subject}</span>
+                            </div>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

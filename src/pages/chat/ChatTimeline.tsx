@@ -1,5 +1,6 @@
 import { memo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { motion, AnimatePresence } from 'framer-motion';
 import { State } from '../../redux/store';
 import './ChatTimeline.scss';
 
@@ -47,30 +48,38 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
                 title="Chat timeline"
                 onClick={() => setOpen(!open)}
             ></i>
-            {open && (
-                <div className="timeline-dropdown">
-                    <div className="timeline-header">Timeline</div>
-                    <ul className="timeline-list scrollable">
-                        {userMessages.map(({ msg, index }, i) => {
-                            const textMsg = msg as { type: 'text'; role: string; value: string; timestamp?: number };
-                            return (
-                                <li
-                                    key={i}
-                                    className="timeline-item"
-                                    onClick={() => scrollToMessage(index)}
-                                >
-                                    <span className="timeline-time">
-                                        {textMsg.timestamp ? formatTimestamp(textMsg.timestamp) : '—'}
-                                    </span>
-                                    <span className="timeline-text">
-                                        {truncate(textMsg.value, 60)}
-                                    </span>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
-            )}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        className="timeline-dropdown"
+                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30, opacity: { duration: 0.12 } }}
+                    >
+                        <div className="timeline-header">Timeline</div>
+                        <ul className="timeline-list scrollable">
+                            {userMessages.map(({ msg, index }, i) => {
+                                const textMsg = msg as { type: 'text'; role: string; value: string; timestamp?: number };
+                                return (
+                                    <li
+                                        key={i}
+                                        className="timeline-item"
+                                        onClick={() => scrollToMessage(index)}
+                                    >
+                                        <span className="timeline-time">
+                                            {textMsg.timestamp ? formatTimestamp(textMsg.timestamp) : '—'}
+                                        </span>
+                                        <span className="timeline-text">
+                                            {truncate(textMsg.value, 60)}
+                                        </span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 });

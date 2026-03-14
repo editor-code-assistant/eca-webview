@@ -1,5 +1,6 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 import { ChatMessage } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { rollbackChat } from '../../redux/thunks/chat';
@@ -9,6 +10,18 @@ import { ChatReason } from './ChatReason';
 import { ChatTextMessage } from './ChatTextMessage';
 import { ChatToolCall } from './ChatToolCall';
 
+const messageVariants = {
+    hidden: { opacity: 0, y: 6 },
+    visible: { opacity: 1, y: 0 },
+};
+
+const messageTransition = {
+    type: "spring" as const,
+    stiffness: 500,
+    damping: 35,
+    mass: 0.8,
+};
+
 interface ChatMessagesProps {
     children: React.ReactNode,
     chatId: string,
@@ -17,6 +30,9 @@ interface ChatMessagesProps {
 export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const dispatch = useEcaDispatch();
     const messages = useSelector((state: State) => state.chat.chats[chatId].messages);
+
+    // Track how many messages existed on first render so we only animate new ones
+    const initialCountRef = useRef(messages.length);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     useAutoScroll(scrollRef, messages);
@@ -29,19 +45,19 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
         <div className="messages-container scrollable" ref={scrollRef} >
             {messages.length === 0 && children}
             {messages.map((message, index) => {
-                switch (message.type) {
-                    case 'text':
-                        return (
-                            <div key={`chat-message-${index}`}>
+                const shouldAnimate = index >= initialCountRef.current;
+
+                const renderMessage = () => {
+                    switch (message.type) {
+                        case 'text':
+                            return (
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
                                     onRollbackClicked={() => onRollbackClicked(message.contentId!)} />
-                            </div>
-                        );
-                    case 'toolCall':
-                        return (
-                            <div key={`chat-toolcall-${index}`}>
+                            );
+                        case 'toolCall':
+                            return (
                                 <ChatToolCall
                                     chatId={chatId}
                                     toolCallId={message.id}
@@ -57,21 +73,17 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     subagentMessages={message.subagentMessages}
                                     subagentChatId={message.subagentChatId}
                                 />
-                            </div>
-                        );
-                    case 'reason':
-                        return (
-                            <div key={`chat-reason-${index}`}>
+                            );
+                        case 'reason':
+                            return (
                                 <ChatReason
                                     id={message.id}
                                     status={message.status}
                                     totalTimeMs={message.totalTimeMs}
                                     content={message.content} />
-                            </div>
-                        );
-                    case 'hook':
-                        return (
-                            <div key={`chat-hook-${index}`}>
+                            );
+                        case 'hook':
+                            return (
                                 <ChatHook
                                     id={message.id}
                                     status={message.status}
@@ -80,11 +92,31 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     output={message.output}
                                     error={message.error}
                                 />
-                            </div>
-                        );
-                    default:
-                        return (<div></div>);
-                }
+                            );
+                        default:
+                            return null;
+                    }
+                };
+
+                const key = message.type === 'toolCall'
+                    ? `chat-toolcall-${index}`
+                    : message.type === 'reason'
+                        ? `chat-reason-${index}`
+                        : message.type === 'hook'
+                            ? `chat-hook-${index}`
+                            : `chat-message-${index}`;
+
+                return (
+                    <motion.div
+                        key={key}
+                        variants={messageVariants}
+                        initial={shouldAnimate ? "hidden" : false}
+                        animate="visible"
+                        transition={messageTransition}
+                    >
+                        {renderMessage()}
+                    </motion.div>
+                );
             })}
         </div>
     );

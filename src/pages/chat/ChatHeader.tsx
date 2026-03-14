@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { deleteChat } from '../../redux/thunks/chat';
@@ -84,7 +85,16 @@ export const ChatHeader = memo(({ chats }: Props) => {
                         return (
                             <span onClick={() => selectTab(chat.id)}
                                 key={`chat-${chat.id}`}
-                                className={`chat empty ${isSelected ? 'selected' : ''}`}>Empty chat</span>
+                                className={`chat empty ${isSelected ? 'selected' : ''}`}>
+                                Empty chat
+                                {isSelected && (
+                                    <motion.div
+                                        className="tab-indicator"
+                                        layoutId="tab-indicator"
+                                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    />
+                                )}
+                            </span>
                         );
                     }
 
@@ -113,6 +123,13 @@ export const ChatHeader = memo(({ chats }: Props) => {
                                 e.stopPropagation();
                                 chatDelete(chat);
                             }} className="close codicon codicon-close"></i>
+                            {isSelected && (
+                                <motion.div
+                                    className="tab-indicator"
+                                    layoutId="tab-indicator"
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                />
+                            )}
                         </span>
 
                     );

@@ -9,18 +9,27 @@
 
         .chat {
             display: flex;
+            position: relative;
             font-size: 0.9em;
             background-color: var(--eca-editor-bg);
             padding: 0.5em 0;
             padding-left: 0.8em;
             cursor: pointer;
             align-items: center;
-            border-top: 1px solid var(--eca-input-bg);
+            border-top: 1px solid transparent;
             border-right: 1px solid var(--eca-input-bg);
             transition: background-color 0.1s;
 
+            .tab-indicator {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background-color: var(--eca-link-fg);
+            }
+
             &.selected {
-                border-top: 1px solid var(--eca-link-fg);
                 background-color: var(--eca-editor-bg) !important;
             }
 
