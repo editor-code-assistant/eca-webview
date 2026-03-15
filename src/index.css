@@ -73,6 +73,33 @@ a {
   color: var(--eca-link-fg);
 }
 
+/* Inline code — subtle pill */
+.inline-code {
+  background-color: var(--eca-input-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+  font-family: var(--eca-monospace-font, monospace);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Fenced code block without a language (no syntax highlighting) */
+pre:has(> .code-block) {
+  background-color: var(--eca-input-bg);
+  padding: 0.6em 0.8em;
+  border-radius: 0.35em;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.code-block {
+  font-size: 0.88em;
+  font-family: var(--eca-monospace-font, monospace);
+  line-height: 1.5;
+  white-space: pre;
+}
+
 /* Markdown tables */
 .table-wrapper {
   overflow-x: auto;

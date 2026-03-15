@@ -25,21 +25,41 @@ export function MarkdownContent({ content, codeClassName }: Props) {
                 code(props) {
                     const { children, className, node, ...rest } = props
                     const match = /language-(\w+)/.exec(className || '')
-                    return match ? (
-                        <SyntaxHighlighter
-                            customStyle={{ scrollbarWidth: 'thin' }}
-                            wrapLines={true}
-                            wrapLongLines={true}
-                            PreTag="div"
-                            children={String(children).replace(/\n$/, '')}
-                            language={match[1]}
-                            style={dracula}
-                        />
-                    ) : (
-                        <code {...rest} className={`${className} ${codeClassName ? codeClassName : ''}`}>
+                    const isBlock = node?.position && String(children).includes('\n');
+
+                    if (match) {
+                        return (
+                            <SyntaxHighlighter
+                                customStyle={{ scrollbarWidth: 'thin' }}
+                                wrapLines={true}
+                                wrapLongLines={true}
+                                PreTag="div"
+                                children={String(children).replace(/\n$/, '')}
+                                language={match[1]}
+                                style={dracula}
+                            />
+                        );
+                    }
+
+                    if (isBlock) {
+                        return (
+                            <SyntaxHighlighter
+                                customStyle={{ scrollbarWidth: 'thin' }}
+                                wrapLines={true}
+                                wrapLongLines={true}
+                                PreTag="div"
+                                children={String(children).replace(/\n$/, '')}
+                                language={'text'}
+                                style={dracula}
+                            />
+                        );
+                    }
+
+                    return (
+                        <code {...rest} className={`inline-code ${className ?? ''} ${codeClassName ?? ''}`}>
                             {children}
                         </code>
-                    )
+                    );
                 },
                 a(props) {
                     const { href, children, ...rest } = props;
