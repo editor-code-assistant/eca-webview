@@ -4,6 +4,10 @@ html[data-editor="vscode"] {
   --eca-editor-bg: var(--vscode-editor-background, #2b2d30);
   --eca-editor-fg: var(--vscode-editor-foreground, #d4d4d4);
 
+  --eca-base-bg: var(--vscode-editor-background, #1e1e1e);
+  --eca-fg: var(--vscode-editor-foreground, #cccccc);
+  --eca-accent-fg: var(--vscode-focusBorder, #007acc);
+
   --eca-panel-bg: var(--vscode-panel-background, #252526);
   --eca-panel-border: var(--vscode-panel-border, #3e3e3e);
 
@@ -61,6 +65,10 @@ html[data-editor="vscode"] {
 html[data-editor="intellij"] {
   --eca-editor-bg: var(--intellij-editor-bg, #414450);
   --eca-editor-fg: var(--intellij-editor-fg, #a0a0a0);
+
+  --eca-base-bg: var(--intellij-editor-bg, #1e1e1e);
+  --eca-fg: var(--intellij-editor-fg, #cccccc);
+  --eca-accent-fg: var(--intellij-accent-fg, #007acc);
 
   --eca-panel-bg: var(--intellij-panel-bg, #3a3d4c);
   --eca-panel-border: var(--intellij-panel-border, #282a36);
