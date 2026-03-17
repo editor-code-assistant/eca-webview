@@ -26,6 +26,7 @@ export const serverSlice = createSlice({
     initialState: {
         status: ServerStatus.Stopped,
         workspaceFolders: [] as WorkspaceFolder[],
+        trust: false,
         config: {
             chat: {
                 models: [],
@@ -74,6 +75,9 @@ export const serverSlice = createSlice({
         setSelectedVariant: (state, action) => {
             state.config.chat.selectedVariant = action.payload;
         },
+        setTrust: (state, action) => {
+            state.trust = action.payload;
+        },
     },
 });
 
@@ -82,4 +86,5 @@ export const {
     setWorkspaceFolders,
     setConfig,
     setSelectedVariant,
+    setTrust,
 } = serverSlice.actions

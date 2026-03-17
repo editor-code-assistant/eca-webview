@@ -30,6 +30,7 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
         dispatch(incRequestId(chatId));
 
         const contexts = state.chat.chats[chatId].addedContexts;
+        const trust = state.server.trust;
 
         webviewSend('chat/userPrompt',
             {
@@ -40,6 +41,7 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
                 model,
                 agent,
                 ...(variant ? { variant } : {}),
+                ...(trust ? { trust } : {}),
             },
         );
     }

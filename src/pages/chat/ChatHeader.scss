@@ -1,4 +1,29 @@
 .chat-header {
+    display: flex;
+    align-items: stretch;
+
+    .trust-toggle {
+        display: flex;
+        align-items: center;
+        padding: 0 0.6em;
+        cursor: pointer;
+        font-size: 0.7em;
+        opacity: 0.8;
+        background-color: var(--eca-editor-bg);
+        user-select: none;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &.trust-off {
+            color: var(--eca-fg);
+        }
+
+        &.trust-on {
+            color: #f44747;
+        }
+    }
 
     .chats {
         display: flex;
