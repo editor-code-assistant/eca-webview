@@ -59,6 +59,12 @@ export function webviewSend<T>(
             }
             return;
         }
+        case 'web': {
+            if (window.__ecaWebTransport) {
+                window.__ecaWebTransport.send(msg);
+            }
+            return;
+        }
     }
     console.error("No webview provider found to send message");
 }

@@ -79,6 +79,7 @@ export function ChatSubHeader({ chatId }: Props) {
 
     const clearHistoryChat = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         dispatch(clearChat({ chatId: chatId }));
+        webviewSend('chat/clearChat', { chatId: chatId });
     }
 
     const openConfig = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

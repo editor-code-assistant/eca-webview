@@ -27,5 +27,8 @@ export function editorName() {
     if (getLocalStorage("editor") === "jetbrains") {
         return "intellij"
     }
+    if (getLocalStorage("editor") === "web") {
+        return "web"
+    }
     return null;
 }
