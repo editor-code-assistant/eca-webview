@@ -45,13 +45,13 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const pendingPrompts = useSelector((state: State) => state.chat.chats[chatId]?.pendingPrompts || []);
 
     useEffect(() => {
-        if (selectedModel === undefined && selectModel !== undefined) {
+        if (selectModel !== undefined) {
             setSelectedModel(selectModel);
         }
     }, [selectModel]);
 
     useEffect(() => {
-        if (selectedAgent === undefined && selectAgent !== undefined) {
+        if (selectAgent !== undefined) {
             setSelectedAgent(selectAgent);
         }
     }, [selectAgent]);
