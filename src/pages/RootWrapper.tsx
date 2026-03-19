@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, addContext, cleared, newChat, resetChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
+import { addContentReceived, addContext, cleared, newChat, resetChat, resetChats, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
@@ -111,6 +111,12 @@ const RootWrapper = () => {
     });
 
     useEffect(() => {
+        // Reset stale chat state before requesting fresh state from the bridge.
+        // The Redux store is a module-level singleton that persists across
+        // WebviewApp unmount/remount cycles (e.g. disconnect → reconnect).
+        // Without this reset, restoreChats() would replay messages on top of
+        // stale state, causing duplicates.
+        dispatch(resetChats());
         webviewSend('webview/ready', {});
     }, []);
 

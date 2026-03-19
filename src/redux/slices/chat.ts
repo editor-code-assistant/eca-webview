@@ -402,6 +402,12 @@ export const chatSlice = createSlice({
             // --- Normal (non-subagent) content ---
             const isNewChat = state.chats[chatId] === undefined;
 
+            // If this chatId is a known subagent but arrived without parentChatId
+            // (e.g. from chat:status-changed events), don't create a new chat tab.
+            if (isNewChat && state.subagentChatIdToToolCallId[chatId]) {
+                return;
+            }
+
             let chat;
             if (isNewChat) {
                 state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
