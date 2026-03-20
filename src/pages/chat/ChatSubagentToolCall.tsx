@@ -112,7 +112,7 @@ function chatSubagentToolCall(props: Props) {
     const dispatch = useEcaDispatch();
     const depth = props.depth ?? 0;
     const { agent, task, activity } = useMemo(() => parseAgentArgs(props.argumentsText), [props.argumentsText]);
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(false);
 
     const waitingApproval = props.manualApproval && props.status === 'run';
     const effectiveChatId = props.subagentChatId || props.chatId;
