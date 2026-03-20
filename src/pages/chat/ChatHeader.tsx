@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import { webviewSend } from '../../hooks';
 import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
 import { setTrust } from '../../redux/slices/server';
 import { State, useEcaDispatch } from '../../redux/store';
@@ -74,7 +75,9 @@ export const ChatHeader = memo(({ chats }: Props) => {
     };
 
     const toggleTrust = () => {
-        dispatch(setTrust(!trust));
+        const newTrust = !trust;
+        dispatch(setTrust(newTrust));
+        webviewSend('server/setTrust', newTrust);
     };
 
     const emptyChat = chats.find(c => c.id === 'EMPTY');

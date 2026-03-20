@@ -302,13 +302,12 @@ function chatToolCall(props: Props) {
         );
     }
 
-    // File change card — default open with diff
+    // File change card with diff
     if (props.details?.type === 'fileChange') {
         return (
             <ToolCallCard
                 props={props}
                 iconClass={iconClass}
-                defaultOpen={true}
                 headerContent={<FileChangeHeader props={props} dispatch={dispatch} />}
                 bodyContent={<FileChangeBody props={props} />}
                 approvalComp={approvalComp}

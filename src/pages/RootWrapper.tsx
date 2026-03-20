@@ -3,9 +3,9 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, addContext, cleared, newChat, resetChat, resetChats, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
+import { addContentReceived, addContext, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
-import { ServerStatus, setConfig, setWorkspaceFolders } from "../redux/slices/server";
+import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
 import { sendPromptToCurrentChat } from "../redux/thunks/chat";
 import { focusChanged } from "../redux/thunks/editor";
@@ -38,6 +38,10 @@ const RootWrapper = () => {
 
     useWebviewListener('server/setWorkspaceFolders', (workspaceFolders: WorkspaceFolder[]) => {
         dispatch(setWorkspaceFolders(workspaceFolders));
+    });
+
+    useWebviewListener('server/setTrust', (trust: boolean) => {
+        dispatch(setTrust(trust));
     });
 
     useWebviewListener('chat/contentReceived', (contentReceived: ChatContentReceivedParams) => {
@@ -104,6 +108,10 @@ const RootWrapper = () => {
 
     useWebviewListener('chat/createNewChat', () => {
         dispatch(newChat());
+    });
+
+    useWebviewListener('chat/selectChat', (chatId: string) => {
+        dispatch(selectChat(chatId));
     });
 
     useWebviewListener('chat/sendPromptToCurrentChat', (data: { prompt: string }) => {
