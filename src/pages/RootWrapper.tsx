@@ -86,6 +86,22 @@ const RootWrapper = () => {
         dispatch(resetChat(chatId));
     });
 
+    useWebviewListener('chat/statusChanged', (data: { chatId: string; status: string }) => {
+        if (data.status === 'idle') {
+            dispatch(addContentReceived({
+                chatId: data.chatId,
+                role: 'system',
+                content: { type: 'progress', state: 'finished' },
+            }));
+        } else if (data.status === 'running') {
+            dispatch(addContentReceived({
+                chatId: data.chatId,
+                role: 'system',
+                content: { type: 'progress', state: 'running', text: 'Running...' },
+            }));
+        }
+    });
+
     useWebviewListener('tool/serversUpdated', (mcps: ToolServerUpdatedParams) => {
         dispatch(setMcpServers(mcps));
     });

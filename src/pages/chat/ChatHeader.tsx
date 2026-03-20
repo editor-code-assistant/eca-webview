@@ -6,6 +6,7 @@ import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
 import { setTrust } from '../../redux/slices/server';
 import { State, useEcaDispatch } from '../../redux/store';
 import { deleteChat } from '../../redux/thunks/chat';
+import { editorName } from '../../util';
 import './ChatHeader.scss';
 
 interface Props {
@@ -81,9 +82,24 @@ export const ChatHeader = memo(({ chats }: Props) => {
     };
 
     const emptyChat = chats.find(c => c.id === 'EMPTY');
+    const isWeb = editorName() === 'web';
+    const selectedChatObj = chats.find(c => c.id === selectedChat);
+
+    const openSidebar = () => {
+        webviewSend('editor/toggleSidebar', {});
+    };
 
     return (
         <div className="chat-header">
+            {isWeb && selectedChatObj && (
+                <button className="web-chat-title-bar" onClick={openSidebar}>
+                    <i className="codicon codicon-comment web-chat-title-icon" />
+                    <span className="web-chat-title-label">
+                        {chatTitle(selectedChatObj)}
+                    </span>
+                    <i className="codicon codicon-chevron-down web-chat-title-chevron" />
+                </button>
+            )}
             <section className="chats scrollable">
                 {chats.map(chat => {
                     const isEmpty = chat.id === emptyChat?.id;
