@@ -299,6 +299,165 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
     }
 }
 
+/**
+ * Core content event processing logic, extracted so it can be shared
+ * between `addContentReceived` (single event) and `batchContentReceived`
+ * (bulk restore). Operates on the Immer draft state directly.
+ */
+function processContentEvent(state: ChatState, payload: ChatContentReceivedParams) {
+    const { chatId, parentChatId, role, content } = payload;
+
+    // --- Subagent content: route into parent chat's tool call ---
+    if (parentChatId) {
+        const mapping = state.subagentChatIdToToolCallId[chatId];
+        if (!mapping) return;
+
+        const parentChat = state.chats[mapping.parentChatId];
+        if (!parentChat) return;
+
+        const toolCallIndex = parentChat.messages.findIndex(
+            msg => msg.type === 'toolCall' && msg.id === mapping.toolCallId
+        );
+        if (toolCallIndex === -1) return;
+
+        const toolCall = parentChat.messages[toolCallIndex] as ChatMessageToolCall;
+        const msgs = toolCall.subagentMessages ? [...toolCall.subagentMessages] : [];
+
+        applyContentToMessages(msgs, role, content);
+
+        parentChat.messages[toolCallIndex] = { ...toolCall, subagentMessages: msgs };
+
+        // Update the parent tool call's details with step info from subagent tool calls
+        if (content.type === 'toolCallRunning' || content.type === 'toolCallRun') {
+            if (content.details?.type === 'subagent') {
+                const details = content.details as SubagentDetails;
+                if (details.step !== undefined && toolCall.details?.type === 'subagent') {
+                    (toolCall.details as SubagentDetails).step = details.step;
+                    (toolCall.details as SubagentDetails).maxSteps = details.maxSteps;
+                }
+            }
+        }
+
+        return;
+    }
+
+    // --- Normal (non-subagent) content ---
+    const isNewChat = state.chats[chatId] === undefined;
+
+    // If this chatId is a known subagent but arrived without parentChatId
+    // (e.g. from chat:status-changed events), don't create a new chat tab.
+    if (isNewChat && state.subagentChatIdToToolCallId[chatId]) {
+        return;
+    }
+
+    let chat;
+    if (isNewChat) {
+        state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
+        chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: defaultContexts, pendingPrompts: [] } as Chat;
+        state.selectedChat = chatId;
+    } else {
+        chat = state.chats[chatId];
+    }
+
+    // Register subagent mapping for spawn_agent tool calls.
+    // We register on all lifecycle events (including toolCallPrepare) because
+    // during chat resume the server may replay events grouped by chatId,
+    // so toolCalled can fire before the subagent's own content arrives.
+    if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
+        || content.type === 'toolCallRunning'
+        || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
+        if (content.details?.type === 'subagent') {
+            const details = content.details as SubagentDetails;
+            if (details.subagentChatId) {
+                state.subagentChatIdToToolCallId[details.subagentChatId] = {
+                    parentChatId: chatId,
+                    toolCallId: content.id,
+                };
+            }
+        }
+    }
+
+    // --- Task tool call: intercept and route to task state ---
+    if (isTaskToolCall(content)) {
+        switch (content.type) {
+            case 'toolCallPrepare': {
+                if (!chat.taskState) {
+                    chat.taskLoading = true;
+                }
+                break;
+            }
+            case 'toolCalled': {
+                if (content.details?.type === 'task') {
+                    const details = content.details as TaskDetails;
+                    if (details.tasks.length === 0) {
+                        chat.taskState = null;
+                    } else {
+                        chat.taskState = details;
+                    }
+                }
+                chat.taskLoading = false;
+                break;
+            }
+            case 'toolCallRun':
+            case 'toolCallRunning': {
+                // Suppress — don't add to messages
+                break;
+            }
+            case 'toolCallRejected': {
+                chat.taskLoading = false;
+                break;
+            }
+        }
+        state.chats[chatId] = chat;
+        return;
+    }
+
+    applyContentToMessages(chat.messages, role, content);
+
+    // Store subagentChatId on the tool call message for rendering.
+    // Must run after applyContentToMessages so the message exists.
+    if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
+        || content.type === 'toolCallRunning'
+        || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
+        if (content.details?.type === 'subagent') {
+            const details = content.details as SubagentDetails;
+            const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
+            if (existingIndex !== -1) {
+                const tool = chat.messages[existingIndex] as ChatMessageToolCall;
+                tool.subagentChatId = details.subagentChatId;
+                if (!tool.subagentMessages) {
+                    tool.subagentMessages = [];
+                }
+            }
+        }
+    }
+
+    switch (content.type) {
+        case 'progress': {
+            switch (content.state) {
+                case 'running': {
+                    chat.progress = content.text!;
+                    break;
+                }
+                case 'finished': {
+                    chat.progress = undefined;
+                    break;
+                }
+            }
+            break;
+        }
+        case 'usage': {
+            chat.usage = content;
+            break;
+        }
+        case 'metadata': {
+            chat.title = content.title;
+            break;
+        }
+    }
+    state.chats[chatId] = chat;
+}
+
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
@@ -364,157 +523,19 @@ export const chatSlice = createSlice({
             state.selectedChat = action.payload;
         },
         addContentReceived: (state, action) => {
-            const { chatId, parentChatId, role, content } = action.payload as ChatContentReceivedParams;
-
-            // --- Subagent content: route into parent chat's tool call ---
-            if (parentChatId) {
-                const mapping = state.subagentChatIdToToolCallId[chatId];
-                if (!mapping) return;
-
-                const parentChat = state.chats[mapping.parentChatId];
-                if (!parentChat) return;
-
-                const toolCallIndex = parentChat.messages.findIndex(
-                    msg => msg.type === 'toolCall' && msg.id === mapping.toolCallId
-                );
-                if (toolCallIndex === -1) return;
-
-                const toolCall = parentChat.messages[toolCallIndex] as ChatMessageToolCall;
-                const msgs = toolCall.subagentMessages ? [...toolCall.subagentMessages] : [];
-
-                applyContentToMessages(msgs, role, content);
-
-                parentChat.messages[toolCallIndex] = { ...toolCall, subagentMessages: msgs };
-
-                // Update the parent tool call's details with step info from subagent tool calls
-                if (content.type === 'toolCallRunning' || content.type === 'toolCallRun') {
-                    if (content.details?.type === 'subagent') {
-                        const details = content.details as SubagentDetails;
-                        if (details.step !== undefined && toolCall.details?.type === 'subagent') {
-                            (toolCall.details as SubagentDetails).step = details.step;
-                            (toolCall.details as SubagentDetails).maxSteps = details.maxSteps;
-                        }
-                    }
-                }
-
-                return;
+            processContentEvent(state, action.payload as ChatContentReceivedParams);
+        },
+        /**
+         * Process multiple content events in a single Immer draft.
+         * Used during chat restore to avoid hundreds of individual Redux
+         * dispatches (each creating a separate Immer draft + React render).
+         * A single batchContentReceived dispatch = one draft, one render.
+         */
+        batchContentReceived: (state, action) => {
+            const events = action.payload as ChatContentReceivedParams[];
+            for (const event of events) {
+                processContentEvent(state, event);
             }
-
-            // --- Normal (non-subagent) content ---
-            const isNewChat = state.chats[chatId] === undefined;
-
-            // If this chatId is a known subagent but arrived without parentChatId
-            // (e.g. from chat:status-changed events), don't create a new chat tab.
-            if (isNewChat && state.subagentChatIdToToolCallId[chatId]) {
-                return;
-            }
-
-            let chat;
-            if (isNewChat) {
-                state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
-                chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: defaultContexts, pendingPrompts: [] } as Chat;
-                state.selectedChat = chatId;
-            } else {
-                chat = state.chats[chatId];
-            }
-
-            // Register subagent mapping for spawn_agent tool calls.
-            // We register on all lifecycle events (including toolCallPrepare) because
-            // during chat resume the server may replay events grouped by chatId,
-            // so toolCalled can fire before the subagent's own content arrives.
-            if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
-                || content.type === 'toolCallRunning'
-                || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
-                if (content.details?.type === 'subagent') {
-                    const details = content.details as SubagentDetails;
-                    if (details.subagentChatId) {
-                        state.subagentChatIdToToolCallId[details.subagentChatId] = {
-                            parentChatId: chatId,
-                            toolCallId: content.id,
-                        };
-                    }
-                }
-            }
-
-            // --- Task tool call: intercept and route to task state ---
-            if (isTaskToolCall(content)) {
-                switch (content.type) {
-                    case 'toolCallPrepare': {
-                        if (!chat.taskState) {
-                            chat.taskLoading = true;
-                        }
-                        break;
-                    }
-                    case 'toolCalled': {
-                        if (content.details?.type === 'task') {
-                            const details = content.details as TaskDetails;
-                            if (details.tasks.length === 0) {
-                                chat.taskState = null;
-                            } else {
-                                chat.taskState = details;
-                            }
-                        }
-                        chat.taskLoading = false;
-                        break;
-                    }
-                    case 'toolCallRun':
-                    case 'toolCallRunning': {
-                        // Suppress — don't add to messages
-                        break;
-                    }
-                    case 'toolCallRejected': {
-                        chat.taskLoading = false;
-                        break;
-                    }
-                }
-                state.chats[chatId] = chat;
-                return;
-            }
-
-            applyContentToMessages(chat.messages, role, content);
-
-            // Store subagentChatId on the tool call message for rendering.
-            // Must run after applyContentToMessages so the message exists.
-            if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
-                || content.type === 'toolCallRunning'
-                || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
-                if (content.details?.type === 'subagent') {
-                    const details = content.details as SubagentDetails;
-                    const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
-                    if (existingIndex !== -1) {
-                        const tool = chat.messages[existingIndex] as ChatMessageToolCall;
-                        tool.subagentChatId = details.subagentChatId;
-                        if (!tool.subagentMessages) {
-                            tool.subagentMessages = [];
-                        }
-                    }
-                }
-            }
-
-            switch (content.type) {
-                case 'progress': {
-                    switch (content.state) {
-                        case 'running': {
-                            chat.progress = content.text!;
-                            break;
-                        }
-                        case 'finished': {
-                            chat.progress = undefined;
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case 'usage': {
-                    chat.usage = content;
-                    break;
-                }
-                case 'metadata': {
-                    chat.title = content.title;
-                    break;
-                }
-            }
-            state.chats[chatId] = chat;
         },
         setCursorFocus: (state, action) => {
             state.cursorFocus = action.payload as CursorFocus;
@@ -582,6 +603,7 @@ export const chatSlice = createSlice({
 export const {
     incRequestId,
     addContentReceived,
+    batchContentReceived,
     resetChat,
     clearChat,
     cleared,

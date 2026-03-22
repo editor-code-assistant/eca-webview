@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, addContext, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
+import { addContentReceived, batchContentReceived, addContext, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
 import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
@@ -60,6 +60,10 @@ const RootWrapper = () => {
         if (isMcpTool || anyWriteTool) {
             webviewSend('editor/refresh', {});
         }
+    });
+
+    useWebviewListener('chat/batchContentReceived', (events: ChatContentReceivedParams[]) => {
+        dispatch(batchContentReceived(events));
     });
 
     useWebviewListener('chat/queryContext', (result: ChatQueryContextResponse) => {
