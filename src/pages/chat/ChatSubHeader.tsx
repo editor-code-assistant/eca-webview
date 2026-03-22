@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
@@ -96,7 +97,8 @@ export function ChatSubHeader({ chatId }: Props) {
         webviewSend('editor/saveFile', { content: markdown, defaultName });
     }
 
-    const mcpServers = useSelector((state: State) => state.mcp.servers.filter((server) => server.type === 'mcp'));
+    const allServers = useSelector((state: State) => state.mcp.servers);
+    const mcpServers = useMemo(() => allServers.filter((server) => server.type === 'mcp'), [allServers]);
 
     const usage = useSelector((state: State) => state.chat.chats[chatId].usage);
     const usageStringFormat = useSelector((state: State) => state.server.config.usageStringFormat);
