@@ -324,6 +324,7 @@ export const chatSlice = createSlice({
         },
         clearChat: (state, action) => {
             const chatId = action.payload.chatId;
+            if (!state.chats[chatId]) return;
             state.chats[chatId].messages = [];
             state.chats[chatId].taskState = null;
             state.chats[chatId].taskLoading = false;
@@ -331,7 +332,7 @@ export const chatSlice = createSlice({
         cleared: (state, action) => {
             const chatId = action.payload.chatId;
             const isMessages = action.payload.messages;
-            if (isMessages) {
+            if (isMessages && state.chats[chatId]) {
                 state.chats[chatId].messages = [];
                 state.chats[chatId].taskState = null;
                 state.chats[chatId].taskLoading = false;
