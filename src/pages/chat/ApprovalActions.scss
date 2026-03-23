@@ -71,163 +71,167 @@
     }
 }
 
-// ——— Mobile swipe layout (hidden on desktop) ———
+// ——— Mobile swipe layout (hidden by default, only shown in eca-web) ———
 .approval-mobile {
     display: none;
 }
 
 // ——————————————————————————————————————————
-// Mobile overrides
+// Mobile overrides — scoped to eca-web only.
+// VS Code / IntelliJ always show the desktop
+// button layout regardless of panel width.
 // ——————————————————————————————————————————
-@media (max-width: 767px) {
-    .approval-actions {
-        padding: 0.5em 0.6em 0.6em 0.6em;
-    }
-
-    // Hide desktop row layout on mobile
-    .approval-desktop {
-        display: none;
-    }
-
-    // Show mobile swipe layout
-    .approval-mobile {
-        display: flex;
-        flex-direction: column;
-        gap: 0.6em;
-    }
-
-    // ——— Swipe container ———
-    .approval-swipe-container {
-        position: relative;
-        height: 52px;
-        border-radius: 0.5em;
-        overflow: hidden;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: pan-y;
-    }
-
-    // Underlay behind the pill — colored halves
-    .swipe-underlay {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        pointer-events: none;
-        border-radius: 0.5em;
-        overflow: hidden;
-    }
-
-    .swipe-indicator {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 0.4em;
-        font-size: 0.85em;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        padding: 0 1em;
-        will-change: opacity;
-
-        .codicon {
-            font-size: 1.15em;
-        }
-    }
-
-    .reject-indicator {
-        justify-content: flex-start;
-        background: linear-gradient(90deg, rgba(241, 76, 76, 0.35) 0%, rgba(241, 76, 76, 0.08) 100%);
-        color: var(--eca-error-fg, #f14c4c);
-    }
-
-    .approve-indicator {
-        justify-content: flex-end;
-        background: linear-gradient(270deg, rgba(115, 201, 145, 0.35) 0%, rgba(115, 201, 145, 0.08) 100%);
-        color: var(--eca-success-fg, #73c991);
-    }
-
-    // ——— Draggable pill ———
-    .swipe-pill {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 0.8em;
-        border-radius: 0.5em;
-        border: 1px solid var(--eca-base-border, #2a2a3e);
-        background: var(--eca-panel-bg, #1a1a2e);
-        cursor: grab;
-        touch-action: pan-y;
-        will-change: transform;
-        z-index: 1;
-
-        &:active {
-            cursor: grabbing;
-        }
-    }
-
-    .swipe-hint-left,
-    .swipe-hint-right {
-        display: flex;
-        align-items: center;
-        gap: 0.35em;
-        font-size: 0.8em;
-        font-weight: 500;
-        opacity: 0.55;
-        pointer-events: none;
-        white-space: nowrap;
-
-        .codicon {
-            font-size: 0.9em;
-        }
-    }
-
-    .swipe-hint-left {
-        color: var(--eca-error-fg, #f14c4c);
-    }
-
-    .swipe-hint-right {
-        color: var(--eca-success-fg, #73c991);
-    }
-
-    // Center label
-    .swipe-pill-label {
-        font-size: 0.75em;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        opacity: 0.3;
-        pointer-events: none;
-        color: var(--eca-fg, #e0e4ea);
-    }
-
-    // ——— Remember button below swipe ———
-    .mobile-remember-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4em;
-        width: 100%;
-        padding: 0.55em 0.8em;
-        border: 1px solid rgba(115, 201, 145, 0.2);
-        border-radius: 0.4em;
-        background: rgba(115, 201, 145, 0.06);
-        color: var(--eca-success-fg, #73c991);
-        font-size: 0.8em;
-        opacity: 0.7;
-        cursor: pointer;
-        transition: opacity 0.15s, background 0.15s, border-color 0.15s;
-
-        .codicon {
-            font-size: 0.9em;
-            opacity: 0.8;
+:root[data-editor="web"] {
+    @media (max-width: 767px) {
+        .approval-actions {
+            padding: 0.5em 0.6em 0.6em 0.6em;
         }
 
-        &:hover,
-        &:active {
-            opacity: 1;
-            background: rgba(115, 201, 145, 0.12);
-            border-color: rgba(115, 201, 145, 0.35);
+        // Hide desktop row layout on mobile web
+        .approval-desktop {
+            display: none;
+        }
+
+        // Show mobile swipe layout
+        .approval-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6em;
+        }
+
+        // ——— Swipe container ———
+        .approval-swipe-container {
+            position: relative;
+            height: 52px;
+            border-radius: 0.5em;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: pan-y;
+        }
+
+        // Underlay behind the pill — colored halves
+        .swipe-underlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            pointer-events: none;
+            border-radius: 0.5em;
+            overflow: hidden;
+        }
+
+        .swipe-indicator {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            font-size: 0.85em;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            padding: 0 1em;
+            will-change: opacity;
+
+            .codicon {
+                font-size: 1.15em;
+            }
+        }
+
+        .reject-indicator {
+            justify-content: flex-start;
+            background: linear-gradient(90deg, rgba(241, 76, 76, 0.35) 0%, rgba(241, 76, 76, 0.08) 100%);
+            color: var(--eca-error-fg, #f14c4c);
+        }
+
+        .approve-indicator {
+            justify-content: flex-end;
+            background: linear-gradient(270deg, rgba(115, 201, 145, 0.35) 0%, rgba(115, 201, 145, 0.08) 100%);
+            color: var(--eca-success-fg, #73c991);
+        }
+
+        // ——— Draggable pill ———
+        .swipe-pill {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0.8em;
+            border-radius: 0.5em;
+            border: 1px solid var(--eca-base-border, #2a2a3e);
+            background: var(--eca-panel-bg, #1a1a2e);
+            cursor: grab;
+            touch-action: pan-y;
+            will-change: transform;
+            z-index: 1;
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
+
+        .swipe-hint-left,
+        .swipe-hint-right {
+            display: flex;
+            align-items: center;
+            gap: 0.35em;
+            font-size: 0.8em;
+            font-weight: 500;
+            opacity: 0.55;
+            pointer-events: none;
+            white-space: nowrap;
+
+            .codicon {
+                font-size: 0.9em;
+            }
+        }
+
+        .swipe-hint-left {
+            color: var(--eca-error-fg, #f14c4c);
+        }
+
+        .swipe-hint-right {
+            color: var(--eca-success-fg, #73c991);
+        }
+
+        // Center label
+        .swipe-pill-label {
+            font-size: 0.75em;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.3;
+            pointer-events: none;
+            color: var(--eca-fg, #e0e4ea);
+        }
+
+        // ——— Remember button below swipe ———
+        .mobile-remember-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4em;
+            width: 100%;
+            padding: 0.55em 0.8em;
+            border: 1px solid rgba(115, 201, 145, 0.2);
+            border-radius: 0.4em;
+            background: rgba(115, 201, 145, 0.06);
+            color: var(--eca-success-fg, #73c991);
+            font-size: 0.8em;
+            opacity: 0.7;
+            cursor: pointer;
+            transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+
+            .codicon {
+                font-size: 0.9em;
+                opacity: 0.8;
+            }
+
+            &:hover,
+            &:active {
+                opacity: 1;
+                background: rgba(115, 201, 145, 0.12);
+                border-color: rgba(115, 201, 145, 0.35);
+            }
         }
     }
 }
