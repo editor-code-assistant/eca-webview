@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SubagentDetails, ToolCallOutput } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
@@ -124,6 +124,13 @@ function chatSubagentToolCall(props: Props) {
             msg => msg.type === 'toolCall' && msg.status === 'run' && msg.manualApproval
         );
     }, [props.subagentMessages]);
+
+    // Auto-expand when a child tool call requires approval so the user can see it
+    useEffect(() => {
+        if (hasChildPendingApproval) {
+            setExpanded(true);
+        }
+    }, [hasChildPendingApproval]);
 
     const rejectToolCall = () => {
         dispatch(toolCallReject({ chatId: effectiveChatId, toolCallId: props.toolCallId }));
