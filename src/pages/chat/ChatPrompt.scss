@@ -12,6 +12,16 @@
         box-shadow: inset 0 1px 0 0 var(--eca-link-fg);
     }
 
+    &.running {
+        border-top-color: var(--eca-warning-fg);
+        box-shadow: inset 0 1px 0 0 var(--eca-warning-fg);
+    }
+
+    &.waiting-approval {
+        border-top-color: var(--eca-approval-fg);
+        box-shadow: inset 0 1px 0 0 var(--eca-approval-fg);
+    }
+
     .field {
         width: 100%;
         background-color: var(--eca-input-bg);

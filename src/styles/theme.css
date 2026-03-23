@@ -22,6 +22,7 @@ html[data-editor="vscode"] {
 
   --eca-success-fg: var(--vscode-testing-iconPassed, #73c991);
   --eca-warning-fg: var(--vscode-testing-iconQueued, #cca700);
+  --eca-approval-fg: #e8850c;
   --eca-error-fg: var(--vscode-testing-iconFailed, #f14c4c);
 
   --eca-warning-message-fg: var(--vscode-activityWarningBadge-background, #cca700);
@@ -84,6 +85,7 @@ html[data-editor="intellij"] {
 
   --eca-success-fg: var(--intellij-success-fg, #73c991);
   --eca-warning-fg: var(--intellij-warning-fg, #cca700);
+  --eca-approval-fg: var(--intellij-approval-fg, #e8850c);
   --eca-error-fg: var(--intellij-error-fg, #f14c4c);
 
   --eca-warning-message-fg: var(--intellij-warning-message-fg, #cca700);

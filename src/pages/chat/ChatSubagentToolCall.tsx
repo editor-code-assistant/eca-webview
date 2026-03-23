@@ -5,6 +5,7 @@ import { ChatMessage } from '../../redux/slices/chat';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { useKeyPressedListener } from '../../hooks';
+import { ApprovalActions } from './ApprovalActions';
 import { ChatTextMessage } from './ChatTextMessage';
 import { ChatToolCall } from './ChatToolCall';
 import { ChatReason } from './ChatReason';
@@ -237,34 +238,12 @@ function chatSubagentToolCall(props: Props) {
                 )}
             </AnimatePresence>
 
-            <AnimatePresence>
-                {waitingApproval && (
-                    <motion.div
-                        className="approval-actions"
-                        initial={{ opacity: 0, scale: 0.96, height: 0 }}
-                        animate={{ opacity: 1, scale: 1, height: "auto" }}
-                        exit={{ opacity: 0, scale: 0.96, height: 0 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 28, opacity: { duration: 0.15 } }}
-                        style={{ overflow: "hidden" }}
-                    >
-                        <div className="approval-option">
-                            <button onClick={approveToolCall} className="approve-btn">Accept</button>
-                            <span className="approval-description">for this session</span>
-                            <span className="approval-shortcut">(Enter)</span>
-                        </div>
-                        <div className="approval-option">
-                            <button onClick={approveToolCallAndRemember} className="approve-remember-btn">Accept and remember</button>
-                            <span className="approval-description">for this session</span>
-                            <span className="approval-shortcut">(Shift + Enter)</span>
-                        </div>
-                        <div className="approval-option">
-                            <button onClick={rejectToolCall} className="reject-btn">Reject</button>
-                            <span className="approval-description">and tell ECA what to do differently</span>
-                            <span className="approval-shortcut">(Esc)</span>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <ApprovalActions
+                waitingApproval={waitingApproval}
+                onApprove={approveToolCall}
+                onApproveAndRemember={approveToolCallAndRemember}
+                onReject={rejectToolCall}
+            />
         </div>
     );
 }

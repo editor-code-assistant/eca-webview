@@ -42,6 +42,16 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [selectedAgent, setSelectedAgent] = useState<string>();
 
     const loading = useSelector((state: State) => state.chat.chats[chatId]?.progress != undefined);
+    const waitingApproval = useSelector((state: State) => {
+        const messages = state.chat.chats[chatId]?.messages ?? [];
+        return messages.some(msg => {
+            if (msg.type !== 'toolCall') return false;
+            if (msg.status === 'run' && msg.manualApproval) return true;
+            return msg.subagentMessages?.some(
+                sub => sub.type === 'toolCall' && sub.status === 'run' && sub.manualApproval
+            ) ?? false;
+        });
+    });
     const pendingPrompts = useSelector((state: State) => state.chat.chats[chatId]?.pendingPrompts || []);
 
     useEffect(() => {
@@ -232,7 +242,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const sendDisabled = !enabled || inputCompleting || !promptValue.trim();
 
     return (
-        <div className={`prompt-area${isFocused ? ' focused' : ''}`}>
+        <div className={['prompt-area', isFocused && 'focused', loading && 'running', waitingApproval && 'waiting-approval'].filter(Boolean).join(' ')}>
             <ChatContexts enabled={enabled} chatId={chatId} />
             <ChatCommands
                 input={inputRef.current}
