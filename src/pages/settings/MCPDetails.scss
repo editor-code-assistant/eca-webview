@@ -208,6 +208,24 @@
       }
     }
 
+    .disable-btn {
+      border-color: orange;
+      color: orange;
+
+      &:hover {
+        background-color: rgba(255, 165, 0, 0.1);
+      }
+    }
+
+    .enable-btn {
+      border-color: var(--eca-success-fg);
+      color: var(--eca-success-fg);
+
+      &:hover {
+        background-color: rgba(0, 180, 0, 0.1);
+      }
+    }
+
     // ── Body / detail sections ───────────────────────────────
     .server-body {
       border-top: 1px solid var(--eca-base-border);

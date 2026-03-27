@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
 import { MCPServerUpdatedParams, ToolServerUpdatedParams, ToolServerStatus } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
-import { connectServer, logoutServer, startServer, stopServer, updateServer } from '../../redux/thunks/mcp';
+import { connectServer, disableServer, enableServer, logoutServer, startServer, stopServer, updateServer } from '../../redux/thunks/mcp';
 import { Toggle } from '../components/Toggle';
 import { ToolTip } from '../components/ToolTip';
 import './MCPDetails.scss';
@@ -180,6 +180,7 @@ export function MCPDetails() {
                     const isMcp = server.type === 'mcp';
                     const stoppable = server.status === 'running' || server.status === 'starting';
                     const failed = server.status === 'failed';
+                    const disabled = server.status === 'disabled';
                     const requiresAuth = server.status === 'requires-auth';
                     const hasAuth = isMcp && server.hasAuth;
                     const prompts = isMcp ? server.prompts : undefined;
@@ -210,15 +211,27 @@ export function MCPDetails() {
                                             <i className="codicon codicon-sign-out"></i>
                                             Logout
                                         </button>}
+                                    {stoppable &&
+                                        <button className="action-btn disable-btn"
+                                            onClick={() => dispatch(disableServer({ name: server.name }))}>
+                                            <i className="codicon codicon-circle-slash"></i>
+                                            Disable
+                                        </button>}
                                     {requiresAuth
                                         ? <button className="action-btn connect-btn"
                                             onClick={() => dispatch(connectServer({ name: server.name }))}>
                                             <i className="codicon codicon-plug"></i>
                                             Connect
                                           </button>
-                                        : <Toggle
-                                            defaultChecked={stoppable}
-                                            onChange={(enabled) => changeServerStatus(enabled, server)} />}
+                                        : disabled
+                                            ? <button className="action-btn enable-btn"
+                                                onClick={() => dispatch(enableServer({ name: server.name }))}>
+                                                <i className="codicon codicon-check"></i>
+                                                Enable
+                                              </button>
+                                            : <Toggle
+                                                defaultChecked={stoppable}
+                                                onChange={(enabled) => changeServerStatus(enabled, server)} />}
                                 </div>
                             </div>
 

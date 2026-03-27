@@ -37,6 +37,20 @@ export const logoutServer = createAsyncThunk<void, { name: string }, ThunkApiTyp
     }
 );
 
+export const disableServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
+    "mcp/disableServer",
+    async ({ name }, {}) => {
+        webviewSend('mcp/disableServer', { name });
+    }
+);
+
+export const enableServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
+    "mcp/enableServer",
+    async ({ name }, {}) => {
+        webviewSend('mcp/enableServer', { name });
+    }
+);
+
 export const updateServer = createAsyncThunk<void, UpdateServerParams, ThunkApiType>(
     "mcp/updateServer",
     async (params) => {
