@@ -519,6 +519,18 @@ export const chatSlice = createSlice({
             state.chats = { ...state.chats, ...emptyStateChats };
             state.selectedChat = 'EMPTY';
         },
+        chatOpened: (state, action) => {
+            const { chatId, title } = action.payload;
+            state.chats[chatId] = {
+                id: chatId,
+                title: title,
+                lastRequestId: 0,
+                messages: [],
+                localId: state.chatLocalId++,
+                addedContexts: defaultContexts,
+                pendingPrompts: [],
+            } as Chat;
+        },
         selectChat: (state, action) => {
             state.selectedChat = action.payload;
         },
@@ -609,6 +621,7 @@ export const {
     cleared,
     resetChats,
     newChat,
+    chatOpened,
     setCursorFocus,
     selectChat,
     setContexts,
