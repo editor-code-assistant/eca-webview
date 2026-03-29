@@ -6,7 +6,6 @@ import { ChatMessage, clearChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
-import { editorOpenGlobalConfig } from '../../redux/thunks/editor';
 import { webviewSend } from '../../hooks';
 import { ChatTimeline } from './ChatTimeline';
 
@@ -83,8 +82,8 @@ export function ChatSubHeader({ chatId }: Props) {
         webviewSend('chat/clearChat', { chatId: chatId });
     }
 
-    const openConfig = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        dispatch(editorOpenGlobalConfig({}));
+    const openSettings = () => {
+        navigate(ROUTES.SETTINGS);
     }
 
     const chat = useSelector((state: State) => state.chat.chats[chatId]);
@@ -134,7 +133,7 @@ export function ChatSubHeader({ chatId }: Props) {
     return (
         <div className="chat-subheader">
             <div className="details">
-                <div data-tooltip-id="details-mcps" onClick={() => navigate(ROUTES.MCP_DETAILS)} className="mcps">
+                <div data-tooltip-id="details-mcps" onClick={() => navigate(ROUTES.SETTINGS)} className="mcps">
                     <span>MCPs </span>
                     {failed > 0 &&
                         <span className="failed">{failed}</span>}
@@ -174,7 +173,7 @@ export function ChatSubHeader({ chatId }: Props) {
                 <div className="action"><ChatTimeline chatId={chatId} /></div>
                 <div className="action"><i onClick={exportChat} className="codicon codicon-export" title="Export chat to Markdown"></i></div>
                 <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash" title="Clear chat messages"></i></div>
-                <div className="action"><i onClick={openConfig} className="codicon codicon-settings-gear" title="Open global config"></i></div>
+                <div className="action"><i onClick={openSettings} className="codicon codicon-settings-gear" title="Settings"></i></div>
             </div>
         </div>
     );

@@ -131,6 +131,22 @@ const RootWrapper = () => {
         respondWebviewRequest(data.requestId, data.value);
     });
 
+    useWebviewListener('providers/list', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('providers/login', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('providers/loginInput', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('providers/logout', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
     useWebviewListener('editor/saveClipboardImage', (data: { requestId: string, path: string }) => {
         respondWebviewRequest(data.requestId, { path: data.path });
     });
