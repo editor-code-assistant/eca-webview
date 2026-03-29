@@ -1,0 +1,50 @@
+.global-config-tab {
+  display: flex;
+  flex-direction: column;
+
+  .tab-description {
+    font-size: 0.85em;
+    color: var(--eca-input-placeholder-fg);
+    margin: 0 0 1.2em;
+
+    a {
+      color: var(--eca-link-fg);
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .config-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5em;
+  }
+
+  .open-config-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    background: none;
+    border: 1px solid var(--eca-link-fg);
+    color: var(--eca-link-fg);
+    border-radius: 0.4em;
+    padding: 0.45em 0.9em;
+    font-size: 0.88em;
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    .codicon { font-size: 1em; }
+
+    &:hover {
+      background-color: rgba(0, 120, 212, 0.1);
+    }
+  }
+
+  .config-path {
+    font-size: 0.78em;
+    font-family: monospace;
+    color: var(--eca-input-placeholder-fg);
+    opacity: 0.7;
+  }
+}

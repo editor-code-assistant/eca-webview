@@ -439,3 +439,60 @@ export interface McpConnectServerParams {
 export interface McpLogoutServerParams {
     name: string;
 }
+
+// Provider types
+
+export type ProviderAuthStatus = 'authenticated' | 'expiring' | 'expired' | 'unauthenticated' | 'local' | 'not-running';
+
+export interface ProviderAuth {
+    status: ProviderAuthStatus;
+    type?: 'oauth' | 'api-key';
+    source?: 'config' | 'login' | 'env';
+    mode?: string;
+    expiresAt?: number;
+    envVar?: string;
+}
+
+export interface LoginMethod {
+    key: string;
+    label: string;
+}
+
+export interface ProviderModel {
+    id: string;
+    capabilities: {
+        reason: boolean;
+        vision: boolean;
+        tools: boolean;
+        webSearch: boolean;
+    };
+    cost?: { input: number; output: number };
+    settings?: Record<string, any>;
+}
+
+export interface ProviderStatus {
+    id: string;
+    label?: string;
+    configured: boolean;
+    auth: ProviderAuth;
+    login?: { methods: LoginMethod[] };
+    models: ProviderModel[];
+    settings?: Record<string, any>;
+}
+
+export interface ProvidersListResult {
+    providers: ProviderStatus[];
+}
+
+export interface InputField {
+    key: string;
+    label: string;
+    type: 'secret' | 'text';
+}
+
+export type LoginAction =
+    | { action: 'choose-method'; methods: LoginMethod[] }
+    | { action: 'authorize'; url: string; message: string; fields?: InputField[] }
+    | { action: 'device-code'; url: string; code: string; message: string }
+    | { action: 'input'; fields: InputField[] }
+    | { action: 'done' };

@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { serverSlice } from "./slices/server";
 import { mcpSlice } from "./slices/mcp";
+import { providersSlice } from "./slices/providers";
 import { useDispatch } from "react-redux";
 import { chatSlice } from "./slices/chat";
 
@@ -8,6 +9,7 @@ const reducers = combineReducers({
     mcp: mcpSlice.reducer,
     server: serverSlice.reducer,
     chat: chatSlice.reducer,
+    providers: providersSlice.reducer,
 });
 
 const setupStore = () => {

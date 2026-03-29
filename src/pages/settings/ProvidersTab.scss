@@ -1,0 +1,199 @@
+.providers-tab {
+  display: flex;
+  flex-direction: column;
+
+  .tab-description {
+    font-size: 0.85em;
+    color: var(--eca-input-placeholder-fg);
+    margin: 0 0 0.6em;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2em 0;
+    gap: 0.5em;
+    opacity: 0.6;
+
+    .codicon {
+      font-size: 2.5em;
+      margin-bottom: 0.2em;
+    }
+
+    p { margin: 0; font-size: 0.95em; }
+  }
+
+  .section-divider {
+    font-size: 0.75em;
+    color: var(--eca-input-placeholder-fg);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    padding: 0.8em 0 0.4em;
+    border-top: 1px solid var(--eca-base-border);
+    margin-top: 0.6em;
+  }
+
+  .provider-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .provider-card {
+    background-color: var(--eca-input-bg);
+    border: 1px solid transparent;
+    border-radius: 0.5em;
+    transition: border-color 0.15s;
+
+    .provider-header {
+      display: flex;
+      align-items: center;
+      padding: 0.55em 0.7em;
+      gap: 0.5em;
+    }
+
+    .provider-identity {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .status-dot {
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.authenticated { background-color: var(--eca-success-fg); }
+      &.local { background-color: var(--eca-link-fg); }
+      &.unauthenticated { background-color: var(--eca-input-placeholder-fg); }
+    }
+
+    .provider-name {
+      font-weight: 600;
+      font-size: 0.95em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .auth-status {
+      font-size: 0.78em;
+      white-space: nowrap;
+
+      &.authenticated { color: var(--eca-success-fg); }
+      &.local { color: var(--eca-link-fg); }
+      &.unauthenticated { color: var(--eca-input-placeholder-fg); }
+    }
+
+    .provider-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+      background: none;
+      border: 1px solid var(--eca-base-border);
+      color: var(--eca-input-fg);
+      border-radius: 0.3em;
+      padding: 0.2em 0.55em;
+      font-size: 0.78em;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.15s, background-color 0.15s;
+      white-space: nowrap;
+
+      .codicon { font-size: 0.9em; }
+      &:hover { opacity: 1; background-color: var(--eca-base-hover); }
+      &:disabled { opacity: 0.5; cursor: default; }
+    }
+
+    .login-btn {
+      border-color: var(--eca-link-fg);
+      color: var(--eca-link-fg);
+      &:hover:not(:disabled) { background-color: rgba(0, 120, 212, 0.1); }
+    }
+
+    .provider-body {
+      border-top: 1px solid var(--eca-base-border);
+      padding: 0.4em 0.7em 0.5em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+    }
+
+    .auth-info {
+      font-size: 0.78em;
+      color: var(--eca-input-placeholder-fg);
+    }
+
+    .models-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+    }
+
+    .models-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+      background: none;
+      border: none;
+      color: var(--eca-input-placeholder-fg);
+      font-size: 0.8em;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+
+      &:hover { color: var(--eca-input-fg); }
+
+      .codicon { font-size: 0.9em; }
+    }
+
+    .models-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2em;
+      padding-left: 0.3em;
+    }
+
+    .model-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      padding: 0.15em 0.4em;
+      border-radius: 0.3em;
+      font-size: 0.82em;
+    }
+
+    .model-name {
+      font-family: monospace;
+      opacity: 0.85;
+    }
+
+    .model-caps {
+      display: flex;
+      gap: 0.25em;
+    }
+
+    .cap-badge {
+      font-size: 0.7em;
+      padding: 0.05em 0.35em;
+      border-radius: 0.3em;
+      background-color: var(--eca-panel-bg);
+      color: var(--eca-input-placeholder-fg);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+  }
+}

@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
-import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
+import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
 import { setMcpServers } from "../redux/slices/mcp";
+import { updateProvider } from "../redux/slices/providers";
 import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
 import { useEcaDispatch } from "../redux/store";
 import { sendPromptToCurrentChat } from "../redux/thunks/chat";
@@ -116,6 +117,10 @@ const RootWrapper = () => {
 
     useWebviewListener('config/updated', (config: { [key: string]: any }) => {
         dispatch(setConfig(config));
+    });
+
+    useWebviewListener('providers/updated', (provider: ProviderStatus) => {
+        dispatch(updateProvider(provider));
     });
 
     useWebviewListener('editor/focusChanged', (focus: any) => {
