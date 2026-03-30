@@ -1,8 +1,8 @@
-import { memo, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useKeyPressedListener } from '../../hooks';
+import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
 import { FileChangeDetails, JsonOutputsDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
 import { EcaDispatch, useEcaDispatch } from '../../redux/store';
@@ -40,13 +40,16 @@ function ToolCallCard({ props, iconClass, defaultOpen, headerContent, bodyConten
     approvalComp: React.ReactNode,
 }) {
     const [expanded, setExpanded] = useState(defaultOpen ?? false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const collapse = () => setExpanded(false);
+    const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
     const isActive = props.status === 'preparing' || props.status === 'run' || props.status === 'running';
 
     const toggleExpanded = () => setExpanded(!expanded);
 
     return (
-        <div className={`tool-call-card ${isActive ? 'active' : ''} ${props.status}`}>
-            <div className="tool-call-card-header" onClick={toggleExpanded}>
+        <div className={`tool-call-card ${isActive ? 'active' : ''} ${props.status}`} ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+            <div className="tool-call-card-header" onClick={toggleExpanded} data-collapsible-header>
                 <motion.i
                     className="chevron codicon codicon-chevron-right"
                     animate={{ rotate: expanded ? 90 : 0 }}

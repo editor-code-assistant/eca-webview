@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State } from '../../redux/store';
 import { Task } from '../../protocol';
+import { useBackgroundCollapse } from '../../hooks';
 import './ChatTask.scss';
 
 interface Props {
@@ -32,10 +33,13 @@ export function ChatTask({ chatId }: Props) {
     const labelText = activeSummary ?? (inProgressTask?.subject || '') ;
 
     const toggle = () => setExpanded(prev => !prev);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const collapse = () => setExpanded(false);
+    const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     return (
-        <div className="chat-task">
-            <div className="chat-task-header" onClick={toggle}>
+        <div className="chat-task" ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+            <div className="chat-task-header" data-collapsible-header onClick={toggle}>
                 <motion.i
                     className="codicon codicon-chevron-right chat-task-chevron"
                     animate={{ rotate: expanded ? 90 : 0 }}

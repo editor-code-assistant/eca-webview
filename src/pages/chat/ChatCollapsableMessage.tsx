@@ -1,5 +1,6 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBackgroundCollapse } from '../../hooks';
 import './ChatCollapsableMessage.scss';
 
 interface Props {
@@ -11,14 +12,17 @@ interface Props {
 
 export const ChatCollapsableMessage = memo(({ header, content, className, defaultOpen }: Props) => {
     const [open, setOpen] = useState(defaultOpen || false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const collapse = () => setOpen(false);
+    const { onMouseDown, onMouseUp } = useBackgroundCollapse(open, collapse, cardRef);
 
     const toggleOpen = (_event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         setOpen(!open);
     }
 
     return (
-        <div className={`collapsable ${open ? 'open' : ''} ${className}`}>
-            <div onClick={toggleOpen} className="header">
+        <div ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={`collapsable ${open ? 'open' : ''} ${className}`}>
+            <div data-collapsible-header onClick={toggleOpen} className="header">
                 <motion.i
                     className="chrevron codicon codicon-chevron-right"
                     animate={{ rotate: open ? 90 : 0 }}

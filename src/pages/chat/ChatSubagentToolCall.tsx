@@ -1,10 +1,10 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SubagentDetails, ToolCallOutput } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
-import { useKeyPressedListener } from '../../hooks';
+import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
 import { ApprovalActions } from './ApprovalActions';
 import { ChatTextMessage } from './ChatTextMessage';
 import { ChatToolCall } from './ChatToolCall';
@@ -114,6 +114,9 @@ function chatSubagentToolCall(props: Props) {
     const depth = props.depth ?? 0;
     const { agent, task, activity } = useMemo(() => parseAgentArgs(props.argumentsText), [props.argumentsText]);
     const [expanded, setExpanded] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const collapse = () => setExpanded(false);
+    const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     const waitingApproval = props.manualApproval && props.status === 'run';
     const effectiveChatId = props.subagentChatId || props.chatId;
@@ -201,10 +204,14 @@ function chatSubagentToolCall(props: Props) {
 
     return (
         <div
+            ref={cardRef}
+            data-collapsible
             className={`subagent-card depth-${Math.min(depth, 4)} ${isActive ? 'active' : ''} ${props.status}`}
             style={{ '--subagent-depth': depth } as React.CSSProperties}
+            onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
         >
-            <div className="subagent-card-header" onClick={toggleExpanded}>
+            <div className="subagent-card-header" data-collapsible-header onClick={toggleExpanded}>
                 <motion.i
                     className="chevron codicon codicon-chevron-right"
                     animate={{ rotate: expanded ? 90 : 0 }}

@@ -94,6 +94,7 @@
     // Body
     .tool-call-card-body {
         padding: 0 0.6em 0.4em 1.6em;
+        cursor: pointer;
 
         .args {
             white-space: pre-wrap;

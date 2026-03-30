@@ -1,6 +1,7 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import './ChatReason.scss';
+import { useBackgroundCollapse } from '../../hooks';
 import { ChatTime } from "./ChatTime";
 import { MarkdownContent } from "./MarkdownContent";
 
@@ -21,9 +22,13 @@ function chatReason({ id, status, content, totalTimeMs }: Props) {
         if (content) setExpanded(!expanded);
     };
 
+    const cardRef = useRef<HTMLDivElement>(null);
+    const collapse = () => setExpanded(false);
+    const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
+
     return (
-        <div className={`reason-card ${isDone ? 'done' : 'active'}`}>
-            <div className="reason-card-header" onClick={toggleExpanded}>
+        <div className={`reason-card ${isDone ? 'done' : 'active'}`} ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+            <div className="reason-card-header" data-collapsible-header onClick={toggleExpanded}>
                 {content && (
                     <motion.i
                         className="chevron codicon codicon-chevron-right"
