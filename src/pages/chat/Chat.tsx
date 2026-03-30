@@ -45,8 +45,8 @@ export function Chat() {
             {!running &&
                 <div className="loading">
                     <div className="content">
-                        <p>Waiting for server to start... </p>
-                        <img className="image" src={`${window.mediaUrl}/logo.png`} />
+                        <img className="image" src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
+                        <p>Waiting for server to start…</p>
                     </div>
                 </div>
             }
@@ -54,10 +54,14 @@ export function Chat() {
             <ChatMessages chatId={currentChatId}>
                 {running && (
                     <div className="welcome-message">
-                        <MarkdownContent content={welcomeMessage} />
-                        <div className="image">
-                            <img src={`${window.mediaUrl}/logo.png`} />
+                        <div className="welcome-logo">
+                            <img src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
                         </div>
+                        {welcomeMessage && (
+                            <div className="welcome-content">
+                                <MarkdownContent content={welcomeMessage} />
+                            </div>
+                        )}
                     </div>)
                 }
             </ChatMessages>

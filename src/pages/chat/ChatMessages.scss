@@ -6,4 +6,11 @@
     padding: 0.2em 0.4em;
     padding-bottom: 1.2em;
     gap: 0.6em;
+    min-height: 0;
+
+    /* When only the welcome-message child is present, center it */
+    &:has(> .welcome-message:only-child) {
+        justify-content: center;
+        align-items: center;
+    }
 }
