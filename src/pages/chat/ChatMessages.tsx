@@ -1,9 +1,11 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { ChatMessage } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { rollbackChat } from '../../redux/thunks/chat';
+import { MessageErrorFallback, captureComponentStack } from '../components/ErrorFallback';
 import { ChatHook } from './ChatHook';
 import './ChatMessages.scss';
 import { ChatReason } from './ChatReason';
@@ -114,7 +116,9 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                         animate="visible"
                         transition={messageTransition}
                     >
-                        {renderMessage()}
+                        <ErrorBoundary FallbackComponent={MessageErrorFallback} onError={captureComponentStack}>
+                            {renderMessage()}
+                        </ErrorBoundary>
                     </motion.div>
                 );
             })}

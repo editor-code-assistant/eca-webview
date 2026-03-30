@@ -1,0 +1,215 @@
+/* --------------------------------------------------------
+   Error Fallback — Shared base + level-specific overrides
+   Uses VS Code CSS variables for native look & feel.
+   -------------------------------------------------------- */
+
+.error-fallback {
+    font-family: var(--vscode-font-family);
+    color: var(--vscode-foreground);
+
+    &__icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--vscode-errorForeground, #f48771);
+    }
+
+    &__title {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    &__description {
+        margin: 0 0 0.75rem;
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    &__details {
+        max-width: 100%;
+        margin: 0 0 1rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        background: var(--vscode-textCodeBlock-background, rgba(255, 255, 255, 0.05));
+        font-size: 0.8rem;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow: auto;
+        max-height: 120px;
+        opacity: 0.7;
+    }
+
+    &__button-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    &__action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.85rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        background: var(--vscode-button-background);
+        color: var(--vscode-button-foreground);
+
+        &:hover {
+            background: var(--vscode-button-hoverBackground);
+        }
+
+        &:focus-visible {
+            outline: 1px solid var(--vscode-focusBorder);
+            outline-offset: 2px;
+        }
+
+        &--secondary {
+            background: var(--vscode-button-secondaryBackground, rgba(255, 255, 255, 0.1));
+            color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
+
+            &:hover {
+                background: var(--vscode-button-secondaryHoverBackground, rgba(255, 255, 255, 0.15));
+            }
+        }
+    }
+
+    /* ---- inline variants (message / markdown) ---- */
+
+    &__inline-icon {
+        color: var(--vscode-errorForeground, #f48771);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+    }
+
+    &__inline-text {
+        font-size: 0.82rem;
+        opacity: 0.75;
+    }
+
+    &__inline-action {
+        background: none;
+        border: none;
+        color: var(--vscode-foreground);
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.82rem;
+        opacity: 0.6;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+            opacity: 1;
+            background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.1));
+        }
+    }
+}
+
+/* =====================================================
+   Error Details — collapsible stack trace + copy button
+   ===================================================== */
+.error-details {
+    &--block {
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.35rem;
+        justify-content: center;
+    }
+
+    &__inline-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.15rem;
+        margin-left: auto;
+    }
+
+    &__stack {
+        margin-top: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        background: var(--vscode-textCodeBlock-background, rgba(255, 255, 255, 0.05));
+        font-size: 0.75rem;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow: auto;
+        max-height: 250px;
+        opacity: 0.7;
+        text-align: left;
+        scrollbar-width: thin;
+
+        /* Full-width: flows below the parent flex row via flex-wrap */
+        &--full-width {
+            flex-basis: 100%;
+            margin-top: 0.35rem;
+        }
+    }
+}
+
+/* =====================================================
+   App-level: centred full-panel
+   ===================================================== */
+.error-fallback--app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    padding: 2rem;
+}
+
+/* =====================================================
+   Route-level: centred but lighter weight
+   ===================================================== */
+.error-fallback--route {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    padding: 2rem;
+}
+
+/* =====================================================
+   Per-message: subtle inline bar
+   ===================================================== */
+.error-fallback--message {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    margin: 0.25rem 0;
+    border-radius: 4px;
+    border-left: 3px solid var(--vscode-errorForeground, #f48771);
+    background: var(--vscode-textCodeBlock-background, rgba(255, 255, 255, 0.04));
+    position: relative;
+}
+
+/* =====================================================
+   Markdown: inline warning bar
+   ===================================================== */
+.error-fallback--markdown {
+    &__header {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 4px;
+        background: var(--vscode-textCodeBlock-background, rgba(255, 255, 255, 0.04));
+        border-left: 3px solid var(--vscode-editorWarning-foreground, #cca700);
+        position: relative;
+    }
+}

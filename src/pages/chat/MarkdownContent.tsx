@@ -1,8 +1,10 @@
+import { ErrorBoundary } from 'react-error-boundary';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import { webviewSend } from '../../hooks';
+import { MarkdownErrorFallback, captureComponentStack } from '../components/ErrorFallback';
 
 interface Props {
     content?: string,
@@ -18,6 +20,7 @@ export function MarkdownContent({ content, codeClassName }: Props) {
     };
 
     return (
+        <ErrorBoundary FallbackComponent={MarkdownErrorFallback} onError={captureComponentStack}>
         <Markdown
             remarkPlugins={[remarkGfm]}
             children={content}
@@ -83,5 +86,6 @@ export function MarkdownContent({ content, codeClassName }: Props) {
                 }
             }}
         />
+        </ErrorBoundary>
     );
 }

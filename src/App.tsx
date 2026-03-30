@@ -1,6 +1,8 @@
+import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import Chat from "./pages";
+import { AppErrorFallback, RouteErrorFallback, captureComponentStack } from "./pages/components/ErrorFallback";
 import RootWrapper from "./pages/RootWrapper";
 import { MCPDetails } from "./pages/settings/MCPDetails";
 import { Settings } from "./pages/settings/Settings";
@@ -16,7 +18,7 @@ const router = createMemoryRouter([
     {
         path: ROUTES.CHAT,
         element: <RootWrapper />,
-        /* errorElement: <Error />, */
+        errorElement: <RouteErrorFallback />,
         children: [
             {
                 path: "/index.html",
@@ -41,7 +43,9 @@ const router = createMemoryRouter([
 function App() {
     return (
         <Provider store={store}>
-            <RouterProvider router={router} />
+            <ErrorBoundary FallbackComponent={AppErrorFallback} onError={captureComponentStack}>
+                <RouterProvider router={router} />
+            </ErrorBoundary>
         </Provider>
     );
 }
