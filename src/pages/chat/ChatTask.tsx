@@ -15,6 +15,9 @@ export function ChatTask({ chatId }: Props) {
 
     const taskState = useSelector((state: State) => state.chat.chats[chatId]?.taskState);
     const taskLoading = useSelector((state: State) => state.chat.chats[chatId]?.taskLoading);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const collapse = () => setExpanded(false);
+    const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     if (!taskState && !taskLoading) {
         return null;
@@ -33,9 +36,6 @@ export function ChatTask({ chatId }: Props) {
     const labelText = activeSummary ?? (inProgressTask?.subject || '') ;
 
     const toggle = () => setExpanded(prev => !prev);
-    const cardRef = useRef<HTMLDivElement>(null);
-    const collapse = () => setExpanded(false);
-    const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     return (
         <div className="chat-task" ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
