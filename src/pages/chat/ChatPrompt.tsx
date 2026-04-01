@@ -2,8 +2,8 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
-import { sendPrompt } from "../../redux/thunks/chat";
-import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory } from "../../redux/slices/chat";
+import { sendPrompt, steerPrompt } from "../../redux/thunks/chat";
+import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
@@ -53,6 +53,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         });
     });
     const pendingPrompts = useSelector((state: State) => state.chat.chats[chatId]?.pendingPrompts || []);
+    const steerMessage = useSelector((state: State) => state.chat.chats[chatId]?.steerMessage);
 
     useEffect(() => {
         if (selectModel !== undefined) {
@@ -82,11 +83,23 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
             setHistoryIndex(-1);
             setDraftPrompt('');
             if (loading) {
-                dispatch(enqueuePendingPrompt({ chatId, prompt }));
+                dispatch(steerPrompt({ chatId, message: prompt }));
+                dispatch(setSteerMessage({ chatId, message: prompt }));
             } else {
                 dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
             }
             setPromptValue('')
+        }
+    }
+
+    const queuePromptValue = () => {
+        const prompt = promptValue.trim();
+        if (prompt && loading) {
+            dispatch(pushPromptHistory(prompt));
+            setHistoryIndex(-1);
+            setDraftPrompt('');
+            dispatch(enqueuePendingPrompt({ chatId, prompt }));
+            setPromptValue('');
         }
     }
 
@@ -112,6 +125,11 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const variantOptions = ['No variant', ...[...variants].sort()];
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && e.ctrlKey && enabled) {
+            queuePromptValue();
+            e.preventDefault();
+            return;
+        }
         if (e.key === "Enter" && !e.shiftKey && enabled) {
             sendPromptValue();
             e.preventDefault();
@@ -294,6 +312,12 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                         title="Select variant"
                     />
                 </div>
+            )}
+            {steerMessage && (
+                <div className="steer-indicator">Steering: {steerMessage.length > 40 ? steerMessage.substring(0, 40) + '...' : steerMessage}</div>
+            )}
+            {pendingPrompts.length > 0 && (
+                <div className="queue-indicator">Queued: {pendingPrompts.length} message{pendingPrompts.length > 1 ? 's' : ''}</div>
             )}
             <div className="spacing"></div>
             <div className="send">

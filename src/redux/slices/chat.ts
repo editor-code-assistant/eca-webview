@@ -64,6 +64,7 @@ export interface Chat {
     addedContexts: ChatPreContext[],
     usage?: ChatUsage,
     pendingPrompts: string[],
+    steerMessage?: string,
     taskState?: TaskDetails | null,
     taskLoading?: boolean,
 }
@@ -414,6 +415,11 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
 
     applyContentToMessages(chat.messages, role, content);
 
+    // Clear steer message when server echoes back a user message (steer consumed)
+    if (content.type === 'text' && role === 'user' && chat.steerMessage) {
+        chat.steerMessage = undefined;
+    }
+
     // Store subagentChatId on the tool call message for rendering.
     // Must run after applyContentToMessages so the message exists.
     if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
@@ -441,6 +447,11 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
                 }
                 case 'finished': {
                     chat.progress = undefined;
+                    // Merge unconsumed steer into pending prompts queue
+                    if (chat.steerMessage) {
+                        chat.pendingPrompts.unshift(chat.steerMessage);
+                        chat.steerMessage = undefined;
+                    }
                     break;
                 }
             }
@@ -591,6 +602,22 @@ export const chatSlice = createSlice({
                 chat.pendingPrompts.shift();
             }
         },
+        setSteerMessage: (state, action) => {
+            const { chatId, message } = action.payload;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.steerMessage = chat.steerMessage
+                    ? chat.steerMessage + '\n' + message
+                    : message;
+            }
+        },
+        clearSteerMessage: (state, action) => {
+            const chatId = action.payload;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.steerMessage = undefined;
+            }
+        },
         pushPromptHistory: (state, action) => {
             const prompt = action.payload as string;
             // Avoid consecutive duplicates
@@ -631,6 +658,8 @@ export const {
     setFiles,
     enqueuePendingPrompt,
     dequeuePendingPrompt,
+    setSteerMessage,
+    clearSteerMessage,
     pushPromptHistory,
     renameChat,
 } = chatSlice.actions

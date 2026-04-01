@@ -68,6 +68,13 @@ export const stopPrompt = createAsyncThunk<void, { chatId: string }, ThunkApiTyp
     }
 );
 
+export const steerPrompt = createAsyncThunk<void, { chatId: string, message: string }, ThunkApiType>(
+    "chat/steerPrompt",
+    async ({ chatId, message }, _) => {
+        webviewSend('chat/promptSteer', { chatId, message });
+    }
+);
+
 export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiType>(
     "chat/delete",
     async ({ chatId }, { dispatch }) => {

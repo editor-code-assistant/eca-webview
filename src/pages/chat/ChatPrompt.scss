@@ -51,6 +51,24 @@
         flex-wrap: wrap;
     }
 
+    .steer-indicator, .queue-indicator {
+        font-size: 11px;
+        font-style: italic;
+        padding: 2px 8px;
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .steer-indicator {
+        color: var(--vscode-editorInfo-foreground, #3794ff);
+    }
+
+    .queue-indicator {
+        color: var(--vscode-descriptionForeground, #888);
+    }
+
     .spacing {
         margin-left: auto;
     }
