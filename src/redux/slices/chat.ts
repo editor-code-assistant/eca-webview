@@ -46,7 +46,13 @@ interface ChatMessageHook {
     error?: string,
 }
 
-export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall | ChatMessageHook;
+interface ChatMessageFlag {
+    type: 'flag',
+    text: string,
+    contentId: string,
+}
+
+export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall | ChatMessageHook | ChatMessageFlag;
 
 interface CursorPreContext {
     type: 'cursor';
@@ -294,6 +300,14 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
                 newHook.error = content.error;
                 messages[existingIndex] = newHook;
             }
+            break;
+        }
+        case 'flag': {
+            messages.push({
+                type: 'flag',
+                text: content.text,
+                contentId: content.contentId,
+            });
             break;
         }
         // progress, usage, metadata, url are not message-level — handled separately
@@ -636,6 +650,15 @@ export const chatSlice = createSlice({
                 chat.title = title;
             }
         },
+        removeFlagMessage: (state, action) => {
+            const { chatId, contentId } = action.payload;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.messages = chat.messages.filter(
+                    msg => !(msg.type === 'flag' && msg.contentId === contentId)
+                );
+            }
+        },
     },
 });
 
@@ -662,4 +685,5 @@ export const {
     clearSteerMessage,
     pushPromptHistory,
     renameChat,
+    removeFlagMessage,
 } = chatSlice.actions

@@ -140,7 +140,8 @@ export type ChatContent =
     | ChatReasonFinishedContent
     | ChatHookActionStartedContent 
     | ChatHookActionFinishedContent 
-    | ChatMetadataContent;
+    | ChatMetadataContent
+    | ChatFlagContent;
 
 interface ChatTextContent {
     type: 'text';
@@ -321,6 +322,12 @@ interface ChatHookActionFinishedContent {
 interface ChatMetadataContent {
     type: 'metadata';
     title?: string;
+}
+
+interface ChatFlagContent {
+    type: 'flag';
+    text: string;
+    contentId: string;
 }
 
 export interface ChatQueryContextParams {

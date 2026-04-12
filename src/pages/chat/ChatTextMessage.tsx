@@ -6,6 +6,7 @@ interface Props {
     role: string,
     text: string,
     onRollbackClicked?: () => void;
+    onAddFlagClicked?: () => void;
     showRollback?: boolean;
 }
 
@@ -42,7 +43,7 @@ function preprocessUserMessage(text: string): string {
     }).join('');
 }
 
-export const ChatTextMessage = memo(({ role, text, onRollbackClicked, showRollback = true }: Props) => {
+export const ChatTextMessage = memo(({ role, text, onRollbackClicked, onAddFlagClicked, showRollback = true }: Props) => {
     const processedText = useMemo(() => role === 'user' ? preprocessUserMessage(text) : text, [role, text]);
 
     if (role === 'system') {
@@ -59,6 +60,11 @@ export const ChatTextMessage = memo(({ role, text, onRollbackClicked, showRollba
                 <div className="user-message-content">
                     <MarkdownContent content={processedText} />
                 </div>
+                {showRollback && onAddFlagClicked && (
+                    <button onClick={onAddFlagClicked} className="rollback-btn" title="Add flag after this message">
+                        <i className="codicon codicon-bookmark" />
+                    </button>
+                )}
                 {showRollback && (
                     <button onClick={onRollbackClicked} className="rollback-btn" title="Rollback to this message">
                         <i className="codicon codicon-discard" />

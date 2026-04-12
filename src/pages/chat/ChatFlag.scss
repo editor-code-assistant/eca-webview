@@ -1,0 +1,53 @@
+.flag-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.3em 0.6em;
+    border-left: 2px solid var(--eca-warning-message-fg, #cca700);
+    border-radius: 0 0.3em 0.3em 0;
+    background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 94%, var(--eca-warning-message-fg, #cca700) 6%);
+    font-size: 0.85em;
+
+    .flag-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        opacity: 0.85;
+    }
+
+    .flag-actions {
+        display: flex;
+        gap: 0.15em;
+        flex-shrink: 0;
+        opacity: 0;
+        transition: opacity 0.15s;
+    }
+
+    &:hover .flag-actions {
+        opacity: 1;
+    }
+
+    .flag-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--eca-fg);
+        opacity: 0.5;
+        padding: 0.1em 0.25em;
+        border-radius: 0.2em;
+        font-size: 0.8em;
+        line-height: 1;
+        transition: opacity 0.1s, background 0.1s;
+
+        &:hover {
+            opacity: 1;
+            background-color: var(--eca-base-hover);
+        }
+    }
+
+    .flag-btn-remove:hover {
+        color: var(--eca-error-fg, #f14c4c);
+    }
+}

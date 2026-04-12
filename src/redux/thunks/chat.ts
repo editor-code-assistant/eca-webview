@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend } from "../../hooks";
 import { ChatContext } from "../../protocol";
-import { ChatPreContext, CursorFocus, incRequestId, resetChat } from "../slices/chat";
+import { ChatPreContext, CursorFocus, incRequestId, removeFlagMessage, resetChat } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
@@ -87,6 +87,28 @@ export const rollbackChat = createAsyncThunk<void, { chatId: string, contentId: 
     "chat/rollback",
     async ({ chatId, contentId }, _) => {
         webviewSend('chat/rollback', { chatId, contentId });
+    }
+);
+
+export const addFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
+    "chat/addFlag",
+    async ({ chatId, contentId }, _) => {
+        webviewSend('chat/addFlag', { chatId, contentId });
+    }
+);
+
+export const removeFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
+    "chat/removeFlag",
+    async ({ chatId, contentId }, { dispatch }) => {
+        webviewSend('chat/removeFlag', { chatId, contentId });
+        dispatch(removeFlagMessage({ chatId, contentId }));
+    }
+);
+
+export const forkFromFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
+    "chat/fork",
+    async ({ chatId, contentId }, _) => {
+        webviewSend('chat/fork', { chatId, contentId });
     }
 );
 

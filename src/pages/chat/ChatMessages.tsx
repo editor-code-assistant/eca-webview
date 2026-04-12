@@ -4,12 +4,13 @@ import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { ChatMessage } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
-import { rollbackChat } from '../../redux/thunks/chat';
+import { addFlag, forkFromFlag, removeFlag, rollbackChat } from '../../redux/thunks/chat';
 import { MessageErrorFallback, captureComponentStack } from '../components/ErrorFallback';
 import { ChatHook } from './ChatHook';
 import './ChatMessages.scss';
 import { ChatReason } from './ChatReason';
 import { ChatTextMessage } from './ChatTextMessage';
+import { ChatFlag } from './ChatFlag';
 import { ChatToolCall } from './ChatToolCall';
 
 const messageVariants = {
@@ -43,6 +44,18 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
         dispatch(rollbackChat({ chatId, contentId }));
     }
 
+    const onAddFlagClicked = (contentId: string) => {
+        dispatch(addFlag({ chatId, contentId }));
+    }
+
+    const onForkFromFlagClicked = (contentId: string) => {
+        dispatch(forkFromFlag({ chatId, contentId }));
+    }
+
+    const onRemoveFlagClicked = (contentId: string) => {
+        dispatch(removeFlag({ chatId, contentId }));
+    }
+
     return (
         <div className="messages-container scrollable" ref={scrollRef} >
             {messages.length === 0 && children}
@@ -56,7 +69,8 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
-                                    onRollbackClicked={() => onRollbackClicked(message.contentId!)} />
+                                    onRollbackClicked={() => onRollbackClicked(message.contentId!)}
+                                    onAddFlagClicked={message.contentId ? () => onAddFlagClicked(message.contentId!) : undefined} />
                             );
                         case 'toolCall':
                             return (
@@ -95,6 +109,14 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     error={message.error}
                                 />
                             );
+                        case 'flag':
+                            return (
+                                <ChatFlag
+                                    text={message.text}
+                                    onForkClicked={() => onForkFromFlagClicked(message.contentId)}
+                                    onRemoveClicked={() => onRemoveFlagClicked(message.contentId)}
+                                />
+                            );
                         default:
                             return null;
                     }
@@ -106,7 +128,9 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                         ? `chat-reason-${index}`
                         : message.type === 'hook'
                             ? `chat-hook-${index}`
-                            : `chat-message-${index}`;
+                            : message.type === 'flag'
+                                ? `chat-flag-${index}`
+                                : `chat-message-${index}`;
 
                 return (
                     <motion.div
@@ -128,7 +152,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
 
 const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMessage[]) => {
     const [userScrolled, setUserScrolled] = useState(false);
-    const userMsgsCount = useMemo(() => messages.filter((msg) => msg.role === 'user').length, [messages.length]);
+    const userMsgsCount = useMemo(() => messages.filter((msg) => 'role' in msg && msg.role === 'user').length, [messages.length]);
 
     useEffect(() => {
         setUserScrolled(false);

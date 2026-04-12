@@ -63,6 +63,10 @@ function messagesToMarkdown(messages: ChatMessage[]): string {
                 }
                 break;
             }
+            case 'flag': {
+                parts.push(`---\n\n🚩 **${msg.text}**\n\n---`);
+                break;
+            }
         }
     }
 

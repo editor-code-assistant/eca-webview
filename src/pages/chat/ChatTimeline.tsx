@@ -27,7 +27,7 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
 
     const userMessages = messages
         .map((msg, index) => ({ msg, index }))
-        .filter(({ msg }) => msg.type === 'text' && msg.role === 'user');
+        .filter(({ msg }) => (msg.type === 'text' && msg.role === 'user') || msg.type === 'flag');
 
     if (userMessages.length === 0) return null;
 
@@ -60,6 +60,20 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
                         <div className="timeline-header">Timeline</div>
                         <ul className="timeline-list scrollable">
                             {userMessages.map(({ msg, index }, i) => {
+                                if (msg.type === 'flag') {
+                                    return (
+                                        <li
+                                            key={i}
+                                            className="timeline-item timeline-flag"
+                                            onClick={() => scrollToMessage(index)}
+                                        >
+                                            <span className="timeline-time">🚩</span>
+                                            <span className="timeline-text">
+                                                {truncate(msg.text, 60)}
+                                            </span>
+                                        </li>
+                                    );
+                                }
                                 const textMsg = msg as { type: 'text'; role: string; value: string; timestamp?: number };
                                 return (
                                     <li
