@@ -2,8 +2,9 @@ import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
-import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
+import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
+import { setJobs } from "../redux/slices/jobs";
 import { setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
 import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
@@ -121,6 +122,22 @@ const RootWrapper = () => {
 
     useWebviewListener('providers/updated', (provider: ProviderStatus) => {
         dispatch(updateProvider(provider));
+    });
+
+    useWebviewListener('jobs/updated', (data: JobsUpdatedParams) => {
+        dispatch(setJobs(data.jobs));
+    });
+
+    useWebviewListener('jobs/list', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('jobs/readOutput', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('jobs/kill', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
     });
 
     useWebviewListener('editor/focusChanged', (focus: any) => {

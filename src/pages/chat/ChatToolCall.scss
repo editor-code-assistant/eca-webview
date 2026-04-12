@@ -21,6 +21,11 @@
         border-left-color: var(--eca-success-fg, #4ec9b0);
     }
 
+    &.background-running {
+        border-left-color: var(--eca-warning-fg, #cca700);
+        background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-warning-fg, #cca700) 4%);
+    }
+
     // Header
     .tool-call-card-header {
         display: flex;
@@ -71,6 +76,14 @@
 
             &.failed {
                 color: var(--eca-error-fg);
+            }
+
+            &.background-running {
+                color: var(--eca-warning-fg, #cca700);
+            }
+
+            &.background-killed {
+                color: var(--eca-input-placeholder-fg, #6e6e6e);
             }
         }
 

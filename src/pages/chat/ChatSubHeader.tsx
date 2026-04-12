@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
 import { ChatMessage, clearChat } from '../../redux/slices/chat';
+import { selectRunningJobCount } from '../../redux/slices/jobs';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
@@ -102,6 +103,7 @@ export function ChatSubHeader({ chatId }: Props) {
 
     const allServers = useSelector((state: State) => state.mcp.servers);
     const mcpServers = useMemo(() => allServers.filter((server) => server.type === 'mcp'), [allServers]);
+    const runningJobCount = useSelector(selectRunningJobCount);
 
     const usage = useSelector((state: State) => state.chat.chats[chatId].usage);
     const usageStringFormat = useSelector((state: State) => state.server.config.usageStringFormat);
@@ -156,6 +158,11 @@ export function ChatSubHeader({ chatId }: Props) {
                     <p>Running: {running}</p>
                     <p>Click for more details.</p>
                 </ToolTip>
+                {runningJobCount > 0 && (
+                    <div className="bg-jobs" onClick={() => navigate(ROUTES.SETTINGS, { state: { tab: 'jobs' } })}>
+                        <span>{runningJobCount} {runningJobCount === 1 ? 'job' : 'jobs'}</span>
+                    </div>
+                )}
                 {usageString && (
                     <div>
                         <div data-tooltip-id="details-usage" className="usage">

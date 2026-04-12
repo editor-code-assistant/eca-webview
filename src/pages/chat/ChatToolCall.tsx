@@ -3,9 +3,11 @@ import { Diff, Hunk, parseDiff } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
+import { useSelector } from 'react-redux';
 import { FileChangeDetails, JsonOutputsDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
-import { EcaDispatch, useEcaDispatch } from '../../redux/store';
+import { selectJobByToolCallId } from '../../redux/slices/jobs';
+import { EcaDispatch, State, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
 import { ApprovalActions } from './ApprovalActions';
@@ -31,9 +33,10 @@ interface Props {
     depth?: number,
 }
 
-function ToolCallCard({ props, iconClass, defaultOpen, headerContent, bodyContent, approvalComp }: {
+function ToolCallCard({ props, iconClass, extraClassName, defaultOpen, headerContent, bodyContent, approvalComp }: {
     props: Props,
     iconClass: string,
+    extraClassName?: string,
     defaultOpen?: boolean,
     headerContent: React.ReactNode,
     bodyContent: React.ReactNode,
@@ -48,7 +51,7 @@ function ToolCallCard({ props, iconClass, defaultOpen, headerContent, bodyConten
     const toggleExpanded = () => setExpanded(!expanded);
 
     return (
-        <div className={`tool-call-card ${isActive ? 'active' : ''} ${props.status}`} ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+        <div className={`tool-call-card ${isActive ? 'active' : ''} ${props.status} ${extraClassName || ''}`} ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
             <div className="tool-call-card-header" onClick={toggleExpanded} data-collapsible-header>
                 <motion.i
                     className="chevron codicon codicon-chevron-right"
@@ -236,23 +239,53 @@ function chatToolCall(props: Props) {
         }
     }, [waitingApproval]);
 
+    // Check if this is a background job tool call
+    const isBackground = props.details && 'background' in props.details && (props.details as any).background;
+    const bgJob = useSelector((state: State) =>
+        isBackground && props.toolCallId ? selectJobByToolCallId(props.toolCallId)(state) : undefined
+    );
+
     let iconClass: string;
-    switch (props.status) {
-        case 'preparing':
-        case 'run':
-        case 'running':
-            iconClass = 'codicon-loading codicon-modifier-spin';
-            break;
-        case 'succeeded':
-            iconClass = 'codicon-check succeeded';
-            break;
-        case 'failed':
-        case 'rejected':
-            iconClass = 'codicon-error failed';
-            break;
-        default:
-            iconClass = 'codicon-question';
+    if (isBackground && props.status === 'succeeded') {
+        // Background job: derive icon from job status
+        const jobStatus = bgJob?.status;
+        switch (jobStatus) {
+            case 'running':
+                iconClass = 'codicon-circle-filled background-running';
+                break;
+            case 'completed':
+                iconClass = 'codicon-check succeeded';
+                break;
+            case 'failed':
+                iconClass = 'codicon-error failed';
+                break;
+            case 'killed':
+                iconClass = 'codicon-circle-filled background-killed';
+                break;
+            default:
+                // Job evicted or not found — show success
+                iconClass = 'codicon-check succeeded';
+        }
+    } else {
+        switch (props.status) {
+            case 'preparing':
+            case 'run':
+            case 'running':
+                iconClass = 'codicon-loading codicon-modifier-spin';
+                break;
+            case 'succeeded':
+                iconClass = 'codicon-check succeeded';
+                break;
+            case 'failed':
+            case 'rejected':
+                iconClass = 'codicon-error failed';
+                break;
+            default:
+                iconClass = 'codicon-question';
+        }
     }
+
+    const bgCardClass = isBackground && bgJob?.status === 'running' ? 'background-running' : '';
 
     const approvalComp = (
         <ApprovalActions
@@ -290,6 +323,7 @@ function chatToolCall(props: Props) {
             <ToolCallCard
                 props={props}
                 iconClass={iconClass}
+                extraClassName={bgCardClass}
                 headerContent={<FileChangeHeader props={props} dispatch={dispatch} />}
                 bodyContent={<FileChangeBody props={props} />}
                 approvalComp={approvalComp}
@@ -303,6 +337,7 @@ function chatToolCall(props: Props) {
             <ToolCallCard
                 props={props}
                 iconClass={iconClass}
+                extraClassName={bgCardClass}
                 headerContent={<GenericToolCallHeader props={props} />}
                 bodyContent={<JsonOutputsBody props={props} />}
                 approvalComp={approvalComp}
@@ -315,6 +350,7 @@ function chatToolCall(props: Props) {
         <ToolCallCard
             props={props}
             iconClass={iconClass}
+            extraClassName={bgCardClass}
             headerContent={<GenericToolCallHeader props={props} />}
             bodyContent={<GenericToolCallBody props={props} />}
             approvalComp={approvalComp}

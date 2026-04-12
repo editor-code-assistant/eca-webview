@@ -1,21 +1,29 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
 import { MCPsTab } from './MCPsTab';
 import { ProvidersTab } from './ProvidersTab';
 import { GlobalConfigTab } from './GlobalConfigTab';
+import { JobsTab } from './JobsTab';
 import './Settings.scss';
 
-type SettingsTabKey = 'mcps' | 'providers' | 'config';
+type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs';
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'mcps', label: 'MCPs', icon: 'codicon-extensions' },
     { key: 'providers', label: 'Providers', icon: 'codicon-key' },
+    { key: 'jobs', label: '⚡ Jobs', icon: '' },
     { key: 'config', label: 'Global Config', icon: 'codicon-settings-gear' },
 ];
 
+const validTabs = new Set<string>(tabs.map(t => t.key));
+
 export function Settings() {
-    const [activeTab, setActiveTab] = useState<SettingsTabKey>('mcps');
+    const location = useLocation();
+    const initialTab = (location.state as any)?.tab;
+    const [activeTab, setActiveTab] = useState<SettingsTabKey>(
+        initialTab && validTabs.has(initialTab) ? initialTab : 'mcps'
+    );
     const navigate = useNavigate();
 
     return (
@@ -33,7 +41,7 @@ export function Settings() {
                         key={tab.key}
                         className={`settings-tab ${activeTab === tab.key ? 'active' : ''}`}
                         onClick={() => setActiveTab(tab.key)}>
-                        <i className={`codicon ${tab.icon}`}></i>
+                        {tab.icon && <i className={`codicon ${tab.icon}`}></i>}
                         {tab.label}
                     </button>
                 ))}
@@ -42,6 +50,7 @@ export function Settings() {
             <div className="settings-tab-content">
                 {activeTab === 'mcps' && <MCPsTab />}
                 {activeTab === 'providers' && <ProvidersTab />}
+                {activeTab === 'jobs' && <JobsTab />}
                 {activeTab === 'config' && <GlobalConfigTab />}
             </div>
         </div>

@@ -1,0 +1,42 @@
+.job-output {
+    max-height: 20em;
+    overflow-y: auto;
+    background: var(--eca-input-bg);
+    border-radius: 0.3em;
+    margin-top: 0.4em;
+    padding: 0.4em;
+
+    .job-output-loading,
+    .job-output-error,
+    .job-output-empty {
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+        padding: 0.4em;
+        font-size: 0.85em;
+        opacity: 0.7;
+    }
+
+    .job-output-error {
+        color: var(--eca-error-fg);
+    }
+
+    .job-output-content {
+        margin: 0;
+        font-size: 0.8em;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-all;
+
+        .output-line {
+            &.stderr {
+                color: var(--eca-error-fg, #f14c4c);
+                opacity: 0.9;
+            }
+
+            &.stdout {
+                color: var(--eca-input-fg);
+            }
+        }
+    }
+}

@@ -39,6 +39,11 @@
             }
         }
 
+        .bg-jobs {
+            @extend %item;
+            color: var(--eca-warning-fg, #cca700);
+        }
+
         .usage {
             @extend %item;
         }

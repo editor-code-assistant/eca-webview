@@ -508,3 +508,39 @@ export type LoginAction =
     | { action: 'device-code'; url: string; code: string; message: string }
     | { action: 'input'; fields: InputField[] }
     | { action: 'done' };
+
+// === Background Jobs ===
+
+export type JobStatus = 'running' | 'completed' | 'failed' | 'killed';
+
+export interface Job {
+    id: string;
+    status: JobStatus;
+    label: string;
+    summary?: string;
+    startedAt: string;
+    elapsed: string;
+    exitCode?: number | null;
+    chatId: string;
+    chatLabel?: string;
+    toolCallId?: string;
+}
+
+export interface JobOutputLine {
+    text: string;
+    stream: 'stdout' | 'stderr';
+}
+
+export interface JobsUpdatedParams {
+    jobs: Job[];
+}
+
+export interface JobsReadOutputResult {
+    lines: JobOutputLine[];
+    status: string;
+    exitCode?: number | null;
+}
+
+export interface JobsKillResult {
+    killed: boolean;
+}
