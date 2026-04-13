@@ -139,9 +139,13 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         // Don't cycle history while a completion menu is open
         if (inputCompleting) return;
 
-        // Prompt history: Up/Down arrows when textarea has no multi-line content
-        const isMultiLine = promptValue.includes('\n');
-        if (e.key === "ArrowUp" && !isMultiLine && promptHistory.length > 0) {
+        // Prompt history: Up/Down arrows only when cursor is at the very
+        // start (ArrowUp) or very end (ArrowDown) of the text. This avoids
+        // hijacking arrow navigation on visually-wrapped long lines.
+        const textarea = e.target as HTMLTextAreaElement;
+        const cursorAtStart = textarea.selectionStart === 0 && textarea.selectionEnd === 0;
+        const cursorAtEnd = textarea.selectionStart === promptValue.length;
+        if (e.key === "ArrowUp" && cursorAtStart && promptHistory.length > 0) {
             e.preventDefault();
             if (historyIndex === -1) {
                 setDraftPrompt(promptValue);
@@ -156,7 +160,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
             return;
         }
 
-        if (e.key === "ArrowDown" && !isMultiLine && historyIndex !== -1) {
+        if (e.key === "ArrowDown" && cursorAtEnd && historyIndex !== -1) {
             e.preventDefault();
             if (historyIndex < promptHistory.length - 1) {
                 const newIndex = historyIndex + 1;
