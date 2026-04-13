@@ -79,6 +79,9 @@ export const ChatHeader = memo(({ chats }: Props) => {
         const newTrust = !trust;
         dispatch(setTrust(newTrust));
         webviewSend('server/setTrust', newTrust);
+        if (selectedChat && selectedChat !== 'EMPTY') {
+            webviewSend('chat/update', { chatId: selectedChat, trust: newTrust });
+        }
     };
 
     const emptyChat = chats.find(c => c.id === 'EMPTY');
