@@ -1,6 +1,6 @@
 # ECA webview
 
-This is the React frontend for the ECA vscode and intellij plugins.
+This is the React frontend for the ECA vscode, intellij plugins, eca-desktop and eca-web.
 
 | Vscode                                        | Intellij                                        |
 |-----------------------------------------------|-------------------------------------------------|
