@@ -20,9 +20,10 @@ export function Chat() {
     const allChats = useSelector((state: State) => state.chat.chats);
     const chatsList = Object.values(allChats);
 
-    let currentChatId = chatsList.find(c => c.id === selectedChat)!.id;
+    const found = chatsList.find(c => c.id === selectedChat);
+    let currentChatId = found ? found.id : 'EMPTY';
 
-    const currentProgress = allChats[currentChatId].progress;
+    const currentProgress = allChats[currentChatId]?.progress;
 
     const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 
