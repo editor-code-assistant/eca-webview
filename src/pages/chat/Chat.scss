@@ -20,6 +20,8 @@
 
           .image {
             width: min(10em, 40vw);
+            height: auto;
+            object-fit: contain;
             opacity: 0.12;
             user-select: none;
             pointer-events: none;
@@ -43,15 +45,19 @@
       width: 100%;
       padding: 2em 1.5em;
       box-sizing: border-box;
-      animation: welcome-fade-in 0.5s ease-out;
+      opacity: 0;
+      animation: welcome-fade-in 0.8s ease-out 0.3s forwards;
 
       .welcome-logo {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
 
         img {
           width: min(14em, 50vw);
+          height: auto;
+          object-fit: contain;
           opacity: 0.12;
           user-select: none;
           pointer-events: none;

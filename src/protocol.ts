@@ -18,6 +18,12 @@ export interface WorkspaceFolder {
     uri: string;
 }
 
+export interface SessionInfo {
+    id: string;
+    workspaceFolder: WorkspaceFolder;
+    status: string;
+}
+
 export interface InitializeResult {
     models: string[];
     chatDefaultModel: string;

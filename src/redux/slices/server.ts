@@ -26,6 +26,7 @@ export const serverSlice = createSlice({
     initialState: {
         status: ServerStatus.Stopped,
         workspaceFolders: [] as WorkspaceFolder[],
+        activeSessionId: null as string | null,
         trust: false,
         config: {
             chat: {
@@ -78,6 +79,9 @@ export const serverSlice = createSlice({
         setTrust: (state, action) => {
             state.trust = action.payload;
         },
+        setActiveSessionId: (state, action) => {
+            state.activeSessionId = action.payload;
+        },
     },
 });
 
@@ -87,4 +91,5 @@ export const {
     setConfig,
     setSelectedVariant,
     setTrust,
+    setActiveSessionId,
 } = serverSlice.actions
