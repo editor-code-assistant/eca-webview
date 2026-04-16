@@ -60,9 +60,6 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
 
     return (
         <div className="messages-container scrollable" ref={scrollRef} >
-            <AnimatePresence initial={false}>
-                {messages.length === 0 && children}
-            </AnimatePresence>
             {messages.map((message, index) => {
                 const shouldAnimate = index >= initialCountRef.current;
 
@@ -161,6 +158,18 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                     <ChatQuestion chatId={chatId} question={pendingQuestion} />
                 </motion.div>
             )}
+            {/*
+              * Render the empty-state welcome LAST so that while it is exiting
+              * (AnimatePresence keeps it mounted for the duration of its exit
+              * animation) the already-mounted user message stays above it in
+              * the flex flow. Placing it first here, combined with its
+              * `flex: 1`, would expand the welcome to fill the column and push
+              * the first user message to the bottom for ~250ms, then snap it
+              * back to the top when the welcome finally unmounts.
+              */}
+            <AnimatePresence initial={false}>
+                {messages.length === 0 && children}
+            </AnimatePresence>
         </div>
     );
 }

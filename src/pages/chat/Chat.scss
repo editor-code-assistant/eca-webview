@@ -91,15 +91,22 @@
       }
   }
 
-  // Hero mode: clean centered layout for empty desktop chats
+  // Hero mode: clean centered layout for empty desktop chats.
+  // The bottom-anchor on .messages-container and the ::after spacer
+  // are scoped to the "welcome-only" state via :has(). The moment the
+  // first real message is appended, these rules stop matching, so the
+  // messages-container returns to its default flex-start layout and
+  // the first user message renders at the top (its final position)
+  // instead of being briefly bottom-anchored and then snapping up
+  // when .hero-mode is removed.
   &.hero-mode {
-    > .messages-container {
+    > .messages-container:has(> .welcome-message:only-child) {
       flex: 1 1 0;
       justify-content: flex-end;
       padding-bottom: 1.5em;
     }
 
-    &::after {
+    &:has(> .messages-container > .welcome-message:only-child)::after {
       content: '';
       flex: 1 1 0;
       pointer-events: none;
