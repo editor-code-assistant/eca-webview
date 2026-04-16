@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { webviewSend } from '../../hooks';
 import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
-import { setTrust } from '../../redux/slices/server';
 import { State, useEcaDispatch } from '../../redux/store';
 import { deleteChat } from '../../redux/thunks/chat';
 import { editorName } from '../../util';
@@ -23,7 +22,6 @@ function chatTitle(chat: Chat): string {
 export const ChatHeader = memo(({ chats }: Props) => {
     const dispatch = useEcaDispatch();
     const selectedChat = useSelector((state: State) => state.chat.selectedChat);
-    const trust = useSelector((state: State) => state.server.trust);
     const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
     const [renameValue, setRenameValue] = useState('');
     const renameInputRef = useRef<HTMLInputElement>(null);
@@ -72,15 +70,6 @@ export const ChatHeader = memo(({ chats }: Props) => {
         } else if (e.key === 'Escape') {
             e.preventDefault();
             cancelRename();
-        }
-    };
-
-    const toggleTrust = () => {
-        const newTrust = !trust;
-        dispatch(setTrust(newTrust));
-        webviewSend('server/setTrust', newTrust);
-        if (selectedChat && selectedChat !== 'EMPTY') {
-            webviewSend('chat/update', { chatId: selectedChat, trust: newTrust });
         }
     };
 
@@ -167,12 +156,6 @@ export const ChatHeader = memo(({ chats }: Props) => {
                     <span onClick={chatNew} className="new-chat">+</span>
                 )}
             </section>
-            <span
-                className={`trust-toggle ${trust ? 'trust-on' : 'trust-off'}`}
-                onClick={toggleTrust}
-                title={trust ? 'Trust ON - auto-accepting tool calls' : 'Trust OFF - not auto-accepting tool calls'}>
-                ⬤
-            </span>
         </div>
     );
 });
