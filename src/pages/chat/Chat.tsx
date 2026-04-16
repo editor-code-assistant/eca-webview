@@ -1,8 +1,8 @@
+import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { SyncLoader } from "react-spinners";
 import { ServerStatus } from "../../redux/slices/server";
-import { State, useEcaDispatch } from "../../redux/store";
-import { stopPrompt } from "../../redux/thunks/chat";
+import { State } from "../../redux/store";
 import './Chat.scss';
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from './ChatMessages';
@@ -13,7 +13,6 @@ import { MarkdownContent } from "./MarkdownContent";
 import { editorName } from "../../util";
 
 export function Chat() {
-    const dispatch = useEcaDispatch();
     const status = useSelector((state: State) => state.server.status);
     const running = status === ServerStatus.Running;
 
@@ -24,17 +23,11 @@ export function Chat() {
     const found = chatsList.find(c => c.id === selectedChat);
     let currentChatId = found ? found.id : 'EMPTY';
 
-    const currentProgress = allChats[currentChatId]?.progress;
-
     const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 
     const isWeb = editorName() === 'web';
     const hasNoMessages = !allChats[currentChatId]?.messages?.length;
     const heroMode = isWeb && (!running || hasNoMessages);
-
-    const onStop = (_e: any) => {
-        dispatch(stopPrompt({ chatId: currentChatId! }));
-    };
 
     return (
         <div className={`chat-container${heroMode ? ' hero-mode' : ''}`}>
@@ -59,7 +52,12 @@ export function Chat() {
 
             <ChatMessages chatId={currentChatId}>
                 {(running || isWeb) && (
-                    <div className="welcome-message">
+                    <motion.div
+                        key="welcome-message"
+                        className="welcome-message"
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                    >
                         <div className="welcome-logo">
                             <img src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
                         </div>
@@ -68,7 +66,7 @@ export function Chat() {
                                 <MarkdownContent content={welcomeMessage} />
                             </div>
                         )}
-                    </div>)
+                    </motion.div>)
                 }
             </ChatMessages>
 
@@ -83,18 +81,7 @@ export function Chat() {
                 </div>
             )}
 
-            {currentProgress && (
-                <div className="progress-area">
-                    <p>{currentProgress}</p>
-                    <SyncLoader className="spinner" size={2} />
-                    <div className="divider"></div>
-                    {currentChatId && (
-                        <span onClick={onStop} className="stop">Stop</span>
-                    )}
-                </div>
-            )}
-
-            <ChatPrompt chatId={currentChatId} enabled={running} />
+            <ChatPrompt chatId={currentChatId} enabled={running} heroMode={heroMode} />
         </div>
     );
 }

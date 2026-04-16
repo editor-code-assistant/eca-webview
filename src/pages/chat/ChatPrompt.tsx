@@ -1,8 +1,10 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { AnimatePresence, motion } from "framer-motion";
+import { SyncLoader } from "react-spinners";
 import { useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
-import { answerQuestion, sendPrompt, steerPrompt } from "../../redux/thunks/chat";
+import { answerQuestion, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
 import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
@@ -16,9 +18,10 @@ import { editorReadInput } from "../../redux/thunks/editor";
 interface ChatPromptProps {
     enabled: boolean,
     chatId: string,
+    heroMode?: boolean,
 }
 
-export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
+export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) => {
     const [promptValue, setPromptValue] = useState('');
     const [commandCompleting, setCommandCompleting] = useState(false);
     const [fileCompleting, setFileCompleting] = useState(false);
@@ -41,7 +44,12 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const [selectedModel, setSelectedModel] = useState<string>();
     const [selectedAgent, setSelectedAgent] = useState<string>();
 
-    const loading = useSelector((state: State) => state.chat.chats[chatId]?.progress != undefined);
+    const currentProgress = useSelector((state: State) => state.chat.chats[chatId]?.progress);
+    const loading = currentProgress !== undefined;
+
+    const onStop = () => {
+        dispatch(stopPrompt({ chatId }));
+    };
     const waitingApproval = useSelector((state: State) => {
         const messages = state.chat.chats[chatId]?.messages ?? [];
         return messages.some(msg => {
@@ -276,7 +284,36 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     const sendDisabled = !enabled || inputCompleting || !promptValue.trim() || (isQuestionPending && !isAnswerMode);
 
     return (
-        <div className={['prompt-area', isFocused && 'focused', loading && 'running', waitingApproval && 'waiting-approval'].filter(Boolean).join(' ')}>
+        <motion.div
+            layout="position"
+            layoutDependency={heroMode}
+            transition={{
+                layout: {
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 34,
+                    mass: 0.9,
+                },
+            }}
+            className={['prompt-area', heroMode && 'hero', isFocused && 'focused', loading && 'running', waitingApproval && 'waiting-approval'].filter(Boolean).join(' ')}
+        >
+            <AnimatePresence initial={false}>
+                {currentProgress && (
+                    <motion.div
+                        key="progress-area"
+                        className="progress-area"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                    >
+                        <p>{currentProgress}</p>
+                        <SyncLoader className="spinner" size={2} />
+                        <div className="divider"></div>
+                        <span onClick={onStop} className="stop">Stop</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <ChatContexts enabled={enabled} chatId={chatId} />
             <ChatCommands
                 input={inputRef.current}
@@ -347,6 +384,6 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                     tabIndex={sendDisabled ? -1 : 0}
                 />
             </div>
-        </div>
+        </motion.div>
     );
 });

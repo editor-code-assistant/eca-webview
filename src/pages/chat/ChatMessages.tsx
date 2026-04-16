@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChatMessage } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
 import { addFlag, forkFromFlag, removeFlag, rollbackChat } from '../../redux/thunks/chat';
@@ -60,7 +60,9 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
 
     return (
         <div className="messages-container scrollable" ref={scrollRef} >
-            {messages.length === 0 && children}
+            <AnimatePresence initial={false}>
+                {messages.length === 0 && children}
+            </AnimatePresence>
             {messages.map((message, index) => {
                 const shouldAnimate = index >= initialCountRef.current;
 

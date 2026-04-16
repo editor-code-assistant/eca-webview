@@ -3,9 +3,30 @@
     padding: 0.6em;
     flex-wrap: wrap;
     gap: 0.4em;
-    border-top: 1px solid var(--eca-base-border);
+    // Full border on all 4 sides so colors can be transitioned
+    // individually when entering/leaving hero mode. In the default
+    // (non-hero) state only the top is visible.
+    border: 1px solid transparent;
+    border-top-color: var(--eca-base-border);
+    border-radius: 0;
     background-color: var(--eca-input-bg);
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    // Explicit width/max-width/margin so transitioning to/from hero
+    // mode interpolates smoothly between length values (instead of
+    // snapping when a property was previously unset/auto).
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+    // Zero-sized fully transparent shadow so transitions from/to the
+    // hero drop-shadow interpolate smoothly (a `box-shadow: none`
+    // cannot be animated).
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    transition:
+        border-color 200ms ease,
+        border-radius 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        padding 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        max-width 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 280ms ease;
 
     &.focused {
         border-top-color: var(--eca-link-fg);
@@ -22,6 +43,92 @@
         box-shadow: inset 0 1px 0 0 var(--eca-approval-fg);
     }
 
+    // Hero mode: floating, centered, rounded card used while the chat
+    // is empty. All four border sides become visible, and the prompt is
+    // capped in width and centered in the viewport. The position change
+    // (from bottom to center) is animated by framer-motion's
+    // `layout="position"`; the visual changes below animate via CSS.
+    &.hero {
+        max-width: 40em;
+        border-color: var(--eca-base-border);
+        border-radius: 12px;
+        padding: 0.8em 1em;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+        &.focused {
+            border-color: var(--eca-link-fg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        &.running {
+            border-color: var(--eca-warning-fg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        &.waiting-approval {
+            border-color: var(--eca-approval-fg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .field {
+            font-size: 1.05em;
+        }
+    }
+
+    // Inline progress row (generating / stop). Rendered inside
+    // `.prompt-area` so that it shares the prompt's layout animation
+    // and card styling — no sibling tricks, no animation desync.
+    // `overflow: hidden` keeps content clipped while height animates
+    // in/out via AnimatePresence.
+    .progress-area {
+        width: 100%;
+        flex-basis: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+        padding-bottom: 0.3em;
+        border-bottom: 1px solid var(--eca-base-border);
+        color: var(--eca-input-placeholder-fg);
+        font-size: 0.9em;
+        overflow: hidden;
+
+        p {
+            margin: 0;
+            display: inline-block;
+        }
+
+        .spinner {
+            display: inline-block !important;
+            margin: 0 0.2em;
+
+            @keyframes spinner-sync {
+                33% { transform: translateY(2px); }
+                66% { transform: translateY(-2px); }
+                100% { transform: translateY(0px); }
+            }
+
+            span {
+                background-color: var(--eca-input-placeholder-fg) !important;
+                animation-name: spinner-sync !important;
+            }
+        }
+
+        .divider {
+            flex: 1;
+        }
+
+        .stop {
+            opacity: 0.8;
+            cursor: pointer;
+            transition: opacity 0.1s;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+
     .field {
         width: 100%;
         background-color: var(--eca-input-bg);
@@ -29,9 +136,11 @@
         border: none;
         color: var(--eca-input-fg);
         font-family: inherit;
+        font-size: 1em;
         overflow: hidden;
         resize: none;
         field-sizing: content;
+        transition: font-size 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
 
         &:focus {
             outline: none;

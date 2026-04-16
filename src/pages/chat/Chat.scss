@@ -91,51 +91,6 @@
       }
   }
 
-  .progress-area {
-      width: calc(100% - 2em);
-      margin: 0 auto;
-      background-color: var(--eca-panel-bg);
-      padding: 0.5em 1em;
-      color: var(--eca-input-placeholder-fg);
-      display: flex;
-
-      p {
-          margin: 0;
-          display: inline-block;
-      }
-
-      .spinner {
-          display: inline-block !important;
-          margin: 0 0.2em;
-
-          @keyframes spinner-sync {
-              33% {transform: translateY(2px);} 
-              66% {transform: translateY(-2px);} 
-              100% {transform: translateY(0px);} 
-          }
-
-          span {
-              background-color: var(--eca-input-placeholder-fg) !important;
-              animation-name: spinner-sync !important;
-          }
-      }
-
-      .divider {
-          flex: 1;
-      }
-
-
-      .stop {
-        opacity: 0.8;
-        cursor: pointer;
-        transition: opacity 0.1s;
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-  }
-
   // Hero mode: clean centered layout for empty desktop chats
   &.hero-mode {
     > .messages-container {
@@ -156,7 +111,7 @@
       animation: none;
 
       .welcome-logo img {
-        width: min(8em, 30vw);
+        width: min(12em, 40vw);
         opacity: 0.18;
       }
     }
@@ -188,34 +143,9 @@
       }
     }
 
-    > .prompt-area {
-      max-width: 40em;
-      width: calc(100% - 3em);
-      margin: 0 auto;
-      border: 1px solid var(--eca-base-border);
-      border-top: 1px solid var(--eca-base-border);
-      border-radius: 12px;
-      padding: 0.8em 1em;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-
-      &.focused {
-        border-color: var(--eca-link-fg);
-        box-shadow: 0 0 0 1px var(--eca-link-fg), 0 2px 8px rgba(0, 0, 0, 0.12);
-      }
-
-      &.running {
-        border-color: var(--eca-warning-fg);
-        box-shadow: 0 0 0 1px var(--eca-warning-fg), 0 2px 8px rgba(0, 0, 0, 0.12);
-      }
-
-      &.waiting-approval {
-        border-color: var(--eca-approval-fg);
-        box-shadow: 0 0 0 1px var(--eca-approval-fg), 0 2px 8px rgba(0, 0, 0, 0.12);
-      }
-
-      .field {
-        font-size: 1.05em;
-      }
-    }
+    // Prompt styling (both hero and non-hero) and the inline progress
+    // row now live entirely in ChatPrompt.scss. The prompt's position
+    // change (bottom -> center) is animated by framer-motion's
+    // `layout="position"` on the motion.div wrapping .prompt-area.
   }
 }
