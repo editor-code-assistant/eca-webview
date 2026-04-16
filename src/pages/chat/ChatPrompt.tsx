@@ -283,6 +283,16 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
 
     const sendDisabled = !enabled || inputCompleting || !promptValue.trim() || (isQuestionPending && !isAnswerMode);
 
+    const placeholderText = isAnswerMode
+        ? "Answer>"
+        : isQuestionPending
+            ? "Select an option above..."
+            : selectedAgent === 'plan'
+                ? "Plan, research, explore..."
+                : selectedAgent === 'code'
+                    ? "Code, ask, build..."
+                    : "Ask, plan, build...";
+
     return (
         <motion.div
             layout="position"
@@ -337,7 +347,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                 onPaste={onPaste}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder={isAnswerMode ? "Answer>" : isQuestionPending ? "Select an option above..." : "Ask, plan, build..."}
+                placeholder={placeholderText}
                 className="field"
                 disabled={isQuestionPending && !isAnswerMode}
                 aria-label={isAnswerMode ? "Answer question" : "Chat prompt"}
