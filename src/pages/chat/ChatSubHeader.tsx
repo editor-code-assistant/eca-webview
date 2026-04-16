@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
 import { ChatMessage, clearChat } from '../../redux/slices/chat';
 import { selectRunningJobCount } from '../../redux/slices/jobs';
+import { setTrust } from '../../redux/slices/server';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
@@ -81,6 +82,16 @@ interface Props {
 export function ChatSubHeader({ chatId }: Props) {
     const dispatch = useEcaDispatch();
     const navigate = useNavigate();
+    const trust = useSelector((state: State) => state.server.trust);
+
+    const toggleTrust = () => {
+        const newTrust = !trust;
+        dispatch(setTrust(newTrust));
+        webviewSend('server/setTrust', newTrust);
+        if (chatId && chatId !== 'EMPTY') {
+            webviewSend('chat/update', { chatId, trust: newTrust });
+        }
+    };
 
     const clearHistoryChat = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         dispatch(clearChat({ chatId: chatId }));
@@ -181,6 +192,13 @@ export function ChatSubHeader({ chatId }: Props) {
                 )}
             </div>
             <div className="actions">
+                <div className="action trust-toggle">
+                    <i
+                        onClick={toggleTrust}
+                        className={`codicon ${trust ? 'codicon-workspace-trusted trust-on' : 'codicon-workspace-untrusted trust-off'}`}
+                        title={trust ? 'Trust ON - auto-accepting tool calls' : 'Trust OFF - not auto-accepting tool calls'}
+                    ></i>
+                </div>
                 <div className="action"><ChatTimeline chatId={chatId} /></div>
                 <div className="action"><i onClick={exportChat} className="codicon codicon-export" title="Export chat to Markdown"></i></div>
                 <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash" title="Clear chat messages"></i></div>

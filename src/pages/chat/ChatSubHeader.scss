@@ -68,6 +68,16 @@
             }
         }
 
+        .trust-toggle {
+            i.trust-on {
+                color: #f44747;
+            }
+
+            i.trust-off {
+                opacity: 0.6;
+            }
+        }
+
     }
 
 }
