@@ -116,7 +116,7 @@ export function ChatSubHeader({ chatId }: Props) {
     const mcpServers = useMemo(() => allServers.filter((server) => server.type === 'mcp'), [allServers]);
     const runningJobCount = useSelector(selectRunningJobCount);
 
-    const usage = useSelector((state: State) => state.chat.chats[chatId].usage);
+    const usage = useSelector((state: State) => state.chat.chats[chatId]?.usage);
     const usageStringFormat = useSelector((state: State) => state.server.config.usageStringFormat);
 
     let usageString;

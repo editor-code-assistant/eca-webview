@@ -10,6 +10,7 @@ import { ChatPrompt } from "./ChatPrompt";
 import { ChatSubHeader } from './ChatSubHeader';
 import { ChatTask } from './ChatTask';
 import { MarkdownContent } from "./MarkdownContent";
+import { editorName } from "../../util";
 
 export function Chat() {
     const dispatch = useEcaDispatch();
@@ -27,23 +28,27 @@ export function Chat() {
 
     const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 
+    const isWeb = editorName() === 'web';
+    const hasNoMessages = !allChats[currentChatId]?.messages?.length;
+    const heroMode = isWeb && (!running || hasNoMessages);
+
     const onStop = (_e: any) => {
         dispatch(stopPrompt({ chatId: currentChatId! }));
     };
 
     return (
-        <div className="chat-container">
-            {running && (
+        <div className={`chat-container${heroMode ? ' hero-mode' : ''}`}>
+            {(running || isWeb) && (
                 <ChatHeader chats={chatsList} />)}
-            {running && (
+            {(running || isWeb) && (
                 <ChatSubHeader chatId={currentChatId} />
             )}
 
-            {running && (
+            {(running || isWeb) && (
                 <ChatTask key={currentChatId} chatId={currentChatId} />
             )}
 
-            {!running &&
+            {!running && !isWeb &&
                 <div className="loading">
                     <div className="content">
                         <img className="image" src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
@@ -53,12 +58,12 @@ export function Chat() {
             }
 
             <ChatMessages chatId={currentChatId}>
-                {running && (
+                {(running || isWeb) && (
                     <div className="welcome-message">
                         <div className="welcome-logo">
                             <img src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
                         </div>
-                        {welcomeMessage && (
+                        {welcomeMessage && !isWeb && (
                             <div className="welcome-content">
                                 <MarkdownContent content={welcomeMessage} />
                             </div>
@@ -66,6 +71,17 @@ export function Chat() {
                     </div>)
                 }
             </ChatMessages>
+
+            {heroMode && (
+                <div className={`hero-status${running ? ' hero-status-ready' : ''}`}>
+                    {!running && (
+                        <>
+                            <p>Waiting for server to start…</p>
+                            <SyncLoader className="spinner" size={2} />
+                        </>
+                    )}
+                </div>
+            )}
 
             {currentProgress && (
                 <div className="progress-area">

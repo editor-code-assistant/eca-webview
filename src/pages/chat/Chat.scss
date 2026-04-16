@@ -135,4 +135,87 @@
         }
       }
   }
+
+  // Hero mode: clean centered layout for empty desktop chats
+  &.hero-mode {
+    > .messages-container {
+      flex: 1 1 0;
+      justify-content: flex-end;
+      padding-bottom: 1.5em;
+    }
+
+    &::after {
+      content: '';
+      flex: 1 1 0;
+      pointer-events: none;
+    }
+
+    .welcome-message {
+      padding: 0;
+      opacity: 1;
+      animation: none;
+
+      .welcome-logo img {
+        width: min(8em, 30vw);
+        opacity: 0.18;
+      }
+    }
+
+    .hero-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4em;
+      padding: 0.4em 1em;
+      margin-bottom: 1em;
+      min-height: 1.5em;
+      color: var(--eca-input-placeholder-fg);
+      font-size: 0.85em;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+
+      &.hero-status-ready {
+        opacity: 0;
+      }
+
+      p { margin: 0; }
+
+      .spinner {
+        display: inline-block !important;
+        span {
+          background-color: var(--eca-input-placeholder-fg) !important;
+        }
+      }
+    }
+
+    > .prompt-area {
+      max-width: 40em;
+      width: calc(100% - 3em);
+      margin: 0 auto;
+      border: 1px solid var(--eca-base-border);
+      border-top: 1px solid var(--eca-base-border);
+      border-radius: 12px;
+      padding: 0.8em 1em;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+      &.focused {
+        border-color: var(--eca-link-fg);
+        box-shadow: 0 0 0 1px var(--eca-link-fg), 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+
+      &.running {
+        border-color: var(--eca-warning-fg);
+        box-shadow: 0 0 0 1px var(--eca-warning-fg), 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+
+      &.waiting-approval {
+        border-color: var(--eca-approval-fg);
+        box-shadow: 0 0 0 1px var(--eca-approval-fg), 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+
+      .field {
+        font-size: 1.05em;
+      }
+    }
+  }
 }
