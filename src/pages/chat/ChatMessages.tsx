@@ -8,6 +8,7 @@ import { addFlag, forkFromFlag, removeFlag, rollbackChat } from '../../redux/thu
 import { MessageErrorFallback, captureComponentStack } from '../components/ErrorFallback';
 import { ChatHook } from './ChatHook';
 import './ChatMessages.scss';
+import { ChatQuestion } from './ChatQuestion';
 import { ChatReason } from './ChatReason';
 import { ChatTextMessage } from './ChatTextMessage';
 import { ChatFlag } from './ChatFlag';
@@ -33,6 +34,7 @@ interface ChatMessagesProps {
 export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const dispatch = useEcaDispatch();
     const messages = useSelector((state: State) => state.chat.chats[chatId].messages);
+    const pendingQuestion = useSelector((state: State) => state.chat.chats[chatId]?.pendingQuestion);
 
     // Track how many messages existed on first render so we only animate new ones
     const initialCountRef = useRef(messages.length);
@@ -146,6 +148,17 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                     </motion.div>
                 );
             })}
+            {pendingQuestion && (
+                <motion.div
+                    key="chat-question-standalone"
+                    variants={messageVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={messageTransition}
+                >
+                    <ChatQuestion chatId={chatId} question={pendingQuestion} />
+                </motion.div>
+            )}
         </div>
     );
 }

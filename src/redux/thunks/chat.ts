@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend } from "../../hooks";
 import { ChatContext } from "../../protocol";
-import { ChatPreContext, CursorFocus, incRequestId, removeFlagMessage, resetChat } from "../slices/chat";
+import { clearPendingQuestion, ChatPreContext, CursorFocus, incRequestId, removeFlagMessage, resetChat } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
@@ -130,6 +130,32 @@ export const queryFiles = createAsyncThunk<void, { chatId?: string, query: strin
     "chat/queryFiles",
     async ({ chatId, query }, _) => {
         webviewSend('chat/queryFiles', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query });
+    }
+);
+
+export const answerQuestion = createAsyncThunk<void, { chatId: string, answer: string }, ThunkApiType>(
+    "chat/answerQuestion",
+    async ({ chatId, answer }, { dispatch, getState }) => {
+        const state = getState();
+        const chat = state.chat.chats[chatId];
+        if (!chat?.pendingQuestion) return;
+
+        const requestId = chat.pendingQuestion.requestId;
+        webviewSend('chat/answerQuestion', { requestId, answer, cancelled: false });
+        dispatch(clearPendingQuestion({ chatId }));
+    }
+);
+
+export const cancelQuestion = createAsyncThunk<void, { chatId: string }, ThunkApiType>(
+    "chat/cancelQuestion",
+    async ({ chatId }, { dispatch, getState }) => {
+        const state = getState();
+        const chat = state.chat.chats[chatId];
+        if (!chat?.pendingQuestion) return;
+
+        const requestId = chat.pendingQuestion.requestId;
+        webviewSend('chat/answerQuestion', { requestId, answer: null, cancelled: true });
+        dispatch(clearPendingQuestion({ chatId }));
     }
 );
 

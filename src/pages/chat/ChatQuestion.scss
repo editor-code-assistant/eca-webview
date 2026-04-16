@@ -1,0 +1,57 @@
+.chat-question {
+    padding: 0.5em 0.75em;
+    margin: 0.35em 0;
+    border-left: 2px solid var(--eca-link-fg, #3794ff);
+    border-radius: 0 0.3em 0.3em 0;
+    background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 94%, var(--eca-link-fg, #3794ff) 6%);
+    font-size: 0.9em;
+
+    &__header {
+        font-weight: 600;
+        margin-bottom: 0.4em;
+        color: var(--eca-fg);
+    }
+
+    &__options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15em;
+        padding-left: 0.75em;
+    }
+
+    &__option {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75em;
+        cursor: pointer;
+        padding: 0.2em 0.4em;
+        border-radius: 0.2em;
+        transition: background 0.1s;
+
+        &:hover {
+            background-color: var(--eca-base-hover);
+        }
+
+        &--cancel {
+            margin-top: 0.2em;
+        }
+
+        &--cancel &-label {
+            color: var(--eca-error-fg, #f14c4c);
+        }
+    }
+
+    &__option-label {
+        color: var(--eca-link-fg, #3794ff);
+        text-decoration: underline;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    &__option-desc {
+        color: var(--eca-fg);
+        opacity: 0.6;
+        font-size: 0.9em;
+    }
+
+}

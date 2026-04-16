@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
-import { sendPrompt, steerPrompt } from "../../redux/thunks/chat";
+import { answerQuestion, sendPrompt, steerPrompt } from "../../redux/thunks/chat";
 import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
@@ -54,6 +54,9 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
     });
     const pendingPrompts = useSelector((state: State) => state.chat.chats[chatId]?.pendingPrompts || []);
     const steerMessage = useSelector((state: State) => state.chat.chats[chatId]?.steerMessage);
+    const pendingQuestion = useSelector((state: State) => state.chat.chats[chatId]?.pendingQuestion);
+    const isAnswerMode = !!pendingQuestion && !pendingQuestion.answer && !pendingQuestion.cancelled && !!pendingQuestion.allowFreeform;
+    const isQuestionPending = !!pendingQuestion && !pendingQuestion.answer && !pendingQuestion.cancelled;
 
     useEffect(() => {
         if (selectModel !== undefined) {
@@ -78,7 +81,16 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
-        if (prompt && !inputCompleting && selectedAgent) {
+        if (!prompt || inputCompleting) return;
+
+        // Answer mode: send as question answer instead of chat prompt
+        if (isAnswerMode) {
+            dispatch(answerQuestion({ chatId, answer: prompt }));
+            setPromptValue('');
+            return;
+        }
+
+        if (selectedAgent) {
             dispatch(pushPromptHistory(prompt));
             setHistoryIndex(-1);
             setDraftPrompt('');
@@ -261,7 +273,7 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
         inputRef.current?.focus();
     }
 
-    const sendDisabled = !enabled || inputCompleting || !promptValue.trim();
+    const sendDisabled = !enabled || inputCompleting || !promptValue.trim() || (isQuestionPending && !isAnswerMode);
 
     return (
         <div className={['prompt-area', isFocused && 'focused', loading && 'running', waitingApproval && 'waiting-approval'].filter(Boolean).join(' ')}>
@@ -288,9 +300,10 @@ export const ChatPrompt = memo(({ chatId, enabled }: ChatPromptProps) => {
                 onPaste={onPaste}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder="Ask, plan, build..."
+                placeholder={isAnswerMode ? "Answer>" : isQuestionPending ? "Select an option above..." : "Ask, plan, build..."}
                 className="field"
-                aria-label="Chat prompt"
+                disabled={isQuestionPending && !isAnswerMode}
+                aria-label={isAnswerMode ? "Answer question" : "Chat prompt"}
             />
             {enabled && (
                 <div className="toolbar">

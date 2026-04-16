@@ -199,6 +199,15 @@ function FileChangeBody({ props }: { props: Props }) {
 function chatToolCall(props: Props) {
     const dispatch = useEcaDispatch();
 
+    // Hide active tool call while a question is pending (question shown in messages instead)
+    const hiddenByQuestion = useSelector((state: State) => {
+        const q = state.chat.chats[props.chatId]?.pendingQuestion;
+        if (!q || q.answer !== undefined || q.cancelled) return false;
+        // If question specifies a toolCallId, match it; otherwise hide any running tool call
+        if (q.toolCallId) return q.toolCallId === props.toolCallId;
+        return props.status === 'preparing' || props.status === 'run' || props.status === 'running';
+    });
+
     const waitingApproval = props.manualApproval && props.status === 'run';
 
     const rejectToolCall = () => {
@@ -287,6 +296,9 @@ function chatToolCall(props: Props) {
 
     const bgCardClass = isBackground && bgJob?.status === 'running' ? 'background-running' : '';
 
+    // All hooks above — safe to early-return now
+    if (hiddenByQuestion) return null;
+
     const approvalComp = (
         <ApprovalActions
             waitingApproval={waitingApproval}
@@ -351,9 +363,9 @@ function chatToolCall(props: Props) {
             props={props}
             iconClass={iconClass}
             extraClassName={bgCardClass}
-            headerContent={<GenericToolCallHeader props={props} />}
-            bodyContent={<GenericToolCallBody props={props} />}
-            approvalComp={approvalComp}
+                            headerContent={<GenericToolCallHeader props={props} />}
+                            bodyContent={<GenericToolCallBody props={props} />}
+                            approvalComp={approvalComp}
         />
     );
 }

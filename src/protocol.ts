@@ -515,6 +515,33 @@ export type LoginAction =
     | { action: 'input'; fields: InputField[] }
     | { action: 'done' };
 
+// === Ask Question ===
+
+export interface AskQuestionOption {
+    label: string;
+    description?: string;
+}
+
+export interface AskQuestionData {
+    chatId: string;
+    question: string;
+    options: AskQuestionOption[];
+    toolCallId?: string;
+    allowFreeform?: boolean;
+    requestId: string;
+}
+
+export interface PendingQuestion {
+    chatId: string;
+    question: string;
+    options: AskQuestionOption[];
+    toolCallId?: string;
+    allowFreeform?: boolean;
+    requestId: string;
+    answer?: string;
+    cancelled?: boolean;
+}
+
 // === Background Jobs ===
 
 export type JobStatus = 'running' | 'completed' | 'failed' | 'killed';

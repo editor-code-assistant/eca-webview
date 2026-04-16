@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 
 interface ChatMessageText {
     type: 'text',
@@ -73,6 +73,7 @@ export interface Chat {
     steerMessage?: string,
     taskState?: TaskDetails | null,
     taskLoading?: boolean,
+    pendingQuestion?: PendingQuestion,
 }
 
 interface ChatUsage {
@@ -659,6 +660,31 @@ export const chatSlice = createSlice({
                 );
             }
         },
+        setPendingQuestion: (state, action) => {
+            const data = action.payload as PendingQuestion;
+            const chat = state.chats[data.chatId];
+            if (chat) {
+                chat.pendingQuestion = data;
+            }
+        },
+        clearPendingQuestion: (state, action) => {
+            const { chatId } = action.payload;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.pendingQuestion = undefined;
+            }
+        },
+        answerPendingQuestion: (state, action) => {
+            const { chatId, answer, cancelled } = action.payload;
+            const chat = state.chats[chatId];
+            if (chat && chat.pendingQuestion) {
+                chat.pendingQuestion = {
+                    ...chat.pendingQuestion,
+                    answer: answer ?? undefined,
+                    cancelled: !!cancelled,
+                };
+            }
+        },
     },
 });
 
@@ -686,4 +712,7 @@ export const {
     pushPromptHistory,
     renameChat,
     removeFlagMessage,
+    setPendingQuestion,
+    clearPendingQuestion,
+    answerPendingQuestion,
 } = chatSlice.actions

@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
-import { ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, } from "../redux/slices/chat";
+import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
+import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
 import { setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
@@ -110,6 +110,10 @@ const RootWrapper = () => {
                 content: { type: 'progress', state: 'running', text: 'Running...' },
             }));
         }
+    });
+
+    useWebviewListener('chat/askQuestion', (data: AskQuestionData) => {
+        dispatch(setPendingQuestion(data));
     });
 
     useWebviewListener('tool/serversUpdated', (mcps: ToolServerUpdatedParams) => {
