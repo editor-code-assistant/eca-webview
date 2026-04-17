@@ -40,6 +40,23 @@
         border-color: color-mix(in srgb, var(--eca-approval-fg) 35%, transparent);
     }
 
+    // Server not ready (Stopped | Starting | Failed). Give the card a
+    // dimmed accent border so the user can see at a glance that the
+    // prompt isn't in its normal submit-ready state. The textarea stays
+    // fully interactive so drafts typed during startup are preserved.
+    &.waiting {
+        border-color: color-mix(in srgb, var(--eca-input-placeholder-fg) 55%, transparent);
+    }
+
+    // One-shot shake played when the user hits Enter while the server
+    // isn't ready. Duration matches the setShake(false) timeout in
+    // ChatPrompt.tsx's handleKeyDown (320ms). `transform`-only so it
+    // stacks cleanly with the `.waiting` border tint above without
+    // property conflicts.
+    &.shake {
+        animation: prompt-shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
     // Hero mode: floating, centered, width-capped version of the same
     // card. Shape and shadow are inherited from the base .prompt-area
     // styles above; hero bumps `font-size` so the whole card (padding,
@@ -151,6 +168,30 @@
         flex-wrap: wrap;
     }
 
+    // Shown in place of the toolbar while the server is initializing.
+    // Matches the top-level startup-card vocabulary (status-dot + muted
+    // copy) so users see the same "we're working on it" signal locally,
+    // without having to re-focus on the main indicator. Placeholder-fg
+    // is used for text so it never competes with the user's typed draft.
+    .prompt-waiting-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        font-size: 0.82em;
+        color: var(--eca-input-placeholder-fg);
+        padding: 0.2em 0.1em;
+        user-select: none;
+
+        .status-dot {
+            width: 0.45em;
+            height: 0.45em;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background-color: var(--eca-warning-fg);
+            animation: prompt-hint-dot-pulse 1.4s ease-in-out infinite;
+        }
+    }
+
     .steer-indicator, .queue-indicator {
         font-size: 11px;
         font-style: italic;
@@ -200,4 +241,25 @@
             }
         }
     }
+}
+
+// One-shot horizontal shake played by `.prompt-area.shake` when the
+// user hits Enter while the ECA server isn't Running. Amplitude is
+// kept small (≤6px) so it reads as a hint rather than an error.
+@keyframes prompt-shake {
+    0%, 100% { transform: translateX(0); }
+    15%      { transform: translateX(-6px); }
+    30%      { transform: translateX(6px); }
+    45%      { transform: translateX(-4px); }
+    60%      { transform: translateX(4px); }
+    75%      { transform: translateX(-2px); }
+    90%      { transform: translateX(2px); }
+}
+
+// Pulse for the prompt-waiting-hint status dot. Slower cadence (1.4s)
+// than the top-level startup-card pulse so stacking the two doesn't
+// create a distracting beat pattern.
+@keyframes prompt-hint-dot-pulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.2); }
 }

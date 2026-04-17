@@ -26,6 +26,10 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const [commandCompleting, setCommandCompleting] = useState(false);
     const [fileCompleting, setFileCompleting] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    // One-shot shake played when the user presses Enter while the server
+    // isn't Running. Controlled from handleKeyDown; reset via setTimeout
+    // after the CSS animation duration defined in ChatPrompt.scss.
+    const [shake, setShake] = useState(false);
     const inputCompleting = commandCompleting || fileCompleting;
     const dispatch = useEcaDispatch();
 
@@ -165,6 +169,21 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                 return;
             }
             (e.target as HTMLTextAreaElement).blur();
+            return;
+        }
+
+        // ── Server not ready: Enter is a no-op ──
+        //
+        // The textarea itself stays editable (drafts survive startup) but
+        // pressing Enter must NOT submit and, crucially, must NOT insert a
+        // newline (the textarea's default behavior). This single branch
+        // swallows Enter + any modifier (plain, Shift, Ctrl, Meta) and
+        // triggers a short shake on the prompt card as passive feedback.
+        if (!enabled && e.key === "Enter") {
+            e.preventDefault();
+            setShake(true);
+            // Duration matches the prompt-shake keyframes in ChatPrompt.scss.
+            window.setTimeout(() => setShake(false), 320);
             return;
         }
 
@@ -328,7 +347,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                     mass: 0.9,
                 },
             }}
-            className={['prompt-area', heroMode && 'hero', isFocused && 'focused', loading && 'running', waitingApproval && 'waiting-approval'].filter(Boolean).join(' ')}
+            className={['prompt-area', heroMode && 'hero', isFocused && 'focused', loading && 'running', waitingApproval && 'waiting-approval', !enabled && 'waiting', shake && 'shake'].filter(Boolean).join(' ')}
         >
             <AnimatePresence initial={false}>
                 {currentProgress && (
@@ -398,6 +417,17 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                         options={variantOptions}
                         title="Select variant"
                     />
+                </div>
+            )}
+            {!enabled && (
+                // Inline "waiting for server" hint shown in place of the
+                // toolbar. Gives users who are already focused on the
+                // prompt a local explanation for why Enter is inert —
+                // without requiring them to look back up at the main
+                // startup-card.
+                <div className="prompt-waiting-hint" aria-hidden="true">
+                    <span className="status-dot" />
+                    <span>Waiting for ECA server…</span>
                 </div>
             )}
             {steerMessage && (

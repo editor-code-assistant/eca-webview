@@ -41,14 +41,29 @@ export function Chat() {
                 <ChatTask key={currentChatId} chatId={currentChatId} />
             )}
 
-            {!running && !isWeb &&
-                <div className="loading">
+            {!running && !isWeb && (
+                <div className={`startup-card${status === ServerStatus.Failed ? ' startup-card-failed' : ' startup-card-starting'}`}
+                     role="status"
+                     aria-live="polite">
                     <div className="content">
                         <img className="image" src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
-                        <p>Waiting for server to start…</p>
+                        <div className="status-row">
+                            <span className="status-dot" aria-hidden="true" />
+                            <p className="title">
+                                {status === ServerStatus.Failed ? 'ECA server failed to start' : 'Starting ECA server…'}
+                            </p>
+                        </div>
+                        {status !== ServerStatus.Failed && (
+                            <SyncLoader className="spinner" size={4} />
+                        )}
+                        <p className="subtitle">
+                            {status === ServerStatus.Failed
+                                ? 'Check the logs for details and try restarting.'
+                                : 'This usually takes a few seconds. You can start drafting your message below.'}
+                        </p>
                     </div>
                 </div>
-            }
+            )}
 
             <ChatMessages chatId={currentChatId}>
                 {(running || isWeb) && (
@@ -88,11 +103,18 @@ export function Chat() {
             </ChatMessages>
 
             {heroMode && (
-                <div className={`hero-status${running ? ' hero-status-ready' : ''}`}>
+                <div className={`hero-status${running ? ' hero-status-ready' : ''}${status === ServerStatus.Failed ? ' hero-status-failed' : ''}`}
+                     role="status"
+                     aria-live="polite">
                     {!running && (
                         <>
-                            <p>Waiting for server to start…</p>
-                            <SyncLoader className="spinner" size={2} />
+                            <span className="status-dot" aria-hidden="true" />
+                            <p>
+                                {status === ServerStatus.Failed ? 'ECA server failed to start' : 'Starting ECA server…'}
+                            </p>
+                            {status !== ServerStatus.Failed && (
+                                <SyncLoader className="spinner" size={2} />
+                            )}
                         </>
                     )}
                 </div>

@@ -4,7 +4,13 @@
   height: 100%;
   width: 100%;
 
-  > .loading {
+  // Prominent startup indicator shown while the ECA server is Stopped
+  // / Starting / Failed. Replaces the previous near-invisible ".loading"
+  // placeholder — the logo stays visible (not faded to 0.12), a pulsing
+  // status-dot draws the eye, and the copy is active ("Starting ECA
+  // server…") rather than passive ("Waiting for server to start…").
+  // Failed state re-uses the same layout with warning-fg color.
+  > .startup-card {
       display: flex;
       flex: 1;
       justify-content: center;
@@ -15,24 +21,90 @@
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1.5em;
+          gap: 0.9em;
           text-align: center;
+          max-width: 26em;
+          padding: 1.5em 1em;
 
           .image {
-            width: min(10em, 40vw);
+            width: min(6em, 24vw);
             height: auto;
             object-fit: contain;
-            opacity: 0.12;
+            opacity: 0.6;
             user-select: none;
             pointer-events: none;
-            filter: grayscale(20%);
+            filter: grayscale(10%);
+            transition: opacity 0.3s ease;
+            margin-bottom: 0.2em;
           }
 
-          p {
+          .status-row {
+            display: flex;
+            align-items: center;
+            gap: 0.55em;
+          }
+
+          .status-dot {
+            width: 0.55em;
+            height: 0.55em;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background-color: var(--eca-warning-fg);
+            animation: startup-dot-pulse 1.6s ease-in-out infinite;
+          }
+
+          .title {
+            margin: 0;
+            color: var(--eca-input-fg);
+            font-size: 1.05em;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+          }
+
+          .subtitle {
             margin: 0;
             color: var(--eca-input-placeholder-fg);
-            font-size: 0.95em;
+            font-size: 0.85em;
+            opacity: 0.85;
+            line-height: 1.5;
           }
+
+          .spinner {
+            display: inline-block !important;
+            span {
+              background-color: var(--eca-warning-fg) !important;
+            }
+          }
+      }
+
+      // Failed state: same layout, warning color, no pulsing dot.
+      &.startup-card-failed {
+          .content {
+              .status-dot {
+                  animation: none;
+                  opacity: 1;
+              }
+              .title {
+                  color: var(--eca-warning-fg);
+              }
+              .image {
+                  opacity: 0.4;
+              }
+          }
+      }
+  }
+
+  // Pulsing halo used by both the top-level startup-card dot and the
+  // hero-mode status dot. Box-shadow radiates out and fades to zero
+  // alpha, which reads as a soft ping without cluttering the canvas.
+  @keyframes startup-dot-pulse {
+      0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 color-mix(in srgb, var(--eca-warning-fg) 60%, transparent);
+      }
+      50% {
+          transform: scale(1.2);
+          box-shadow: 0 0 0 6px color-mix(in srgb, var(--eca-warning-fg) 0%, transparent);
       }
   }
 
@@ -133,29 +205,52 @@
       }
     }
 
+    // Hero-mode startup status: promoted from 0.5 to full opacity and
+    // given a pulsing status-dot so empty-state web sessions get the
+    // same attention-grabbing cue as the desktop startup-card above.
+    // Still fades to 0 once the server is Running so the empty hero
+    // canvas stays clean. Failed state swaps the color to warning-fg.
     .hero-status {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.4em;
-      padding: 0.4em 1em;
+      gap: 0.55em;
+      padding: 0.5em 1em;
       margin-bottom: 1em;
       min-height: 1.5em;
-      color: var(--eca-input-placeholder-fg);
-      font-size: 0.85em;
-      opacity: 0.5;
+      color: var(--eca-input-fg);
+      font-size: 0.95em;
+      font-weight: 500;
+      opacity: 1;
       transition: opacity 0.3s ease;
 
       &.hero-status-ready {
         opacity: 0;
       }
 
+      &.hero-status-failed {
+        color: var(--eca-warning-fg);
+
+        .status-dot {
+          animation: none;
+        }
+      }
+
       p { margin: 0; }
+
+      .status-dot {
+        width: 0.5em;
+        height: 0.5em;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background-color: var(--eca-warning-fg);
+        animation: startup-dot-pulse 1.6s ease-in-out infinite;
+      }
 
       .spinner {
         display: inline-block !important;
         span {
-          background-color: var(--eca-input-placeholder-fg) !important;
+          background-color: var(--eca-warning-fg) !important;
         }
       }
     }

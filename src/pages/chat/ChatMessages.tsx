@@ -33,7 +33,7 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const dispatch = useEcaDispatch();
-    const messages = useSelector((state: State) => state.chat.chats[chatId].messages);
+    const messages = useSelector((state: State) => state.chat.chats[chatId]?.messages ?? []);
     const pendingQuestion = useSelector((state: State) => state.chat.chats[chatId]?.pendingQuestion);
 
     // Track how many messages existed on first render so we only animate new ones

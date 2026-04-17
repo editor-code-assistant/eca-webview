@@ -93,3 +93,15 @@ export const {
     setTrust,
     setActiveSessionId,
 } = serverSlice.actions
+
+// Selectors for use with useSelector. Typed against a minimal state
+// shape on purpose so this slice file doesn't have to import from
+// store.ts (avoids a circular import during module load).
+export const selectServerStatus = (state: { server: { status: ServerStatus } }) =>
+    state.server.status;
+export const selectIsServerReady = (state: { server: { status: ServerStatus } }) =>
+    state.server.status === ServerStatus.Running;
+export const selectIsServerStarting = (state: { server: { status: ServerStatus } }) =>
+    state.server.status === ServerStatus.Starting;
+export const selectIsServerFailed = (state: { server: { status: ServerStatus } }) =>
+    state.server.status === ServerStatus.Failed;
