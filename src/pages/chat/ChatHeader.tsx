@@ -73,6 +73,20 @@ export const ChatHeader = memo(({ chats }: Props) => {
         }
     };
 
+    // Bridge for the desktop "Rename Chat" menu (F2). RootWrapper emits
+    // this DOM event on the currently-selected chat; we map it to the
+    // existing inline-rename flow so there is a single code path.
+    useEffect(() => {
+        const handler = () => {
+            const target = chats.find(c => c.id === selectedChat);
+            if (target && target.id !== 'EMPTY') {
+                startRename(target);
+            }
+        };
+        document.addEventListener('eca:requestRenameCurrent', handler);
+        return () => document.removeEventListener('eca:requestRenameCurrent', handler);
+    }, [chats, selectedChat]);
+
     const emptyChat = chats.find(c => c.id === 'EMPTY');
     const isWeb = editorName() === 'web';
     const selectedChatObj = chats.find(c => c.id === selectedChat);

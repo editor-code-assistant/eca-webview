@@ -1,15 +1,16 @@
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
+import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
 import { setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
 import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
-import { useEcaDispatch } from "../redux/store";
-import { sendPromptToCurrentChat } from "../redux/thunks/chat";
+import { State, useEcaDispatch } from "../redux/store";
+import { deleteChat, sendPromptToCurrentChat, stopPrompt } from "../redux/thunks/chat";
 import { focusChanged } from "../redux/thunks/editor";
 import { statusChanged } from "../redux/thunks/server";
 
@@ -183,6 +184,51 @@ const RootWrapper = () => {
     useWebviewListener('chat/sendPromptToCurrentChat', (data: { prompt: string }) => {
         dispatch(sendPromptToCurrentChat({ prompt: data.prompt }));
     });
+
+    // ── Desktop keyboard shortcuts routed through the webview ──
+    //
+    // The host reads `selectedChat` at dispatch time so we can safely pin it
+    // in the listener deps — the listener closure will re-register whenever
+    // the selection changes, ensuring the right chat is targeted. `EMPTY`
+    // is the pre-send placeholder chat and is ignored for destructive ops.
+    const selectedChat = useSelector((state: State) => state.chat.selectedChat);
+
+    useWebviewListener('chat/closeCurrent', async () => {
+        if (selectedChat && selectedChat !== 'EMPTY') {
+            dispatch(deleteChat({ chatId: selectedChat }));
+        }
+    }, [selectedChat]);
+
+    useWebviewListener('chat/renameCurrent', async () => {
+        if (selectedChat && selectedChat !== 'EMPTY') {
+            // ChatHeader listens for this DOM event and enters rename mode
+            // on the currently-selected tab. Using a DOM event avoids
+            // threading rename state through Redux for a transient UI mode.
+            document.dispatchEvent(new CustomEvent('eca:requestRenameCurrent'));
+        }
+    }, [selectedChat]);
+
+    useWebviewListener('chat/clearCurrent', async () => {
+        if (selectedChat && selectedChat !== 'EMPTY') {
+            dispatch(clearChat({ chatId: selectedChat }));
+            webviewSend('chat/clearChat', { chatId: selectedChat });
+        }
+    }, [selectedChat]);
+
+    useWebviewListener('chat/exportCurrent', async () => {
+        if (selectedChat && selectedChat !== 'EMPTY') {
+            // ChatSubHeader owns the markdown serialization; surface the
+            // request as a DOM event so the component runs its existing
+            // `exportChat()` flow without duplicating logic here.
+            document.dispatchEvent(new CustomEvent('eca:requestExportCurrent'));
+        }
+    }, [selectedChat]);
+
+    useWebviewListener('chat/stopCurrent', async () => {
+        if (selectedChat && selectedChat !== 'EMPTY') {
+            dispatch(stopPrompt({ chatId: selectedChat }));
+        }
+    }, [selectedChat]);
 
     useEffect(() => {
         // Reset stale chat state before requesting fresh state from the bridge.

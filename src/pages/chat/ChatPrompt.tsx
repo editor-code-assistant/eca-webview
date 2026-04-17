@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SyncLoader } from "react-spinners";
 import { useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
-import { answerQuestion, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
+import { answerQuestion, cancelQuestion, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
 import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
@@ -145,6 +145,29 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const variantOptions = ['No variant', ...[...variants].sort()];
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        // ── Escape: layered cancel ──
+        //
+        // Completion menus (slash commands, @file mentions) attach their own
+        // keydown listeners with stopPropagation(), so this branch only runs
+        // when no completion menu is open.
+        //   1. Cancel a pending askQuestion (both select-option and answer mode).
+        //   2. Stop an in-flight generation.
+        //   3. Blur the textarea so window-level shortcuts work.
+        if (e.key === "Escape" && !inputCompleting) {
+            if (isQuestionPending || isAnswerMode) {
+                dispatch(cancelQuestion({ chatId }));
+                e.preventDefault();
+                return;
+            }
+            if (loading) {
+                dispatch(stopPrompt({ chatId }));
+                e.preventDefault();
+                return;
+            }
+            (e.target as HTMLTextAreaElement).blur();
+            return;
+        }
+
         if (e.key === "Enter" && e.ctrlKey && enabled) {
             queuePromptValue();
             e.preventDefault();

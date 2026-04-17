@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
@@ -111,6 +111,15 @@ export function ChatSubHeader({ chatId }: Props) {
         const defaultName = `${title.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').toLowerCase()}.md`;
         webviewSend('editor/saveFile', { content: markdown, defaultName });
     }
+
+    // Bridge for the desktop "Export Chat" menu (CmdOrCtrl+Shift+E).
+    // RootWrapper emits this DOM event when the accelerator fires; the
+    // handler closes over the current `chat` so deps must include it.
+    useEffect(() => {
+        const handler = () => exportChat();
+        document.addEventListener('eca:requestExportCurrent', handler);
+        return () => document.removeEventListener('eca:requestExportCurrent', handler);
+    }, [chat]);
 
     const allServers = useSelector((state: State) => state.mcp.servers);
     const mcpServers = useMemo(() => allServers.filter((server) => server.type === 'mcp'), [allServers]);
