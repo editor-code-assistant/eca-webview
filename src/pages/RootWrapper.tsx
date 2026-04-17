@@ -3,10 +3,10 @@ import { useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
-import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
+import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerRemovedParams, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
-import { setMcpServers } from "../redux/slices/mcp";
+import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
 import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
 import { State, useEcaDispatch } from "../redux/store";
@@ -119,6 +119,21 @@ const RootWrapper = () => {
 
     useWebviewListener('tool/serversUpdated', (mcps: ToolServerUpdatedParams) => {
         dispatch(setMcpServers(mcps));
+    });
+
+    useWebviewListener('tool/serverRemoved', (params: ToolServerRemovedParams) => {
+        dispatch(removeMcpServer(params));
+    });
+
+    // Main-side dispatches the RPC result back as an 'mcp/addServer'/'mcp/removeServer'
+    // message keyed by requestId. `respondWebviewRequest` resolves the thunk's promise
+    // so callers can surface validation errors from the server.
+    useWebviewListener('mcp/addServer', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('mcp/removeServer', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
     });
 
     useWebviewListener('config/updated', (config: { [key: string]: any }) => {

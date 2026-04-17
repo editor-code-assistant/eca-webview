@@ -35,6 +35,248 @@
     }
   }
 
+  // ── Shared primitives ────────────────────────────────────────────
+  //
+  // These rules live at the tab scope (not under .server-card) so the
+  // Add-server form, which sits outside any server card, picks them up.
+  // Card-specific variants (.start-btn / .stop-btn / .remove-btn / etc.)
+  // stay nested under .server-card — they only ever render there and
+  // their higher specificity lets them override these defaults.
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    background: none;
+    border: 1px solid var(--eca-base-border);
+    color: var(--eca-input-fg);
+    border-radius: 0.3em;
+    padding: 0.2em 0.55em;
+    font-size: 0.78em;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.15s, background-color 0.15s;
+    white-space: nowrap;
+
+    .codicon { font-size: 0.9em; }
+    &:hover:not(:disabled) { opacity: 1; background-color: var(--eca-base-hover); }
+    &:disabled { opacity: 0.45; cursor: default; }
+  }
+
+  .editable-field {
+    font-size: 0.8em;
+    font-family: monospace;
+    background-color: var(--eca-panel-bg);
+    padding: 0.35em 0.5em;
+    border-radius: 0.3em;
+    color: var(--eca-input-fg);
+    border: 1px solid transparent;
+    outline: none;
+    transition: border-color 0.15s, width 0.1s;
+    opacity: 0.85;
+    flex: 0 1 auto;
+    min-width: 4em;
+    max-width: 100%;
+
+    &::placeholder {
+      color: var(--eca-input-placeholder-fg);
+      opacity: 0.7;
+    }
+
+    &:focus { border-color: var(--eca-link-fg); opacity: 1; }
+  }
+
+  .url-field { flex: 1 1 auto; }
+
+  .save-btn {
+    flex-shrink: 0;
+    font-size: 0.75em;
+    padding: 0.3em 0.6em;
+    border-radius: 0.3em;
+    border: 1px solid var(--eca-link-fg);
+    background: transparent;
+    color: var(--eca-link-fg);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s, opacity 0.15s;
+
+    &:hover:not(:disabled) { background-color: rgba(0, 120, 212, 0.1); }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+
+  .add-server-area {
+    margin-bottom: 0.6em;
+  }
+
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.35em 0.7em;
+    font-size: 0.85em;
+
+    .codicon { font-size: 1em; }
+  }
+
+  .add-server-form {
+    background-color: var(--eca-input-bg);
+    border: 1px solid var(--eca-base-border);
+    border-radius: 0.5em;
+    padding: 0.7em 0.8em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55em;
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.15em;
+    }
+
+    .form-title {
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--eca-input-fg);
+      opacity: 0.7;
+      cursor: pointer;
+      padding: 0.2em;
+      border-radius: 0.25em;
+
+      &:hover:not(:disabled) { opacity: 1; background-color: var(--eca-base-hover); }
+      &:disabled { opacity: 0.35; cursor: default; }
+
+      .codicon { font-size: 0.95em; }
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2em;
+    }
+
+    .form-label {
+      font-size: 0.75em;
+      color: var(--eca-input-placeholder-fg);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 500;
+
+      .optional {
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 400;
+        opacity: 0.7;
+      }
+    }
+
+    .field-hint {
+      font-size: 0.75em;
+      color: var(--eca-input-placeholder-fg);
+      opacity: 0.8;
+
+      code {
+        background-color: var(--eca-panel-bg);
+        padding: 0 0.3em;
+        border-radius: 0.2em;
+        font-size: 0.95em;
+      }
+
+      &.error {
+        color: var(--eca-error-fg);
+        opacity: 1;
+      }
+    }
+
+    .editable-field.multiline {
+      font-family: monospace;
+      min-height: 3.5em;
+      resize: vertical;
+      width: 100%;
+      padding: 0.4em 0.5em;
+    }
+
+    .editable-field.has-error {
+      border-color: var(--eca-error-fg);
+      opacity: 1;
+    }
+
+    .transport-toggle {
+      display: inline-flex;
+      align-self: flex-start;
+      border-radius: 0.35em;
+      overflow: hidden;
+      border: 1px solid var(--eca-base-border);
+    }
+
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+      background: transparent;
+      border: none;
+      color: var(--eca-input-fg);
+      padding: 0.3em 0.7em;
+      font-size: 0.82em;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.15s, background-color 0.15s;
+
+      .codicon { font-size: 0.9em; }
+
+      &:hover { opacity: 1; background-color: var(--eca-base-hover); }
+
+      &.active {
+        background-color: var(--eca-panel-bg);
+        opacity: 1;
+        color: var(--eca-link-fg);
+      }
+
+      & + .toggle-btn {
+        border-left: 1px solid var(--eca-base-border);
+      }
+    }
+
+    .form-error {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      padding: 0.35em 0.5em;
+      border-radius: 0.3em;
+      font-size: 0.8em;
+      background-color: rgba(241, 76, 76, 0.08);
+      border: 1px solid rgba(241, 76, 76, 0.25);
+      color: var(--eca-error-fg);
+
+      .codicon { font-size: 0.95em; }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.4em;
+      margin-top: 0.2em;
+    }
+
+    .primary-btn {
+      border-color: var(--eca-link-fg);
+      color: var(--eca-link-fg);
+
+      &:hover:not(:disabled) {
+        background-color: rgba(0, 120, 212, 0.1);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+  }
+
   .empty-state {
     display: flex;
     flex-direction: column;
@@ -124,25 +366,6 @@
       flex-shrink: 0;
     }
 
-    .action-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3em;
-      background: none;
-      border: 1px solid var(--eca-base-border);
-      color: var(--eca-input-fg);
-      border-radius: 0.3em;
-      padding: 0.2em 0.55em;
-      font-size: 0.78em;
-      cursor: pointer;
-      opacity: 0.8;
-      transition: opacity 0.15s, background-color 0.15s;
-      white-space: nowrap;
-
-      .codicon { font-size: 0.9em; }
-      &:hover { opacity: 1; background-color: var(--eca-base-hover); }
-    }
-
     .connect-btn {
       border-color: var(--eca-warning-fg);
       color: var(--eca-warning-fg);
@@ -166,6 +389,29 @@
       border-color: var(--eca-error-fg);
       color: var(--eca-error-fg);
       &:hover { background-color: rgba(241, 76, 76, 0.1); }
+    }
+
+    .icon-only {
+      padding: 0.2em 0.35em;
+      .codicon { font-size: 0.9em; }
+    }
+
+    .remove-btn {
+      border-color: var(--eca-input-placeholder-fg);
+      color: var(--eca-input-placeholder-fg);
+
+      &:hover {
+        border-color: var(--eca-error-fg);
+        color: var(--eca-error-fg);
+        background-color: rgba(241, 76, 76, 0.08);
+        opacity: 1;
+      }
+    }
+
+    .confirm-prompt {
+      font-size: 0.8em;
+      color: var(--eca-error-fg);
+      margin-right: 0.25em;
     }
 
     .server-body {
@@ -231,42 +477,6 @@
       display: flex;
       align-items: center;
       gap: 0.25em;
-    }
-
-    .editable-field {
-      font-size: 0.8em;
-      font-family: monospace;
-      background-color: var(--eca-panel-bg);
-      padding: 0.35em 0.5em;
-      border-radius: 0.3em;
-      color: var(--eca-input-fg);
-      border: 1px solid transparent;
-      outline: none;
-      transition: border-color 0.15s, width 0.1s;
-      opacity: 0.85;
-      flex: 0 1 auto;
-      min-width: 4em;
-      max-width: 100%;
-
-      &:focus { border-color: var(--eca-link-fg); opacity: 1; }
-    }
-
-    .url-field { flex: 1 1 auto; }
-
-    .save-btn {
-      flex-shrink: 0;
-      font-size: 0.75em;
-      padding: 0.3em 0.6em;
-      border-radius: 0.3em;
-      border: 1px solid var(--eca-link-fg);
-      background: transparent;
-      color: var(--eca-link-fg);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background-color 0.15s, opacity 0.15s;
-
-      &:hover:not(:disabled) { background-color: rgba(0, 120, 212, 0.1); }
-      &:disabled { opacity: 0.5; cursor: default; }
     }
   }
 

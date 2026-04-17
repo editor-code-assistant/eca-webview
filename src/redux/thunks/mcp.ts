@@ -1,12 +1,20 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
+import {
+    McpAddServerRequest,
+    McpAddServerResponse,
+    McpRemoveServerRequest,
+    McpRemoveServerResponse,
+} from "../../protocol";
 import { ThunkApiType } from "../store";
 
 interface UpdateServerParams {
     name: string;
     command?: string;
     args?: string[];
+    env?: Record<string, string>;
     url?: string;
+    headers?: Record<string, string>;
 }
 
 export const startServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
@@ -55,5 +63,33 @@ export const updateServer = createAsyncThunk<void, UpdateServerParams, ThunkApiT
     "mcp/updateServer",
     async (params) => {
         await webviewSendAndGet('mcp/updateServer', params);
+    }
+);
+
+/**
+ * Request the server to add a new MCP server definition.
+ * Resolves with the canonical add-server response (including `error` when
+ * validation fails) so UI code can surface problems inline.
+ * The server also broadcasts the new entry through `tool/serverUpdated`,
+ * so the slice will converge regardless of how this promise is awaited.
+ */
+export const addServer = createAsyncThunk<McpAddServerResponse, McpAddServerRequest, ThunkApiType>(
+    "mcp/addServer",
+    async (params) => {
+        const result = await webviewSendAndGet<McpAddServerRequest>('mcp/addServer', params);
+        return result as McpAddServerResponse;
+    }
+);
+
+/**
+ * Request the server to remove an MCP server definition.
+ * The server broadcasts `tool/serverRemoved`; the slice optimistically
+ * drops the row here so the UI doesn't flicker while waiting.
+ */
+export const removeServer = createAsyncThunk<McpRemoveServerResponse, McpRemoveServerRequest, ThunkApiType>(
+    "mcp/removeServer",
+    async (params) => {
+        const result = await webviewSendAndGet<McpRemoveServerRequest>('mcp/removeServer', params);
+        return result as McpRemoveServerResponse;
     }
 );

@@ -458,6 +458,49 @@ export interface McpLogoutServerParams {
     name: string;
 }
 
+/**
+ * Payload for adding a new MCP server via the `mcp/addServer` IPC message.
+ * Exactly one transport must be populated: stdio (`command` + optional
+ * `args`/`env`) or HTTP (`url` + optional `headers`/OAuth fields).
+ * `scope` defaults to "global" on the server.
+ */
+export interface McpAddServerRequest {
+    name: string;
+    // stdio transport
+    command?: string;
+    args?: string[];
+    env?: Record<string, string>;
+    // HTTP transport
+    url?: string;
+    headers?: Record<string, string>;
+    clientId?: string;
+    clientSecret?: string;
+    oauthPort?: number;
+    // shared
+    disabled?: boolean;
+    scope?: 'global' | 'workspace';
+    workspaceUri?: string;
+}
+
+export interface McpAddServerResponse {
+    server?: MCPServerUpdatedParams;
+    error?: { code: string; message: string; data?: unknown };
+}
+
+export interface McpRemoveServerRequest {
+    name: string;
+}
+
+export interface McpRemoveServerResponse {
+    name?: string;
+    removed?: boolean;
+    error?: { code: string; message: string; data?: unknown };
+}
+
+export interface ToolServerRemovedParams {
+    name: string;
+}
+
 // Provider types
 
 export type ProviderAuthStatus = 'authenticated' | 'expiring' | 'expired' | 'unauthenticated' | 'local' | 'not-running';

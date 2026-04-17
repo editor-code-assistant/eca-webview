@@ -1,8 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { MCPServerUpdatedParams, ToolServerStatus } from '../../protocol';
+import { McpAddServerRequest, MCPServerUpdatedParams, ToolServerStatus } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
-import { connectServer, disableServer, enableServer, logoutServer, startServer, stopServer, updateServer } from '../../redux/thunks/mcp';
+import {
+    addServer,
+    connectServer,
+    disableServer,
+    enableServer,
+    logoutServer,
+    removeServer,
+    startServer,
+    stopServer,
+    updateServer,
+} from '../../redux/thunks/mcp';
 import { openServerLogs } from '../../redux/thunks/server';
 import { ToolTip } from '../components/ToolTip';
 import './MCPsTab.scss';
@@ -15,6 +25,272 @@ const statusLabel: Record<ToolServerStatus, string> = {
     'disabled': 'Disabled',
     'requires-auth': 'Requires auth',
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+/**
+ * Parse a multi-line KEY=VALUE block into an object.
+ * Blank lines are ignored. Returns a human-readable error string when
+ * any non-blank line is malformed.
+ */
+function parseEnvLines(raw: string): Record<string, string> | { error: string } {
+    const out: Record<string, string> = {};
+    const lines = raw.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const eq = line.indexOf('=');
+        if (eq <= 0) return { error: `env line ${i + 1} must be KEY=VALUE: "${line}"` };
+        const key = line.slice(0, eq).trim();
+        const value = line.slice(eq + 1);
+        if (!key) return { error: `env line ${i + 1} has empty key` };
+        out[key] = value;
+    }
+    return out;
+}
+
+/**
+ * Parse a multi-line "Header: value" block into an object.
+ * Blank lines are ignored. Colon in the value is preserved (first split wins).
+ */
+function parseHeaderLines(raw: string): Record<string, string> | { error: string } {
+    const out: Record<string, string> = {};
+    const lines = raw.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const colon = line.indexOf(':');
+        if (colon <= 0) return { error: `header line ${i + 1} must be "Key: value": "${line}"` };
+        const key = line.slice(0, colon).trim();
+        const value = line.slice(colon + 1).trim();
+        if (!key) return { error: `header line ${i + 1} has empty key` };
+        out[key] = value;
+    }
+    return out;
+}
+
+// ── Add-server form ───────────────────────────────────────────────────────
+
+interface AddServerFormProps {
+    existingNames: Set<string>;
+    onClose: () => void;
+}
+
+/**
+ * Inline form for adding a new MCP server. Posts `mcp/addServer` and waits
+ * for the server's response — validation errors surface inline, and on
+ * success the `tool/serverUpdated` broadcast will populate the new row in
+ * the parent list so we don't need to push it locally.
+ */
+function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
+    const dispatch = useEcaDispatch();
+    const [name, setName] = useState('');
+    const [transport, setTransport] = useState<'stdio' | 'remote'>('stdio');
+    const [command, setCommand] = useState('');
+    const [args, setArgs] = useState('');
+    const [env, setEnv] = useState('');
+    const [url, setUrl] = useState('');
+    const [headers, setHeaders] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const trimmedName = name.trim();
+    const nameCollision = trimmedName.length > 0 && existingNames.has(trimmedName);
+
+    const canSubmit =
+        trimmedName.length > 0 &&
+        !nameCollision &&
+        !submitting &&
+        (transport === 'stdio' ? command.trim().length > 0 : url.trim().length > 0);
+
+    const onSubmit = async () => {
+        setError(null);
+        if (!trimmedName) return setError('Name is required.');
+        if (nameCollision) return setError(`Server '${trimmedName}' already exists.`);
+
+        const payload: McpAddServerRequest = { name: trimmedName };
+
+        if (transport === 'stdio') {
+            if (!command.trim()) return setError('Command is required for stdio transport.');
+            payload.command = command.trim();
+            const parsedArgs = args.trim() ? args.trim().split(/\s+/) : [];
+            if (parsedArgs.length) payload.args = parsedArgs;
+            if (env.trim()) {
+                const parsed = parseEnvLines(env);
+                if ('error' in parsed) return setError(parsed.error);
+                if (Object.keys(parsed).length) payload.env = parsed;
+            }
+        } else {
+            if (!url.trim()) return setError('URL is required for remote transport.');
+            payload.url = url.trim();
+            if (headers.trim()) {
+                const parsed = parseHeaderLines(headers);
+                if ('error' in parsed) return setError(parsed.error);
+                if (Object.keys(parsed).length) payload.headers = parsed;
+            }
+        }
+
+        setSubmitting(true);
+        try {
+            const result = await dispatch(addServer(payload)).unwrap();
+            if (result?.error) {
+                setError(result.error.message ?? 'Failed to add MCP server.');
+                return;
+            }
+            onClose();
+        } catch (err) {
+            setError((err as Error)?.message ?? 'Failed to add MCP server.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="add-server-form">
+            <div className="form-header">
+                <span className="form-title">New MCP server</span>
+                <button
+                    className="icon-btn"
+                    onClick={onClose}
+                    aria-label="Close add-server form"
+                    disabled={submitting}
+                >
+                    <i className="codicon codicon-close"></i>
+                </button>
+            </div>
+
+            <div className="form-row">
+                <label className="form-label">Name</label>
+                <input
+                    className={`editable-field${nameCollision ? ' has-error' : ''}`}
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="my-mcp-server"
+                    spellCheck={false}
+                    autoFocus
+                />
+                {nameCollision &&
+                    <span className="field-hint error">Name already in use</span>}
+            </div>
+
+            <div className="form-row">
+                <label className="form-label">Transport</label>
+                <div className="transport-toggle">
+                    <button
+                        type="button"
+                        className={`toggle-btn ${transport === 'stdio' ? 'active' : ''}`}
+                        onClick={() => setTransport('stdio')}
+                    >
+                        <i className="codicon codicon-terminal"></i>
+                        stdio
+                    </button>
+                    <button
+                        type="button"
+                        className={`toggle-btn ${transport === 'remote' ? 'active' : ''}`}
+                        onClick={() => setTransport('remote')}
+                    >
+                        <i className="codicon codicon-globe"></i>
+                        remote
+                    </button>
+                </div>
+            </div>
+
+            {transport === 'stdio' ? (
+                <>
+                    <div className="form-row">
+                        <label className="form-label">Command</label>
+                        <input
+                            className="editable-field"
+                            type="text"
+                            value={command}
+                            onChange={e => setCommand(e.target.value)}
+                            placeholder="npx"
+                            spellCheck={false}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <label className="form-label">Args</label>
+                        <input
+                            className="editable-field"
+                            type="text"
+                            value={args}
+                            onChange={e => setArgs(e.target.value)}
+                            placeholder="-y my-mcp-package"
+                            spellCheck={false}
+                        />
+                        <span className="field-hint">Whitespace-separated.</span>
+                    </div>
+                    <div className="form-row">
+                        <label className="form-label">Env <span className="optional">(optional)</span></label>
+                        <textarea
+                            className="editable-field multiline"
+                            value={env}
+                            onChange={e => setEnv(e.target.value)}
+                            placeholder="KEY=value&#10;OTHER=another"
+                            spellCheck={false}
+                            rows={3}
+                        />
+                        <span className="field-hint">One <code>KEY=VALUE</code> per line.</span>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <div className="form-row">
+                        <label className="form-label">URL</label>
+                        <input
+                            className="editable-field url-field"
+                            type="text"
+                            value={url}
+                            onChange={e => setUrl(e.target.value)}
+                            placeholder="https://example.com/mcp"
+                            spellCheck={false}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <label className="form-label">Headers <span className="optional">(optional)</span></label>
+                        <textarea
+                            className="editable-field multiline"
+                            value={headers}
+                            onChange={e => setHeaders(e.target.value)}
+                            placeholder="Authorization: Bearer xxx&#10;X-Custom: value"
+                            spellCheck={false}
+                            rows={3}
+                        />
+                        <span className="field-hint">One <code>Header: value</code> per line.</span>
+                    </div>
+                </>
+            )}
+
+            {error &&
+                <div className="form-error">
+                    <i className="codicon codicon-warning"></i>
+                    <span>{error}</span>
+                </div>}
+
+            <div className="form-actions">
+                <button
+                    className="action-btn"
+                    onClick={onClose}
+                    disabled={submitting}
+                    type="button"
+                >
+                    Cancel
+                </button>
+                <button
+                    className="action-btn primary-btn"
+                    onClick={onSubmit}
+                    disabled={!canSubmit}
+                    type="button"
+                >
+                    {submitting ? 'Adding…' : 'Add server'}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ── Edit existing connection fields ───────────────────────────────────────
 
 function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }) {
     const dispatch = useEcaDispatch();
@@ -126,14 +402,37 @@ function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }
     );
 }
 
+// ── Tab ───────────────────────────────────────────────────────────────────
+
 export function MCPsTab() {
     const mcpServers = useSelector((state: State) => state.mcp.servers);
     const dispatch = useEcaDispatch();
+
+    const [isAdding, setIsAdding] = useState(false);
+    // Two-step inline-confirm: holds the name of the server currently awaiting
+    // remove-confirmation. null when no card is in confirm mode.
+    const [confirmingRemove, setConfirmingRemove] = useState<string | null>(null);
+    const [removing, setRemoving] = useState<string | null>(null);
+
+    const existingNames = useMemo(
+        () => new Set(mcpServers.map(s => s.name)),
+        [mcpServers],
+    );
 
     const anyFailed = mcpServers.some(s => s.status === 'failed');
 
     const onOpenServerLogs = (_: any) => {
         dispatch(openServerLogs({}));
+    };
+
+    const onRemove = async (name: string) => {
+        setRemoving(name);
+        setConfirmingRemove(null);
+        try {
+            await dispatch(removeServer({ name })).unwrap();
+        } finally {
+            setRemoving(null);
+        }
     };
 
     return (
@@ -149,7 +448,22 @@ export function MCPsTab() {
                     <span>Some servers failed to start. Check <a href="#" onClick={onOpenServerLogs}>server logs</a> for details.</span>
                 </div>}
 
-            {mcpServers.length === 0 &&
+            <div className="add-server-area">
+                {isAdding
+                    ? <AddServerForm
+                        existingNames={existingNames}
+                        onClose={() => setIsAdding(false)}
+                    />
+                    : <button
+                        className="action-btn add-btn"
+                        onClick={() => setIsAdding(true)}
+                    >
+                        <i className="codicon codicon-add"></i>
+                        Add MCP server
+                    </button>}
+            </div>
+
+            {mcpServers.length === 0 && !isAdding &&
                 <div className="empty-state">
                     <i className="codicon codicon-extensions"></i>
                     <p>No MCP servers configured yet</p>
@@ -170,6 +484,11 @@ export function MCPsTab() {
                     const promptCount = prompts?.length ?? 0;
                     const resourceCount = resources?.length ?? 0;
                     const hasConnection = isMcp && (!!server.url || !!server.command);
+                    // Only MCP servers are user-managed; the synthetic 'eca'
+                    // native server is never removable.
+                    const isRemovable = isMcp;
+                    const isConfirming = confirmingRemove === server.name;
+                    const isRemovingThis = removing === server.name;
 
                     return (
                         <div key={index} className={`server-card ${server.status}`}>
@@ -186,41 +505,73 @@ export function MCPsTab() {
                                     {!failed && !requiresAuth && <span>{statusLabel[server.status]}</span>}
                                 </ToolTip>
                                 <div className="server-actions">
-                                    {stoppable && hasAuth &&
-                                        <button className="action-btn logout-btn"
-                                            onClick={() => dispatch(logoutServer({ name: server.name }))}>
-                                            <i className="codicon codicon-sign-out"></i>
-                                            Logout
-                                        </button>}
-                                    {stoppable &&
-                                        <button className="action-btn disable-btn"
-                                            onClick={() => dispatch(disableServer({ name: server.name }))}>
-                                            <i className="codicon codicon-circle-slash"></i>
-                                            Disable
-                                        </button>}
-                                    {requiresAuth
-                                        ? <button className="action-btn connect-btn"
-                                            onClick={() => dispatch(connectServer({ name: server.name }))}>
-                                            <i className="codicon codicon-plug"></i>
-                                            Connect
-                                          </button>
-                                        : disabled
-                                            ? <button className="action-btn enable-btn"
-                                                onClick={() => dispatch(enableServer({ name: server.name }))}>
-                                                <i className="codicon codicon-check"></i>
-                                                Enable
-                                              </button>
-                                            : stoppable
-                                                ? <button className="action-btn stop-btn"
-                                                    onClick={() => dispatch(stopServer({ name: server.name }))}>
-                                                    <i className="codicon codicon-stop-circle"></i>
-                                                    Stop
+                                    {isConfirming ? (
+                                        <>
+                                            <span className="confirm-prompt">Remove?</span>
+                                            <button
+                                                className="action-btn stop-btn"
+                                                onClick={() => onRemove(server.name)}
+                                                disabled={isRemovingThis}
+                                            >
+                                                <i className="codicon codicon-trash"></i>
+                                                {isRemovingThis ? 'Removing…' : 'Yes'}
+                                            </button>
+                                            <button
+                                                className="action-btn"
+                                                onClick={() => setConfirmingRemove(null)}
+                                                disabled={isRemovingThis}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {stoppable && hasAuth &&
+                                                <button className="action-btn logout-btn"
+                                                    onClick={() => dispatch(logoutServer({ name: server.name }))}>
+                                                    <i className="codicon codicon-sign-out"></i>
+                                                    Logout
+                                                </button>}
+                                            {stoppable &&
+                                                <button className="action-btn disable-btn"
+                                                    onClick={() => dispatch(disableServer({ name: server.name }))}>
+                                                    <i className="codicon codicon-circle-slash"></i>
+                                                    Disable
+                                                </button>}
+                                            {requiresAuth
+                                                ? <button className="action-btn connect-btn"
+                                                    onClick={() => dispatch(connectServer({ name: server.name }))}>
+                                                    <i className="codicon codicon-plug"></i>
+                                                    Connect
                                                   </button>
-                                                : <button className="action-btn start-btn"
-                                                    onClick={() => dispatch(startServer({ name: server.name }))}>
-                                                    <i className="codicon codicon-play"></i>
-                                                    Start
-                                                  </button>}
+                                                : disabled
+                                                    ? <button className="action-btn enable-btn"
+                                                        onClick={() => dispatch(enableServer({ name: server.name }))}>
+                                                        <i className="codicon codicon-check"></i>
+                                                        Enable
+                                                      </button>
+                                                    : stoppable
+                                                        ? <button className="action-btn stop-btn"
+                                                            onClick={() => dispatch(stopServer({ name: server.name }))}>
+                                                            <i className="codicon codicon-stop-circle"></i>
+                                                            Stop
+                                                          </button>
+                                                        : <button className="action-btn start-btn"
+                                                            onClick={() => dispatch(startServer({ name: server.name }))}>
+                                                            <i className="codicon codicon-play"></i>
+                                                            Start
+                                                          </button>}
+                                            {isRemovable &&
+                                                <button
+                                                    className="action-btn icon-only remove-btn"
+                                                    onClick={() => setConfirmingRemove(server.name)}
+                                                    title="Remove server"
+                                                    aria-label={`Remove ${server.name}`}
+                                                >
+                                                    <i className="codicon codicon-trash"></i>
+                                                </button>}
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
