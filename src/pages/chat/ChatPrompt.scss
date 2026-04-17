@@ -25,6 +25,7 @@
         border-radius 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
         padding 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
         max-width 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        font-size 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
         box-shadow 280ms ease;
 
     &.focused {
@@ -41,13 +42,27 @@
 
     // Hero mode: floating, centered, width-capped version of the same
     // card. Shape and shadow are inherited from the base .prompt-area
-    // styles above; hero just constrains the width and bumps padding.
+    // styles above; hero bumps `font-size` so the whole card (padding,
+    // max-width, toolbar pills, context chips, progress row — everything
+    // sized in `em`) scales up together, giving the empty-state chat a
+    // bigger, more inviting presence. The `.field` gets an extra bump on
+    // top of that so the text the user actually types/reads is the most
+    // prominent element.
     &.hero {
+        font-size: 1.15em;
         max-width: 40em;
-        padding: 0.8em 1em;
+        padding: 1em 1.2em;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
 
         .field {
-            font-size: 1.05em;
+            font-size: 1.25em;
+        }
+
+        // Codicons are locked to 16px by the base `.codicon` rule, so they
+        // don't inherit the em scaling above — nudge the send icon up a
+        // bit so it stays visually proportional to the larger prompt.
+        .send i.codicon {
+            font-size: 1.15em;
         }
     }
 
