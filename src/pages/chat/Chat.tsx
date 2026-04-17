@@ -59,7 +59,24 @@ export function Chat() {
                         transition={{ duration: 0.25, ease: "easeOut" }}
                     >
                         <div className="welcome-logo">
-                            <img src={`${window.mediaUrl}/logo.png`} alt="" draggable={false} />
+                            {/*
+                              Logo rendered as a CSS-masked <span> rather than
+                              <img> so it can follow the desktop shell's
+                              active theme via --eca-logo-fg (defined in
+                              eca-desktop/src/renderer/theme.css). The mask
+                              URL is set inline via window.mediaUrl so it
+                              resolves the same way the old <img> src did —
+                              independent of how the bundled CSS is served.
+                            */}
+                            <span
+                                className="welcome-logo-icon"
+                                role="img"
+                                aria-label="ECA"
+                                style={{
+                                    WebkitMaskImage: `url(${window.mediaUrl}/logo.svg)`,
+                                    maskImage: `url(${window.mediaUrl}/logo.svg)`,
+                                }}
+                            />
                         </div>
                         {welcomeMessage && !isWeb && (
                             <div className="welcome-content">

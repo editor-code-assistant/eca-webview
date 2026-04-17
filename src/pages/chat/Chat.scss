@@ -54,14 +54,24 @@
         justify-content: center;
         flex-shrink: 0;
 
-        img {
+        // Rendered as a CSS-masked <span> (see Chat.tsx) rather than
+        // an <img> so the mark can be recolored per theme via the
+        // desktop shell's --eca-logo-fg custom property. The mask-image
+        // URL is set inline on the element via window.mediaUrl.
+        .welcome-logo-icon {
+          display: inline-block;
           width: min(14em, 50vw);
-          height: auto;
-          object-fit: contain;
+          aspect-ratio: 1;
           opacity: 0.12;
           user-select: none;
           pointer-events: none;
-          filter: grayscale(20%);
+          background-color: var(--eca-logo-fg, #f8f8f8);
+          -webkit-mask-size: contain;
+                  mask-size: contain;
+          -webkit-mask-repeat: no-repeat;
+                  mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+                  mask-position: center;
         }
       }
 
@@ -117,7 +127,7 @@
       opacity: 1;
       animation: none;
 
-      .welcome-logo img {
+      .welcome-logo .welcome-logo-icon {
         width: min(12em, 40vw);
         opacity: 0.18;
       }
@@ -155,4 +165,27 @@
     // change (bottom -> center) is animated by framer-motion's
     // `layout="position"` on the motion.div wrapping .prompt-area.
   }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Light-theme override for the welcome logo.
+//
+// The dark-mode opacities (0.12 idle, 0.18 in hero-mode) are designed
+// to let the mark fade into the dark chat canvas. On the light theme
+// that same fade collapses the teal into a washed-out cyan on white,
+// which no longer reads as the ECA brand color — so we force the mark
+// to full strength whenever the desktop shell is in light mode. The
+// selector scopes on the outer <html data-theme="light"> set by the
+// theme-bootstrap, so this is a no-op in dark mode and in non-web
+// editor contexts (vscode/intellij) where data-theme is unset.
+//
+// Specificity note: the hero-mode rule compiles to
+//   .chat-container.hero-mode .welcome-message .welcome-logo .welcome-logo-icon
+// which is (0,5,0). This override must match or exceed that to win,
+// so we include .welcome-message in the path to land at (0,5,1). A
+// shorter selector like ".chat-container .welcome-logo-icon" would
+// lose to the hero-mode rule and leave the empty-state logo faded.
+// ════════════════════════════════════════════════════════════════════
+html[data-theme="light"] .chat-container .welcome-message .welcome-logo .welcome-logo-icon {
+  opacity: 1;
 }
