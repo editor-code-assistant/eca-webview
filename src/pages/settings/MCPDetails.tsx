@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
-import { MCPServerUpdatedParams, ToolServerUpdatedParams, ToolServerStatus } from '../../protocol';
+import { MCPServerUpdatedParams, ToolServerStatus } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
 import { connectServer, disableServer, enableServer, logoutServer, startServer, stopServer, updateServer } from '../../redux/thunks/mcp';
-import { Toggle } from '../components/Toggle';
 import { ToolTip } from '../components/ToolTip';
 import './MCPDetails.scss';
 import { openServerLogs } from '../../redux/thunks/server';
@@ -134,14 +133,6 @@ export function MCPDetails() {
     const navigate = useNavigate();
     const dispatch = useEcaDispatch();
 
-    const changeServerStatus = (enabled: boolean, server: ToolServerUpdatedParams) => {
-        if (enabled) {
-            dispatch(startServer({ name: server.name }));
-        } else {
-            dispatch(stopServer({ name: server.name }));
-        }
-    }
-
     const anyFailed = mcpServers.some(s => s.status === 'failed');
 
     const onOpenServerLogs = (_: any) => {
@@ -229,9 +220,17 @@ export function MCPDetails() {
                                                 <i className="codicon codicon-check"></i>
                                                 Enable
                                               </button>
-                                            : <Toggle
-                                                defaultChecked={stoppable}
-                                                onChange={(enabled) => changeServerStatus(enabled, server)} />}
+                                            : stoppable
+                                                ? <button className="action-btn stop-btn"
+                                                    onClick={() => dispatch(stopServer({ name: server.name }))}>
+                                                    <i className="codicon codicon-stop-circle"></i>
+                                                    Stop
+                                                  </button>
+                                                : <button className="action-btn start-btn"
+                                                    onClick={() => dispatch(startServer({ name: server.name }))}>
+                                                    <i className="codicon codicon-play"></i>
+                                                    Start
+                                                  </button>}
                                 </div>
                             </div>
 

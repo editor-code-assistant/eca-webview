@@ -10,10 +10,10 @@ import './Settings.scss';
 type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs';
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
-    { key: 'mcps', label: 'MCPs', icon: 'codicon-extensions' },
-    { key: 'providers', label: 'Providers', icon: 'codicon-key' },
+    { key: 'mcps', label: '🧩 MCPs', icon: '' },
+    { key: 'providers', label: '🔑 Providers', icon: '' },
     { key: 'jobs', label: '⚡ Jobs', icon: '' },
-    { key: 'config', label: 'Global Config', icon: 'codicon-settings-gear' },
+    { key: 'config', label: '⚙️ Global Config', icon: '' },
 ];
 
 const validTabs = new Set<string>(tabs.map(t => t.key));

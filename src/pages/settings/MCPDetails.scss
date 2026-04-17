@@ -217,12 +217,22 @@
       }
     }
 
-    .enable-btn {
+    .enable-btn,
+    .start-btn {
       border-color: var(--eca-success-fg);
       color: var(--eca-success-fg);
 
       &:hover {
         background-color: rgba(0, 180, 0, 0.1);
+      }
+    }
+
+    .stop-btn {
+      border-color: var(--eca-error-fg);
+      color: var(--eca-error-fg);
+
+      &:hover {
+        background-color: rgba(241, 76, 76, 0.1);
       }
     }
 
