@@ -1,11 +1,14 @@
 .global-config-tab {
   display: flex;
   flex-direction: column;
+  gap: 0.8em;
+  min-height: 0;
+  flex: 1;
 
   .tab-description {
     font-size: 0.85em;
     color: var(--eca-input-placeholder-fg);
-    margin: 0 0 1.2em;
+    margin: 0;
 
     a {
       color: var(--eca-link-fg);
@@ -14,37 +17,170 @@
     }
   }
 
-  .config-action {
+  .path-row {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5em;
-  }
-
-  .open-config-btn {
-    display: inline-flex;
     align-items: center;
-    gap: 0.4em;
-    background: none;
-    border: 1px solid var(--eca-link-fg);
-    color: var(--eca-link-fg);
-    border-radius: 0.4em;
-    padding: 0.45em 0.9em;
-    font-size: 0.88em;
-    cursor: pointer;
-    transition: background-color 0.15s;
+    gap: 0.45em;
+    padding: 0.35em 0.6em;
+    border-radius: 0.35em;
+    background-color: rgba(127, 127, 127, 0.07);
+    font-size: 0.82em;
 
-    .codicon { font-size: 1em; }
+    .codicon-file {
+      color: var(--eca-input-placeholder-fg);
+    }
 
-    &:hover {
-      background-color: rgba(0, 120, 212, 0.1);
+    .config-path {
+      flex: 1;
+      font-family: var(--eca-code-font, monospace);
+      color: var(--eca-fg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: text;
     }
   }
 
-  .config-path {
-    font-size: 0.78em;
-    font-family: monospace;
-    color: var(--eca-input-placeholder-fg);
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--eca-fg);
+    padding: 0.25em;
+    border-radius: 0.25em;
+    cursor: pointer;
     opacity: 0.7;
+    transition: opacity 0.15s, background-color 0.15s;
+
+    &:hover:not(:disabled) {
+      opacity: 1;
+      background-color: rgba(127, 127, 127, 0.12);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .codicon { font-size: 0.95em; }
+  }
+
+  .editor-container {
+    flex: 1;
+    min-height: 260px;
+    border: 1px solid var(--eca-input-border, rgba(127, 127, 127, 0.3));
+    border-radius: 0.4em;
+    overflow: hidden;
+    background-color: var(--eca-input-bg, transparent);
+
+    // CodeMirror needs its view to fill the container.
+    .cm-editor {
+      height: 100%;
+    }
+
+    .cm-editor.cm-focused {
+      outline: none;
+    }
+  }
+
+  .action-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
+
+    .primary-btn,
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35em;
+      padding: 0.45em 0.9em;
+      font-size: 0.85em;
+      border-radius: 0.35em;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+
+      .codicon { font-size: 0.95em; }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+
+    .primary-btn {
+      background-color: var(--eca-link-fg);
+      color: var(--eca-btn-primary-fg, #fff);
+      border: 1px solid var(--eca-link-fg);
+
+      &:hover:not(:disabled) {
+        filter: brightness(1.05);
+      }
+    }
+
+    .secondary-btn {
+      background: none;
+      border: 1px solid var(--eca-link-fg);
+      color: var(--eca-link-fg);
+
+      &:hover:not(:disabled) {
+        background-color: rgba(0, 120, 212, 0.1);
+      }
+    }
+
+    .status-area {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6em;
+      font-size: 0.8em;
+      color: var(--eca-input-placeholder-fg);
+
+      .status-hint {
+        font-style: italic;
+      }
+
+      .dirty-indicator {
+        color: var(--eca-warning-fg, #d69e2e);
+      }
+
+      .parse-error {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3em;
+        color: var(--eca-error-fg, #e53e3e);
+      }
+
+      .saved-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3em;
+        color: var(--eca-success-fg, #38a169);
+      }
+    }
+  }
+
+  .error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 0.75em;
+    border-radius: 0.35em;
+    background-color: rgba(229, 62, 62, 0.1);
+    border: 1px solid rgba(229, 62, 62, 0.35);
+    color: var(--eca-error-fg, #e53e3e);
+    font-size: 0.83em;
+
+    span {
+      flex: 1;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .icon-btn {
+      color: var(--eca-error-fg, #e53e3e);
+    }
   }
 }

@@ -153,6 +153,14 @@ const RootWrapper = () => {
         respondWebviewRequest(data.requestId, data.value);
     });
 
+    useWebviewListener('editor/readGlobalConfig', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('editor/writeGlobalConfig', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
     useWebviewListener('providers/list', (data: any) => {
         respondWebviewRequest(data.requestId, data);
     });

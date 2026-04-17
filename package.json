@@ -11,9 +11,16 @@
     "lint": "eslint --ext ts"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.7.1",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/language": "^6.10.8",
+    "@codemirror/lint": "^6.8.4",
+    "@codemirror/state": "^6.5.1",
+    "@codemirror/view": "^6.36.1",
     "@reduxjs/toolkit": "^2.8.2",
     "@vscode/codicons": "^0.0.36",
     "framer-motion": "^12.36.0",
+    "jsonc-parser": "^3.3.1",
     "react": "^19.1.0",
     "react-diff": "^0.0.7",
     "react-diff-view": "^3.3.2",

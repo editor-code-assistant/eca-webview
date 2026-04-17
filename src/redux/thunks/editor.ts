@@ -42,6 +42,37 @@ export const editorOpenGlobalConfig = createAsyncThunk<void, {}, ThunkApiType>(
     }
 );
 
+export interface GlobalConfigReadResult {
+    /** Raw file contents. Empty string when the file does not exist yet. */
+    contents: string;
+    /** Absolute path resolved on the main side. */
+    path: string;
+    /** Whether the file exists on disk. */
+    exists: boolean;
+    /** Populated if an IO error occurred. */
+    error?: string;
+}
+
+export const editorReadGlobalConfig = createAsyncThunk<GlobalConfigReadResult, {}, ThunkApiType>(
+    "editor/readGlobalConfig",
+    async (_) => {
+        return await webviewSendAndGet('editor/readGlobalConfig', {});
+    }
+);
+
+export interface GlobalConfigWriteResult {
+    ok: boolean;
+    path?: string;
+    error?: string;
+}
+
+export const editorWriteGlobalConfig = createAsyncThunk<GlobalConfigWriteResult, { contents: string }, ThunkApiType>(
+    "editor/writeGlobalConfig",
+    async ({ contents }, _) => {
+        return await webviewSendAndGet('editor/writeGlobalConfig', { contents });
+    }
+);
+
 export const editorReadInput = createAsyncThunk<string | null, { message: string }, ThunkApiType>(
     "editor/readInput",
     async ({ message }, _) => {
