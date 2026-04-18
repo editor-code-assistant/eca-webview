@@ -8,7 +8,7 @@ import { addContentReceived, batchContentReceived, addContext, chatOpened, clear
 import { setJobs } from "../redux/slices/jobs";
 import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
-import { ServerStatus, setConfig, setTrust, setWorkspaceFolders } from "../redux/slices/server";
+import { InitProgressTask, ServerStatus, setConfig, setTrust, setWorkspaceFolders, upsertProgress } from "../redux/slices/server";
 import { State, useEcaDispatch } from "../redux/store";
 import { deleteChat, sendPromptToCurrentChat, stopPrompt } from "../redux/thunks/chat";
 import { focusChanged } from "../redux/thunks/editor";
@@ -37,6 +37,15 @@ const RootWrapper = () => {
 
     useWebviewListener('server/statusChanged', (status: ServerStatus) => {
         dispatch(statusChanged({ status: status }));
+    });
+
+    // ECA server init-progress notifications. Forwarded by the desktop
+    // bridge for the active session only (see src/main/bridge.ts). The
+    // webview just funnels the payload into the server slice; rendering
+    // is driven by `selectInitProgressString`, consumed by Chat.tsx and
+    // ChatPrompt.tsx.
+    useWebviewListener('$/progress', (task: InitProgressTask) => {
+        dispatch(upsertProgress(task));
     });
 
     useWebviewListener('server/setWorkspaceFolders', (workspaceFolders: WorkspaceFolder[]) => {

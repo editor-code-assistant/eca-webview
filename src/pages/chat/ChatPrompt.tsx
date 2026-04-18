@@ -2,11 +2,11 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 import { SyncLoader } from "react-spinners";
-import { useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
+import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { answerQuestion, cancelQuestion, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
 import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
-import { setSelectedVariant } from "../../redux/slices/server";
+import { selectInitProgressString, setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
@@ -50,6 +50,19 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
 
     const currentProgress = useSelector((state: State) => state.chat.chats[chatId]?.progress);
     const loading = currentProgress !== undefined;
+
+    // ECA server init-progress line (eca-emacs parity). When the server
+    // is still starting up, we prefer this live "N/M · title" over the
+    // static "Waiting for ECA server…" so the user can see what the
+    // server is actually doing — e.g. "Loading models 2/5". When the
+    // server is Running, this selector returns null and the hint is
+    // hidden entirely by the `!enabled` guard around the block.
+    //
+    // `useStickyString` smooths out the rapid start→finish churn of a
+    // fast ECA boot so titles don't flicker through for <100 ms each
+    // and the whole line doesn't flash in and back out on the same
+    // frame. See the hook's comment for minShow/trailingMs semantics.
+    const initProgress = useStickyString(useSelector(selectInitProgressString));
 
     const onStop = () => {
         dispatch(stopPrompt({ chatId }));
@@ -424,10 +437,32 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                 // toolbar. Gives users who are already focused on the
                 // prompt a local explanation for why Enter is inert —
                 // without requiring them to look back up at the main
-                // startup-card.
+                // startup-card. When the server has started emitting
+                // $/progress notifications we swap the generic copy for
+                // the live "N/M · title" line so the hint and the main
+                // indicator stop repeating the same generic message
+                // (before this wiring the user would see "Starting ECA
+                // server…" AND "Waiting for ECA server…" at once).
+                //
+                // AnimatePresence + motion.span cross-fades the text
+                // whenever the displayed string changes (e.g. progress
+                // appearing, new title, then falling back to the
+                // generic copy once init settles). The status-dot is
+                // intentionally kept outside the animated element so
+                // its pulse animation isn't interrupted on every swap.
                 <div className="prompt-waiting-hint" aria-hidden="true">
                     <span className="status-dot" />
-                    <span>Waiting for ECA server…</span>
+                    <AnimatePresence mode="wait" initial={false}>
+                        <motion.span
+                            key={initProgress ?? 'waiting'}
+                            initial={{ opacity: 0, y: 2 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -2 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                        >
+                            {initProgress ?? 'Waiting for ECA server…'}
+                        </motion.span>
+                    </AnimatePresence>
                 </div>
             )}
             {steerMessage && (

@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useRef, useEffect } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { editorName } from "./util";
 
 /**
@@ -87,6 +87,98 @@ export function useBackgroundCollapse(
     );
 
     return { onMouseDown, onMouseUp };
+}
+
+/**
+ * Stabilize a string that can change rapidly — e.g. the live
+ * `selectInitProgressString` output driven by a stream of `$/progress`
+ * notifications during ECA server startup.
+ *
+ * Two guarantees:
+ *
+ *  1. **Min-show** — every non-null value stays on screen for at least
+ *     `minShowMs` before being replaced. Back-to-back titles like
+ *     `"Loading models"` → `"Warming cache"` arriving 20 ms apart
+ *     collapse to a single displayed title (the most recent one when
+ *     the window elapses) instead of flickering through both.
+ *
+ *  2. **Trailing-hold** — when the input drops to `null` (all tasks
+ *     finished), the last shown value is held for `trailingMs` more
+ *     before the display itself goes null. This prevents the progress
+ *     line from appearing and disappearing within a single frame on
+ *     very fast startups.
+ *
+ * The hook is string-scoped on purpose — init-progress is the only
+ * consumer right now and broadening the type would force callers to
+ * handle referential-equality edge cases that don't apply here.
+ */
+export function useStickyString(
+    value: string | null,
+    opts: { minShowMs?: number; trailingMs?: number } = {},
+): string | null {
+    const { minShowMs = 350, trailingMs = 500 } = opts;
+
+    // `display` is what the caller should render. `displayRef` mirrors
+    // it so our effect can make decisions based on the freshest value
+    // without adding `display` to the dep array (which would re-run
+    // the effect whenever we update display ourselves — a loop hazard).
+    const [display, setDisplay] = useState<string | null>(value);
+    const displayRef = useRef<string | null>(value);
+    const lastChangeAtRef = useRef<number>(Date.now());
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        // Any new input supersedes a pending transition — cancel it
+        // before scheduling a new one.
+        if (timerRef.current !== null) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+
+        const current = displayRef.current;
+        if (value === current) return;
+
+        const commit = (next: string | null) => {
+            displayRef.current = next;
+            setDisplay(next);
+            lastChangeAtRef.current = Date.now();
+            timerRef.current = null;
+        };
+
+        if (value === null) {
+            // About to hide — hold the last shown value for trailingMs
+            // so it doesn't flash away the instant the server settles.
+            // If nothing was displayed yet, there's nothing to hold
+            // and we can just commit the null immediately.
+            if (current === null) {
+                commit(null);
+                return;
+            }
+            timerRef.current = setTimeout(() => commit(null), trailingMs);
+            return;
+        }
+
+        // Non-null incoming. If the slot is empty or the current value
+        // has had its fair share of screen time, swap right away;
+        // otherwise defer the swap so `current` satisfies minShowMs.
+        const elapsed = Date.now() - lastChangeAtRef.current;
+        if (current === null || elapsed >= minShowMs) {
+            commit(value);
+        } else {
+            timerRef.current = setTimeout(() => commit(value), minShowMs - elapsed);
+        }
+    }, [value, minShowMs, trailingMs]);
+
+    // Cancel any pending timer on unmount so we don't fire setDisplay
+    // on a torn-down component.
+    useEffect(() => () => {
+        if (timerRef.current !== null) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    }, []);
+
+    return display;
 }
 
 export function useWebviewListener<T>(

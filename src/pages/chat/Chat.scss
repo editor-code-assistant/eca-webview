@@ -69,6 +69,20 @@
             line-height: 1.5;
           }
 
+          // Live ECA server init-progress line (eca-emacs parity).
+          // Stands in for the generic "usually takes a few seconds…"
+          // subtitle whenever the server has reported at least one
+          // $/progress task. Rendered with a monospace stack so the
+          // "N/M" counter stays visually aligned as numbers tick up,
+          // and given a slightly tighter letter-spacing so the middle
+          // dot ("·") reads as a separator, not decoration.
+          .subtitle.startup-card-progress {
+            font-family: var(--eca-editor-font-family, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.005em;
+            opacity: 0.95;
+          }
+
           .spinner {
             display: inline-block !important;
             span {
@@ -210,11 +224,19 @@
     // same attention-grabbing cue as the desktop startup-card above.
     // Still fades to 0 once the server is Running so the empty hero
     // canvas stays clean. Failed state swaps the color to warning-fg.
+    //
+    // Layout: two rows stacked vertically — the main status-row (dot
+    // + label + spinner) on top, and an optional progress line below.
+    // Using flex-direction: column instead of flex-wrap keeps the
+    // primary row intrinsically centered as a single unit regardless
+    // of how wide the progress line gets (a long task title shouldn't
+    // ever push the "Starting ECA server…" label off-center).
     .hero-status {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.55em;
+      gap: 0.25em;
       padding: 0.5em 1em;
       margin-bottom: 1em;
       min-height: 1.5em;
@@ -236,6 +258,17 @@
         }
       }
 
+      // Main "Starting ECA server…" row: dot + label + spinner sitting
+      // side-by-side. Wrapped in its own flex-row so the parent can
+      // stack the (optional) progress line underneath without any of
+      // these three items being moved around.
+      .hero-status-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55em;
+      }
+
       p { margin: 0; }
 
       .status-dot {
@@ -252,6 +285,23 @@
         span {
           background-color: var(--eca-warning-fg) !important;
         }
+      }
+
+      // Live "N/M · title" progress line rendered below the main
+      // "Starting ECA server…" label in hero mode. Styled one notch
+      // smaller/dimmer than the label so it reads as subordinate
+      // detail — never competing with the primary status.
+      .hero-status-progress {
+        margin: 0;
+        font-size: 0.8em;
+        opacity: 0.75;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.005em;
+        text-align: center;
+        max-width: 28em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
 
