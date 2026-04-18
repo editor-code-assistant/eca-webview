@@ -6,6 +6,7 @@ import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerRemovedParams, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
+import { LogEntry, appendLogEntry, setLogEntries } from "../redux/slices/logs";
 import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
 import { InitProgressTask, ServerStatus, setConfig, setTrust, setWorkspaceFolders, upsertProgress } from "../redux/slices/server";
@@ -17,6 +18,10 @@ import { statusChanged } from "../redux/thunks/server";
 interface NavigateTo {
     path: string,
     toggle?: boolean,
+    // Arbitrary route state forwarded to the target component via
+    // `react-router`'s `useLocation().state`. Used by the desktop menu's
+    // "View Logs" item to preselect the Settings → Logs tab.
+    state?: unknown,
 }
 
 const RootWrapper = () => {
@@ -29,11 +34,24 @@ const RootWrapper = () => {
             if (data.toggle && location.pathname === data.path) {
                 navigate("/");
             } else {
-                navigate(data.path);
+                navigate(data.path, data.state ? { state: data.state } : undefined);
             }
         },
         [location, navigate],
     );
+
+    // Desktop LogStore → Redux. `logs/snapshot` hydrates the slice on
+    // demand (LogsTab requests it on mount); `logs/appended` streams
+    // every new entry live. We listen at the root so entries also
+    // accumulate in the store even when the user hasn't opened the
+    // tab yet — the cap is enforced inside the reducer.
+    useWebviewListener('logs/snapshot', (entries: LogEntry[]) => {
+        dispatch(setLogEntries(entries));
+    });
+
+    useWebviewListener('logs/appended', (entry: LogEntry) => {
+        dispatch(appendLogEntry(entry));
+    });
 
     useWebviewListener('server/statusChanged', (status: ServerStatus) => {
         dispatch(statusChanged({ status: status }));

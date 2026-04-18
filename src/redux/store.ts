@@ -3,6 +3,7 @@ import { serverSlice } from "./slices/server";
 import { mcpSlice } from "./slices/mcp";
 import { providersSlice } from "./slices/providers";
 import { jobsSlice } from "./slices/jobs";
+import { logsSlice } from "./slices/logs";
 import { useDispatch } from "react-redux";
 import { chatSlice } from "./slices/chat";
 
@@ -12,6 +13,7 @@ const reducers = combineReducers({
     chat: chatSlice.reducer,
     providers: providersSlice.reducer,
     jobs: jobsSlice.reducer,
+    logs: logsSlice.reducer,
 });
 
 const setupStore = () => {

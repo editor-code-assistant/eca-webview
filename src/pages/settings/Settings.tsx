@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../App';
 import { MCPsTab } from './MCPsTab';
 import { ProvidersTab } from './ProvidersTab';
 import { GlobalConfigTab } from './GlobalConfigTab';
 import { JobsTab } from './JobsTab';
+import { LogsTab } from './LogsTab';
 import './Settings.scss';
 
-type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs';
+type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs' | 'logs';
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'mcps', label: '🧩 MCPs', icon: '' },
     { key: 'providers', label: '🔑 Providers', icon: '' },
     { key: 'jobs', label: '⚡ Jobs', icon: '' },
+    { key: 'logs', label: '📋 Logs', icon: '' },
     { key: 'config', label: '⚙️ Global Config', icon: '' },
 ];
 
@@ -25,6 +27,18 @@ export function Settings() {
         initialTab && validTabs.has(initialTab) ? initialTab : 'mcps'
     );
     const navigate = useNavigate();
+
+    // React to subsequent `navigate(..., { state: { tab } })` calls
+    // that arrive while Settings is already mounted — without this,
+    // the "View Logs" menu item would be a no-op when the user is
+    // already on the Settings page but looking at a different tab.
+    useEffect(() => {
+        const tab = (location.state as any)?.tab;
+        if (tab && validTabs.has(tab) && tab !== activeTab) {
+            setActiveTab(tab as SettingsTabKey);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.state]);
 
     return (
         <div className="settings-container scrollable">
@@ -51,6 +65,7 @@ export function Settings() {
                 {activeTab === 'mcps' && <MCPsTab />}
                 {activeTab === 'providers' && <ProvidersTab />}
                 {activeTab === 'jobs' && <JobsTab />}
+                {activeTab === 'logs' && <LogsTab />}
                 {activeTab === 'config' && <GlobalConfigTab />}
             </div>
         </div>
