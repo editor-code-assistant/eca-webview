@@ -4,6 +4,22 @@ import { WorkspaceFolder } from "../../protocol";
 export enum ServerStatus {
     Stopped = 'Stopped',
     Starting = 'Starting',
+    /**
+     * Server process is alive and the `initialize`/`initialized`
+     * handshake has completed, but the server is still running its
+     * post-`initialized` async work (sync models, resolve plugins,
+     * start MCP servers, cleanup). Announced via `$/progress`
+     * notifications — see `initTasks` / `selectInitProgressString`.
+     *
+     * Treated as "not ready" by the UI (startup card visible, chat
+     * prompt disabled) just like Starting, but distinguished from it
+     * so future consumers can surface different copy or telemetry.
+     * Set by the main process (see EcaServerStatus in
+     * src/main/server.ts) once `initialized` has been sent; cleared
+     * to Running once every known `$/progress` task has reached its
+     * matching `finish` pair.
+     */
+    Initializing = 'Initializing',
     Running = 'Running',
     Failed = 'Failed',
 }
@@ -157,6 +173,12 @@ export const selectIsServerStarting = (state: { server: { status: ServerStatus }
     state.server.status === ServerStatus.Starting;
 export const selectIsServerFailed = (state: { server: { status: ServerStatus } }) =>
     state.server.status === ServerStatus.Failed;
+// True while the server is in its post-`initialized` async phase
+// (models/plugins/MCP/cleanup). Distinct from Starting (process
+// spawning) and Running (fully ready for user input). See
+// ServerStatus.Initializing for the full lifecycle notes.
+export const selectIsServerInitializing = (state: { server: { status: ServerStatus } }) =>
+    state.server.status === ServerStatus.Initializing;
 
 /**
  * Derive the init-progress display string, mirroring eca-emacs's

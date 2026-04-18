@@ -11,13 +11,23 @@ export const statusChanged = createAsyncThunk<void, { status: ServerStatus }, Th
         if (status === ServerStatus.Stopped) {
             dispatch(resetChats());
         }
-        // Clear init-progress tasks on any terminal-ish transition so a
-        // subsequent restart doesn't render stale progress. Running is
-        // intentionally NOT in this list — tasks naturally settle into
-        // "all finished", and selectInitProgressString already hides
-        // the line in that case; keeping the history around lets a
-        // late-arriving Running transition find a consistent slice.
-        if (status === ServerStatus.Stopped || status === ServerStatus.Failed) {
+        // Clear init-progress tasks on any transition that kicks off a
+        // fresh lifecycle — Stopped/Failed terminal transitions, plus
+        // Starting at the top of a new attempt — so stale 'finish'
+        // entries from the previous run don't make
+        // selectInitProgressString prematurely return null during
+        // re-init. Running is intentionally NOT in this list: tasks
+        // naturally settle into "all finished" and
+        // selectInitProgressString already hides the line then;
+        // keeping the history around lets a late-arriving Running
+        // transition find a consistent slice. Initializing is also
+        // NOT in this list (resetting while mid-init would discard
+        // the tasks actively driving the progress display).
+        if (
+            status === ServerStatus.Stopped
+            || status === ServerStatus.Failed
+            || status === ServerStatus.Starting
+        ) {
             dispatch(resetInitProgress());
         }
     }
