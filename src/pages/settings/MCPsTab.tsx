@@ -597,7 +597,7 @@ export function MCPsTab() {
                                                             className={`chip tool-chip ${tool.disabled ? 'disabled' : ''}`}
                                                             data-tooltip-id={`tool-${server.name}-${tool.name}`}>
                                                             {tool.name}
-                                                            <ToolTip id={`tool-${server.name}-${tool.name}`}>
+                                                            <ToolTip id={`tool-${server.name}-${tool.name}`} clickable>
                                                                 <p className="tooltip-title">{tool.name}</p>
                                                                 <p>{tool.description}</p>
                                                                 {parametersTxt &&
@@ -625,7 +625,7 @@ export function MCPsTab() {
                                                         className="chip prompt-chip"
                                                         data-tooltip-id={`prompt-${server.name}-${prompt.name}`}>
                                                         {prompt.name}
-                                                        <ToolTip id={`prompt-${server.name}-${prompt.name}`}>
+                                                        <ToolTip id={`prompt-${server.name}-${prompt.name}`} clickable>
                                                             <p className="tooltip-title">{prompt.name}</p>
                                                             <p>{prompt.description}</p>
                                                             {prompt.arguments && prompt.arguments.length > 0 &&
@@ -654,7 +654,7 @@ export function MCPsTab() {
                                                         className="chip resource-chip"
                                                         data-tooltip-id={`resource-${server.name}-${resource.uri}`}>
                                                         {resource.name}
-                                                        <ToolTip id={`resource-${server.name}-${resource.uri}`}>
+                                                        <ToolTip id={`resource-${server.name}-${resource.uri}`} clickable>
                                                             <p className="tooltip-title">{resource.name}</p>
                                                             <p>{resource.description}</p>
                                                             <div className="tooltip-meta">

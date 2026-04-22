@@ -468,7 +468,11 @@
       cursor: default;
 
       &:hover { opacity: 1; }
-      &.disabled { text-decoration: line-through; opacity: 0.35; }
+      &.disabled {
+        text-decoration: line-through;
+        color: var(--eca-input-placeholder-fg);
+        opacity: 0.75;
+      }
     }
 
     .connection-section { gap: 0.25em; }
@@ -488,8 +492,8 @@
   .tooltip-params {
     margin-top: 0.4em;
 
-    span { font-weight: 500; font-size: 0.9em; color: var(--eca-input-placeholder-fg); }
-    pre { margin: 0.2em 0 0; font-size: 0.85em; white-space: pre-wrap; opacity: 0.85; }
+    span { font-weight: 500; font-size: 1em; color: var(--eca-input-placeholder-fg); }
+    pre { margin: 0.2em 0 0; font-size: 0.95em; white-space: pre-wrap; }
   }
 
   .tooltip-meta {

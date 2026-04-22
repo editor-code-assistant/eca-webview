@@ -6,5 +6,8 @@
     z-index: 1000;
     margin-top: 0.5em;
     max-width: 80vw;
+    max-height: min(70vh, 400px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     white-space: pre-line;
 }
