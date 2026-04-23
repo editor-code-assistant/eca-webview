@@ -17,10 +17,11 @@ import { json } from '@codemirror/lang-json';
 import { Diagnostic, linter, lintGutter } from '@codemirror/lint';
 import {
     bracketMatching,
-    defaultHighlightStyle,
+    HighlightStyle,
     indentOnInput,
     syntaxHighlighting,
 } from '@codemirror/language';
+import { tags as t } from '@lezer/highlight';
 import {
     parse as jsoncParse,
     printParseErrorCode,
@@ -41,6 +42,37 @@ const JSONC_PARSE_OPTIONS = {
     allowTrailingComma: true,
     allowEmptyContent: true,
 } as const;
+
+// Custom JSON highlight palette.
+//
+// `defaultHighlightStyle` ships colors tuned for CodeMirror's own docs
+// (bright red strings, teal numbers, …) which look jarring over a
+// VS Code / JetBrains / web panel background. The palette below prefers
+// VS Code's `--vscode-debugTokenExpression-*` CSS variables — those are
+// exposed to webviews and track the user's active theme, so light-theme
+// users get the Light+ JSON colors automatically — and falls back to
+// VS Code's Dark+ defaults on hosts that don't provide the variables.
+const jsonHighlightStyle = HighlightStyle.define([
+    // Strings: salmon/orange. Dark+ `#ce9178`, Light+ `#a31515`.
+    { tag: [t.string, t.special(t.string)], color: 'var(--vscode-debugTokenExpression-string, #ce9178)' },
+    // Numbers: muted green. Dark+ `#b5cea8`, Light+ `#098658`.
+    { tag: t.number, color: 'var(--vscode-debugTokenExpression-number, #b5cea8)' },
+    // Booleans / null: VS Code groups these as keywords; bright blue.
+    // Dark+ `#569cd6`, Light+ `#0000ff`.
+    {
+        tag: [t.bool, t.null, t.keyword, t.atom],
+        color: 'var(--vscode-debugTokenExpression-boolean, #569cd6)',
+    },
+    // Property names (object keys in JSON). Light blue.
+    // Dark+ `#9cdcfe`, Light+ `#0451a5`.
+    { tag: [t.propertyName, t.definition(t.propertyName)], color: 'var(--vscode-debugTokenExpression-name, #9cdcfe)' },
+    // Comments (JSONC only). Muted green, italic — matches VS Code default.
+    { tag: [t.comment, t.lineComment, t.blockComment], color: '#6a9955', fontStyle: 'italic' },
+    // Escapes inside strings. Gold, distinguishes `\n` from surrounding string.
+    { tag: t.escape, color: '#d7ba7d' },
+    // Invalid / error tokens — red, so JSONC parse errors are visually loud.
+    { tag: t.invalid, color: 'var(--eca-error-fg, #f14c4c)' },
+]);
 
 function jsoncLinter() {
     return linter((view) => {
@@ -171,7 +203,7 @@ export function GlobalConfigTab() {
                 history(),
                 bracketMatching(),
                 indentOnInput(),
-                syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+                syntaxHighlighting(jsonHighlightStyle, { fallback: true }),
                 json(),
                 jsoncLinter(),
                 lintGutter(),
