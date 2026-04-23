@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   width: calc(100% - 2em);
+  min-width: 0;
   padding: 0 1em;
 
   .page-header {
@@ -44,6 +45,11 @@
     border-bottom: 1px solid var(--eca-base-border);
     margin-top: 0.8em;
     margin-bottom: 0.8em;
+    // Keep horizontal scroll confined to the tab bar itself so narrow
+    // hosts (e.g. the VSCode sidebar) don't get a page-wide scrollbar.
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--eca-input-bg) var(--eca-editor-bg);
   }
 
   .settings-tab {
@@ -77,6 +83,7 @@
   // ── Tab content ──────────────────────────────────────────────
   .settings-tab-content {
     flex: 1;
+    min-width: 0;
     overflow-y: auto;
     padding-bottom: 1em;
   }
