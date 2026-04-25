@@ -137,6 +137,14 @@ export const serverSlice = createSlice({
                 if (action.payload.chat.selectVariant !== undefined) {
                     state.config.chat.selectedVariant = action.payload.chat.selectVariant;
                 }
+                // Server-driven trust restore on chat resume (eca #426):
+                // align the chat trust indicator with the server's
+                // persisted per-chat :trust so the icon matches the
+                // auto-approval behavior the server will apply for
+                // subsequent tool calls in the resumed chat.
+                if (action.payload.chat.selectTrust !== undefined) {
+                    state.trust = action.payload.chat.selectTrust;
+                }
             }
         },
         setSelectedVariant: (state, action) => {
