@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -40,7 +40,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const initialCountRef = useRef(messages.length);
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    useAutoScroll(scrollRef, messages);
+    const { userScrolled, scrollToBottom } = useAutoScroll(scrollRef, messages);
 
     const onRollbackClicked = (contentId: string) => {
         dispatch(rollbackChat({ chatId, contentId }));
@@ -59,7 +59,8 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     }
 
     return (
-        <div className="messages-container scrollable" ref={scrollRef} >
+        <div className="messages-wrapper">
+            <div className="messages-container scrollable" ref={scrollRef} >
             {messages.map((message, index) => {
                 const shouldAnimate = index >= initialCountRef.current;
 
@@ -170,9 +171,34 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
             <AnimatePresence initial={false}>
                 {messages.length === 0 && children}
             </AnimatePresence>
+            </div>
+            <AnimatePresence>
+                {userScrolled && (
+                    <motion.button
+                        type="button"
+                        key="scroll-to-bottom"
+                        className="scroll-to-bottom-btn"
+                        onClick={() => scrollToBottom(true)}
+                        aria-label="Scroll to latest messages"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.15 }}
+                    >
+                        <i className="codicon codicon-arrow-down" aria-hidden="true" />
+                    </motion.button>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+
+// Tolerance in pixels for considering the scroll container "at bottom".
+// Larger than 1px to avoid flicker from sub-pixel rounding, smooth-scroll
+// inertia, and DPR variations across editors and zoom levels. This same
+// threshold drives both the auto-stick-to-bottom suspend logic and the
+// visibility of the floating "scroll to latest" button.
+const AT_BOTTOM_THRESHOLD_PX = 24;
 
 const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMessage[]) => {
     const [userScrolled, setUserScrolled] = useState(false);
@@ -190,7 +216,7 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
             if (!elem) return;
 
             const isAtBottom =
-                Math.abs(elem.scrollHeight - elem.scrollTop - elem.clientHeight) < 1;
+                Math.abs(elem.scrollHeight - elem.scrollTop - elem.clientHeight) < AT_BOTTOM_THRESHOLD_PX;
             setUserScrolled(!isAtBottom);
         };
 
@@ -213,4 +239,21 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
             ref.current?.removeEventListener("scroll", handleScroll);
         };
     }, [ref, messages.length, userScrolled]);
+
+    // Imperative scroll-to-bottom used by the floating button. We optimistically
+    // clear `userScrolled` so that any streaming chunks arriving during (or
+    // right after) the smooth-scroll animation will keep the view pinned via
+    // the ResizeObserver above — matching the "stay at bottom for new messages
+    // until the user scrolls again" expectation.
+    const scrollToBottom = useCallback((smooth = false) => {
+        const elem = ref.current;
+        if (!elem) return;
+        elem.scrollTo({
+            top: elem.scrollHeight,
+            behavior: smooth ? 'smooth' : 'auto',
+        });
+        setUserScrolled(false);
+    }, [ref]);
+
+    return { userScrolled, scrollToBottom };
 }
