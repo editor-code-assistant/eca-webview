@@ -13,6 +13,10 @@
     .user-message-content {
         flex: 1;
         min-width: 0;
+        // Force long unbreakable tokens (URLs, dotted JS expressions, hashes)
+        // to wrap inside the message column instead of overflowing on narrow
+        // viewports (e.g. mobile browsers).
+        overflow-wrap: anywhere;
 
         // Keep the card compact while preserving blank-line spacing
         > :first-child { margin-top: 0; }
@@ -51,6 +55,11 @@
 .assistant-message {
     line-height: 1.5;
     padding: 0.1em 0;
+    min-width: 0;
+    // Force long unbreakable tokens (URLs, dotted JS expressions, hashes)
+    // to wrap inside the message column instead of overflowing on narrow
+    // viewports (e.g. mobile browsers).
+    overflow-wrap: anywhere;
 }
 
 // System message — warning-toned
