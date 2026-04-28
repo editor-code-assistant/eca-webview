@@ -93,7 +93,7 @@ export function ChatSubHeader({ chatId }: Props) {
         }
     };
 
-    const clearHistoryChat = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const clearHistoryChat = () => {
         dispatch(clearChat({ chatId: chatId }));
         webviewSend('chat/clearChat', { chatId: chatId });
     }
@@ -202,16 +202,49 @@ export function ChatSubHeader({ chatId }: Props) {
             </div>
             <div className="actions">
                 <div className="action trust-toggle">
-                    <i
+                    <button
+                        type="button"
                         onClick={toggleTrust}
-                        className={`codicon ${trust ? 'codicon-workspace-trusted trust-on' : 'codicon-workspace-untrusted trust-off'}`}
                         title={trust ? 'Trust ON - auto-accepting tool calls' : 'Trust OFF - not auto-accepting tool calls'}
-                    ></i>
+                        aria-label={trust ? 'Disable trust mode' : 'Enable trust mode'}
+                    >
+                        <i
+                            className={`codicon ${trust ? 'codicon-workspace-trusted trust-on' : 'codicon-workspace-untrusted trust-off'}`}
+                            aria-hidden="true"
+                        ></i>
+                    </button>
                 </div>
                 <div className="action"><ChatTimeline chatId={chatId} /></div>
-                <div className="action"><i onClick={exportChat} className="codicon codicon-export" title="Export chat to Markdown"></i></div>
-                <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash" title="Clear chat messages"></i></div>
-                <div className="action"><i onClick={openSettings} className="codicon codicon-settings-gear" title="Settings"></i></div>
+                <div className="action">
+                    <button
+                        type="button"
+                        onClick={exportChat}
+                        title="Export chat to Markdown"
+                        aria-label="Export chat to Markdown"
+                    >
+                        <i className="codicon codicon-export" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div className="action">
+                    <button
+                        type="button"
+                        onClick={clearHistoryChat}
+                        title="Clear chat messages"
+                        aria-label="Clear chat messages"
+                    >
+                        <i className="codicon codicon-trash" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div className="action">
+                    <button
+                        type="button"
+                        onClick={openSettings}
+                        title="Settings"
+                        aria-label="Open settings"
+                    >
+                        <i className="codicon codicon-settings-gear" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
         </div>
     );

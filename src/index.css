@@ -90,13 +90,29 @@ a {
   word-break: break-word;
 }
 
+/* Universal <pre> overflow constraint.
+ *
+ * Applies to ANY <pre> regardless of children — important because we cannot
+ * rely on the CSS :has() selector. `:has()` ships in iOS Safari/WebKit only
+ * since 16.4, and on older devices any markdown ```code``` fence rendered to
+ * a plain <pre> (no .code-block child, no language-*) would inherit the UA
+ * default `white-space: pre`, letting a single long line stretch its
+ * ancestors and break the chat column width on iPhone.
+ *
+ * `min-width: 0` defeats the flexbox quirk where a flex child refuses to
+ * shrink below its content's intrinsic width. */
+pre {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
 /* Fenced code block without a language (no syntax highlighting) */
 pre:has(> .code-block) {
   background-color: var(--eca-input-bg);
   padding: 0.6em 0.8em;
   border-radius: 0.35em;
-  overflow-x: auto;
-  scrollbar-width: thin;
 }
 
 /* Fenced code block with syntax highlighting.
@@ -117,6 +133,20 @@ div[class*="language-"] {
   font-family: var(--eca-monospace-font, "SF Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, "Liberation Mono", "Courier New", monospace);
   line-height: 1.5;
   white-space: pre;
+  /* `white-space: pre` (above) preserves source line breaks intentionally,
+   * so we DON'T want word-break or overflow-wrap to alter typical code.
+   * The parent <pre> has `overflow-x: auto`, which lets the user scroll
+   * horizontally for normal code with long lines. The defensive rule below
+   * applies only to "impossibly long unbreakable tokens" (single tokens
+   * wider than the viewport with no whitespace) so they wrap as a last
+   * resort, otherwise an unbroken hash/URL/base64 blob in a 2.3 MB chat
+   * would still push its scroll container wider than the message column.
+   *
+   * `overflow-wrap: anywhere` triggers only when the line cannot fit at
+   * all; `word-break: normal` keeps the rule from breaking normal CJK or
+   * European text inside code. */
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 /* Markdown tables */

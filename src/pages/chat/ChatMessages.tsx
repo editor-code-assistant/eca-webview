@@ -137,6 +137,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                 return (
                     <motion.div
                         key={key}
+                        className="message-row"
                         variants={messageVariants}
                         initial={shouldAnimate ? "hidden" : false}
                         animate="visible"
@@ -151,6 +152,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
             {pendingQuestion && (
                 <motion.div
                     key="chat-question-standalone"
+                    className="message-row"
                     variants={messageVariants}
                     initial="hidden"
                     animate="visible"
@@ -245,11 +247,18 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
     // right after) the smooth-scroll animation will keep the view pinned via
     // the ResizeObserver above — matching the "stay at bottom for new messages
     // until the user scrolls again" expectation.
+    //
+    // We also reset `scrollLeft` to 0. On iOS Safari/WebKit a wide markdown
+    // payload (e.g. an unbreakable token in a long code block) can leave the
+    // scroll container scrolled horizontally — clipping the start of every
+    // line. The user reported "text clipped on left side" on iPhone; resetting
+    // scrollLeft snaps the column back into view alongside the vertical jump.
     const scrollToBottom = useCallback((smooth = false) => {
         const elem = ref.current;
         if (!elem) return;
         elem.scrollTo({
             top: elem.scrollHeight,
+            left: 0,
             behavior: smooth ? 'smooth' : 'auto',
         });
         setUserScrolled(false);
