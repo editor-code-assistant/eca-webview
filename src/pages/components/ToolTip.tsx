@@ -3,7 +3,7 @@ import './ToolTip.scss';
 import { RefAttributes } from "react";
 
 export function ToolTip(props: (ITooltip & RefAttributes<TooltipRefProps>)) {
-    const className = `${props.className} eca-tooltip`;
+    const className = `${props.className ?? ''} eca-tooltip`.trim();
     return (
         <Tooltip
             {...props}
