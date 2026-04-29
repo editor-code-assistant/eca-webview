@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State } from '../../redux/store';
+import { ToolTip } from '../components/ToolTip';
 import './ChatTimeline.scss';
 
 interface Props {
@@ -45,9 +46,10 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
         <div className="chat-timeline">
             <i
                 className="codicon codicon-list-flat"
-                title="Chat timeline"
+                data-tooltip-id="chat-timeline-tip"
                 onClick={() => setOpen(!open)}
             ></i>
+            <ToolTip id="chat-timeline-tip" place="bottom">Chat timeline</ToolTip>
             <AnimatePresence>
                 {open && (
                     <motion.div

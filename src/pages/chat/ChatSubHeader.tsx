@@ -205,13 +205,25 @@ export function ChatSubHeader({ chatId }: Props) {
                     <i
                         onClick={toggleTrust}
                         className={`codicon ${trust ? 'codicon-workspace-trusted trust-on' : 'codicon-workspace-untrusted trust-off'}`}
-                        title={trust ? 'Trust ON - auto-accepting tool calls' : 'Trust OFF - not auto-accepting tool calls'}
+                        data-tooltip-id="action-trust"
                     ></i>
+                    <ToolTip id="action-trust" place="bottom">
+                        {trust ? 'Trust ON - auto-accepting tool calls' : 'Trust OFF - not auto-accepting tool calls'}
+                    </ToolTip>
                 </div>
                 <div className="action"><ChatTimeline chatId={chatId} /></div>
-                <div className="action"><i onClick={exportChat} className="codicon codicon-export" title="Export chat to Markdown"></i></div>
-                <div className="action"><i onClick={clearHistoryChat} className="codicon codicon-trash" title="Clear chat messages"></i></div>
-                <div className="action"><i onClick={openSettings} className="codicon codicon-settings-gear" title="Settings"></i></div>
+                <div className="action">
+                    <i onClick={exportChat} className="codicon codicon-export" data-tooltip-id="action-export"></i>
+                    <ToolTip id="action-export" place="bottom">Export chat to Markdown</ToolTip>
+                </div>
+                <div className="action">
+                    <i onClick={clearHistoryChat} className="codicon codicon-trash" data-tooltip-id="action-clear"></i>
+                    <ToolTip id="action-clear" place="bottom">Clear chat messages</ToolTip>
+                </div>
+                <div className="action">
+                    <i onClick={openSettings} className="codicon codicon-settings-gear" data-tooltip-id="action-settings"></i>
+                    <ToolTip id="action-settings" place="bottom">Settings</ToolTip>
+                </div>
             </div>
         </div>
     );
