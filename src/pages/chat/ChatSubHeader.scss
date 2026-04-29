@@ -70,7 +70,7 @@
 
         .trust-toggle {
             i.trust-on {
-                color: #f44747;
+                color: var(--eca-error-fg);
             }
 
             i.trust-off {

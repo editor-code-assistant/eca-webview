@@ -204,7 +204,7 @@ export function ChatSubHeader({ chatId }: Props) {
                 <div className="action trust-toggle">
                     <i
                         onClick={toggleTrust}
-                        className={`codicon ${trust ? 'codicon-workspace-trusted trust-on' : 'codicon-workspace-untrusted trust-off'}`}
+                        className={`codicon ${trust ? 'codicon-flame trust-on' : 'codicon-verified trust-off'}`}
                         data-tooltip-id="action-trust"
                     ></i>
                     <ToolTip id="action-trust" place="bottom">
