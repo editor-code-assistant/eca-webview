@@ -93,7 +93,7 @@ export function ChatSubHeader({ chatId }: Props) {
         }
     };
 
-    const clearHistoryChat = (_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const clearHistoryChat = () => {
         dispatch(clearChat({ chatId: chatId }));
         webviewSend('chat/clearChat', { chatId: chatId });
     }
@@ -202,26 +202,53 @@ export function ChatSubHeader({ chatId }: Props) {
             </div>
             <div className="actions">
                 <div className="action trust-toggle">
-                    <i
+                    <button
+                        type="button"
                         onClick={toggleTrust}
-                        className={`codicon ${trust ? 'codicon-flame trust-on' : 'codicon-verified trust-off'}`}
                         data-tooltip-id="action-trust"
-                    ></i>
+                        aria-label={trust ? 'Disable trust mode' : 'Enable trust mode'}
+                    >
+                        <i
+                            className={`codicon ${trust ? 'codicon-flame trust-on' : 'codicon-verified trust-off'}`}
+                            aria-hidden="true"
+                        ></i>
+                    </button>
                     <ToolTip id="action-trust" place="bottom">
                         {trust ? 'Trust ON - auto-accepting tool calls' : 'Trust OFF - not auto-accepting tool calls'}
                     </ToolTip>
                 </div>
                 <div className="action"><ChatTimeline chatId={chatId} /></div>
                 <div className="action">
-                    <i onClick={exportChat} className="codicon codicon-export" data-tooltip-id="action-export"></i>
+                    <button
+                        type="button"
+                        onClick={exportChat}
+                        data-tooltip-id="action-export"
+                        aria-label="Export chat to Markdown"
+                    >
+                        <i className="codicon codicon-export" aria-hidden="true"></i>
+                    </button>
                     <ToolTip id="action-export" place="bottom">Export chat to Markdown</ToolTip>
                 </div>
                 <div className="action">
-                    <i onClick={clearHistoryChat} className="codicon codicon-trash" data-tooltip-id="action-clear"></i>
+                    <button
+                        type="button"
+                        onClick={clearHistoryChat}
+                        data-tooltip-id="action-clear"
+                        aria-label="Clear chat messages"
+                    >
+                        <i className="codicon codicon-trash" aria-hidden="true"></i>
+                    </button>
                     <ToolTip id="action-clear" place="bottom">Clear chat messages</ToolTip>
                 </div>
                 <div className="action">
-                    <i onClick={openSettings} className="codicon codicon-settings-gear" data-tooltip-id="action-settings"></i>
+                    <button
+                        type="button"
+                        onClick={openSettings}
+                        data-tooltip-id="action-settings"
+                        aria-label="Open settings"
+                    >
+                        <i className="codicon codicon-settings-gear" aria-hidden="true"></i>
+                    </button>
                     <ToolTip id="action-settings" place="bottom">Settings</ToolTip>
                 </div>
             </div>

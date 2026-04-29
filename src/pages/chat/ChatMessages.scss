@@ -1,3 +1,15 @@
+// Positioning ancestor for the floating scroll-to-bottom button.
+// Keeps `.messages-container` as the actual scroller; the button lives
+// outside that scroller so it stays pinned to the visible viewport.
+.messages-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+}
+
 .messages-container {
     flex: 1;
     overflow-y: auto;
@@ -7,10 +19,74 @@
     padding-bottom: 1.2em;
     gap: 0.6em;
     min-height: 0;
+    // Allow the column to shrink to viewport width before children measure;
+    // prevents brief horizontal-overflow during reflow on narrow viewports.
+    min-width: 0;
 
     /* When only the welcome-message child is present, center it */
     &:has(> .welcome-message:only-child) {
         justify-content: center;
         align-items: center;
+    }
+}
+
+// Each message is wrapped in a framer-motion <motion.div>. By default that
+// wrapper has no width clamp, so a wide descendant (e.g. an unbreakable
+// token inside a <pre> code block) can grow the row past the column and
+// then propagate that width back up the chain — defeating the
+// `min-width: 0` on the parent. Combined with framer-motion's `transform`
+// (which on iOS WebKit creates a new stacking/clip context that bypasses
+// the ancestor `overflow-x: hidden` on body/html), this is the most likely
+// reason the user saw the chat extend past the viewport with horizontal
+// scroll.
+.message-row {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    // Force descendants that don't respect `min-width: 0` (notably tables
+    // with `min-width: 100%`, and react-syntax-highlighter divs) to clip
+    // rather than expand the row. The inner code/table CSS still provides
+    // its own horizontal scroller, so users can scroll long lines locally.
+    overflow: hidden;
+}
+
+// Floating "scroll to latest" pill, shown only when the user has scrolled
+// away from the bottom (see `useAutoScroll` in ChatMessages.tsx). Clicking
+// it scrolls to the bottom and re-arms the auto-stick-to-bottom behavior
+// so streaming chunks keep the view pinned.
+.scroll-to-bottom-btn {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 999px;
+
+    background-color: var(--eca-panel-bg);
+    color: var(--eca-editor-fg);
+    border: 1px solid var(--eca-base-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    z-index: 2;
+
+    .codicon {
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    &:hover {
+        background-color: var(--eca-base-hover);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--eca-accent-fg);
+        outline-offset: 2px;
     }
 }
