@@ -30,5 +30,8 @@ export function editorName() {
     if (getLocalStorage("editor") === "web") {
         return "web"
     }
+    if (getLocalStorage("editor") === "desktop") {
+        return "desktop"
+    }
     return null;
 }

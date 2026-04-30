@@ -243,6 +243,22 @@
     }
 }
 
+// Side-view hosts (eca-vscode, eca-intellij, eca-web) embed the chat
+// as a narrow panel where the modal-card border treatment looks out
+// of place — the outer panel already provides framing, so the prompt
+// adds visual noise. Strip the border, rounded corners, and shadow
+// for every host except eca-desktop. The inner `.progress-area`
+// divider, `.field`, toolbar, hero font-size scaling, and active
+// state border-color tints are unaffected (color tints become inert
+// no-ops since there's no border surface to color, which is fine).
+// Specificity (0,2,1) beats `.prompt-area.hero` (0,2,0), so hero mode
+// also picks up the flat look on these hosts.
+:root:not([data-editor="desktop"]) .prompt-area {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
 // One-shot horizontal shake played by `.prompt-area.shake` when the
 // user hits Enter while the ECA server isn't Running. Amplitude is
 // kept small (≤6px) so it reads as a hint rather than an error.

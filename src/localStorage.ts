@@ -1,6 +1,6 @@
 
 type LocalStorageTypes = {
-  editor: "vscode" | "jetbrains" | "web";
+  editor: "vscode" | "jetbrains" | "web" | "desktop";
   // Base UI font scale multiplier (em units), e.g., 1, 1.1
   fontScale: number;
 };

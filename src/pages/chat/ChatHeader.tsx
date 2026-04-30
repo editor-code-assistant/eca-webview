@@ -88,7 +88,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
     }, [chats, selectedChat]);
 
     const emptyChat = chats.find(c => c.id === 'EMPTY');
-    const isWeb = editorName() === 'web';
+    const isWeb = editorName() === 'web' || editorName() === 'desktop';
     const selectedChatObj = chats.find(c => c.id === selectedChat);
 
     const openSidebar = () => {

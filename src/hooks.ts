@@ -239,7 +239,8 @@ export function webviewSend<T>(
             }
             return;
         }
-        case 'web': {
+        case 'web':
+        case 'desktop': {
             if (window.__ecaWebTransport) {
                 window.__ecaWebTransport.send(msg);
             }

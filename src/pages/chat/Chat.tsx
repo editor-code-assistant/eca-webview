@@ -26,7 +26,7 @@ export function Chat() {
 
     const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 
-    const isWeb = editorName() === 'web';
+    const isWeb = editorName() === 'web' || editorName() === 'desktop';
     const hasNoMessages = !allChats[currentChatId]?.messages?.length;
     const heroMode = isWeb && (!running || hasNoMessages);
 
