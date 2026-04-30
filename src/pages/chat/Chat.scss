@@ -196,13 +196,22 @@
   // instead of being briefly bottom-anchored and then snapping up
   // when .hero-mode is removed.
   &.hero-mode {
-    > .messages-container:has(> .welcome-message:only-child) {
+    // `.messages-wrapper` (introduced as the positioning ancestor for
+    // the floating "scroll to latest" button) sits between
+    // `.chat-container` and `.messages-container`, so both selectors
+    // below have to walk through it explicitly. Without this, the
+    // direct-child combinators below silently stop matching once the
+    // wrapper is present, and the empty-chat welcome layout loses
+    // both its bottom-anchored welcome-message and its balancing
+    // ::after spacer — leaving the welcome content stranded at the
+    // top of the messages region with a large gap before the prompt.
+    > .messages-wrapper > .messages-container:has(> .welcome-message:only-child) {
       flex: 1 1 0;
       justify-content: flex-end;
       padding-bottom: 1.5em;
     }
 
-    &:has(> .messages-container > .welcome-message:only-child)::after {
+    &:has(> .messages-wrapper > .messages-container > .welcome-message:only-child)::after {
       content: '';
       flex: 1 1 0;
       pointer-events: none;
