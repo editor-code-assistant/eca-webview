@@ -116,11 +116,13 @@
         }
     }
 
-    // Mobile / narrow-viewport tuning.
-    // On phones the subheader can crowd out the action icons; tighten the
-    // secondary "details" content (MCPs, jobs, usage) and ensure each
-    // action button meets Apple HIG's 44x44px minimum hit target so the
-    // trash/export/settings icons stay reliably tappable.
+    // Narrow-viewport tuning for the secondary `.details` labels.
+    // The MCPs / jobs / usage content can crowd out the right-side
+    // actions row when the chat is laid out narrow (mobile, narrow
+    // tool window, etc.), so shrink it slightly and drop the verbose
+    // usage string. This rule is width-only — it has nothing to do
+    // with input device, so it applies in narrow desktop side panels
+    // too, which is fine.
     @media (max-width: 600px) {
         .details {
             font-size: 0.85em;
@@ -131,7 +133,17 @@
                 display: none;
             }
         }
+    }
 
+    // Touch-device hit-target tuning for the right-side `.actions`
+    // (Apple HIG ~44×44 minimum). Scoped to `pointer: coarse` so
+    // narrow desktop side panels (eca-intellij tool window,
+    // eca-vscode side panel, narrow eca-web) — where the user is
+    // driving with a mouse — keep the compact icon spacing of the
+    // wide-width layout. Without the `pointer: coarse` qualifier the
+    // 44px boxes introduced uneven gaps between icons whenever the
+    // panel was dragged narrower than 600px.
+    @media (max-width: 600px) and (pointer: coarse) {
         .actions {
             margin: 0 0.25em;
 
