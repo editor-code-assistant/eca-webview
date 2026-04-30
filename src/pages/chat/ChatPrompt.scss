@@ -244,19 +244,31 @@
 }
 
 // Side-view hosts (eca-vscode, eca-intellij, eca-web) embed the chat
-// as a narrow panel where the modal-card border treatment looks out
-// of place — the outer panel already provides framing, so the prompt
-// adds visual noise. Strip the border, rounded corners, and shadow
-// for every host except eca-desktop. The inner `.progress-area`
-// divider, `.field`, toolbar, hero font-size scaling, and active
-// state border-color tints are unaffected (color tints become inert
-// no-ops since there's no border surface to color, which is fine).
-// Specificity (0,2,1) beats `.prompt-area.hero` (0,2,0), so hero mode
-// also picks up the flat look on these hosts.
+// in a narrow surface — IDE tool window, browser side panel, or
+// mobile browser viewport — where two things look out of place vs
+// the wide eca-desktop window:
+//
+//   1. The modal-card border treatment (full 4-side border, rounded
+//      corners, drop-shadow). The outer panel/viewport already
+//      provides framing, so the card border just adds visual noise.
+//   2. The base `.prompt-area { margin: 0.3em auto }` bottom margin
+//      reads as wasted vertical space between the prompt and the
+//      surface's bottom edge — particularly noticeable on mobile
+//      web.eca.dev where every pixel of viewport height counts.
+//
+// Strip the modal-card framing AND the bottom margin for every host
+// except eca-desktop (which keeps both around its centered prompt).
+// The inner `.progress-area` divider, `.field`, toolbar, hero font-
+// size scaling, and active state border-color tints are unaffected
+// (color tints become inert no-ops since there's no border surface
+// to color, which is fine). Specificity (0,2,1) beats
+// `.prompt-area.hero` (0,2,0), so hero mode also picks up the flush
+// flat look on these hosts.
 :root:not([data-editor="desktop"]) .prompt-area {
     border: none;
     border-radius: 0;
     box-shadow: none;
+    margin-bottom: 0;
 }
 
 // One-shot horizontal shake played by `.prompt-area.shake` when the
