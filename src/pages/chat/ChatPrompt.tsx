@@ -317,8 +317,9 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
         let prompt = `/${command.name}`;
         setPromptValue(prompt)
 
-        for (let i = 0; i < command.arguments.length; i++) {
-            const arg = command.arguments[i];
+        const args = command.arguments ?? [];
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i];
             prompt += " ";
             const message = `Arg: ${arg.name}\nDescription: ${arg.description}\n\nInput value:`;
             const userArgInput = (await dispatch(editorReadInput({ message: message }))).payload as (string | null);

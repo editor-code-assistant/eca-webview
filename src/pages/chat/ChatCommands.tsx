@@ -131,7 +131,7 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
                         className={`item ${index === selectedIndex ? 'selected' : ''}`}>
                         {icon(command)}
                         <span className="label">{command.name}</span>
-                        <span className="args">({command.arguments.map((a) => a.name).join(', ')})</span>
+                        <span className="args">({(command.arguments ?? []).map((a) => a.name).join(', ')})</span>
                         <span className="description">{command.description}</span>
                     </li>
                 ))}
