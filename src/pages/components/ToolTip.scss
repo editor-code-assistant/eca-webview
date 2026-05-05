@@ -2,7 +2,7 @@
     background-color: var(--eca-tooltip-bg);
     outline: 0.5px solid var(--eca-base-border);
     color: var(--eca-tooltip-fg);
-    padding: 4px 8px;
+    padding: 2px 6px;
     z-index: 1000;
     margin-top: 0.5em;
     max-width: 80vw;
@@ -10,4 +10,16 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     white-space: pre-line;
+
+    /* react-tooltip wraps children in an internal `.react-tooltip-content-wrapper`
+     * div that ships with `padding: 8px 16px` baked into the library's CSS.
+     * That extra inner padding stacks on top of the outer `.eca-tooltip`
+     * padding (and on top of any per-popup override), which is what made
+     * every popup look like it had a chunky top/side padding even after
+     * setting `padding: 0 !important` on the outer container.
+     * Zero it out here so each tooltip/popup controls its own padding via
+     * the outer element only. */
+    .react-tooltip-content-wrapper {
+        padding: 0;
+    }
 }
