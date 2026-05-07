@@ -79,7 +79,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
     useEffect(() => {
         const handler = () => {
             const target = chats.find(c => c.id === selectedChat);
-            if (target && target.id !== 'EMPTY') {
+            if (target && !target.isEmpty) {
                 startRename(target);
             }
         };
@@ -87,7 +87,11 @@ export const ChatHeader = memo(({ chats }: Props) => {
         return () => document.removeEventListener('eca:requestRenameCurrent', handler);
     }, [chats, selectedChat]);
 
-    const emptyChat = chats.find(c => c.id === 'EMPTY');
+    // The "empty placeholder" chat is now identified by the `isEmpty`
+    // flag (set on creation, cleared on the first user/assistant text)
+    // rather than by a hardcoded id. There is at most one at a time —
+    // see the `newChat` reducer in src/redux/slices/chat.ts.
+    const emptyChat = chats.find(c => c.isEmpty);
     const isWeb = editorName() === 'web' || editorName() === 'desktop';
     const selectedChatObj = chats.find(c => c.id === selectedChat);
 
@@ -108,7 +112,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
             )}
             <section className="chats scrollable">
                 {chats.map(chat => {
-                    const isEmpty = chat.id === emptyChat?.id;
+                    const isEmpty = !!chat.isEmpty;
                     const isSelected = chat.id === selectedChat;
                     const isRenaming = renamingChatId === chat.id;
 

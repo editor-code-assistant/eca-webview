@@ -38,12 +38,25 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [draftPrompt, setDraftPrompt] = useState('');
 
-    const selectAgent = useSelector((state: State) => state.server.config.chat.selectAgent);
+    // Per-chat selection (set by scoped `config/updated` payloads — see
+    // applyConfigToChat in src/redux/slices/chat.ts). When unset on a
+    // freshly minted chat we fall back to the global last-known mirrors
+    // on `state.server.config.chat` so every new chat starts with the
+    // session defaults.
+    const perChatSelectedModel = useSelector((state: State) => state.chat.chats[chatId]?.selectedModel);
+    const perChatSelectedAgent = useSelector((state: State) => state.chat.chats[chatId]?.selectedAgent);
+    const perChatSelectedVariant = useSelector((state: State) => state.chat.chats[chatId]?.selectedVariant);
+
+    const globalSelectAgent = useSelector((state: State) => state.server.config.chat.selectAgent);
     const agents = useSelector((state: State) => state.server.config.chat.agents || []);
-    const selectModel = useSelector((state: State) => state.server.config.chat.selectModel);
+    const globalSelectModel = useSelector((state: State) => state.server.config.chat.selectModel);
     const models = useSelector((state: State) => state.server.config.chat.models || []);
     const variants = useSelector((state: State) => state.server.config.chat.variants || []);
-    const selectedVariant = useSelector((state: State) => state.server.config.chat.selectedVariant);
+    const globalSelectedVariant = useSelector((state: State) => state.server.config.chat.selectedVariant);
+
+    const selectModel = perChatSelectedModel ?? globalSelectModel;
+    const selectAgent = perChatSelectedAgent ?? globalSelectAgent;
+    const selectedVariant = perChatSelectedVariant !== undefined ? perChatSelectedVariant : globalSelectedVariant;
 
     const [selectedModel, setSelectedModel] = useState<string>();
     const [selectedAgent, setSelectedAgent] = useState<string>();
@@ -142,7 +155,13 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
 
     const handleModelChanged = (newModel: string) => {
         setSelectedModel(newModel);
+        // Include the currently-selected chat id so the server can
+        // persist the model on `[:chats chat-id]` and emit a scoped
+        // `config/updated` back. The chatId field is optional on the
+        // wire — older servers that don't understand it will fall
+        // through to the legacy session-wide path.
         webviewSend('chat/selectedModelChanged', {
+            ...(chatId ? { chatId } : {}),
             model: newModel,
             ...(selectedVariant ? { variant: selectedVariant } : {}),
         });
@@ -151,6 +170,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const handleAgentChanged = (newAgent: string) => {
         setSelectedAgent(newAgent);
         webviewSend('chat/selectedAgentChanged', {
+            ...(chatId ? { chatId } : {}),
             agent: newAgent,
         });
     }

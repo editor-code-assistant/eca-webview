@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerRemovedParams, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
+import { addContentReceived, applyConfigToAllChats, applyConfigToChat, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
 import { LogEntry, appendLogEntry, setLogEntries } from "../redux/slices/logs";
 import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
@@ -164,7 +164,23 @@ const RootWrapper = () => {
     });
 
     useWebviewListener('config/updated', (config: { [key: string]: any }) => {
+        // Always update the global last-known mirrors (models list,
+        // selectModel, selectAgent, …) so newly-created chats inherit
+        // the most recently selected session defaults — including when
+        // the payload is scoped to a single chat. The server slice's
+        // setConfig knows to skip the global trust mirror in that case.
         dispatch(setConfig(config));
+
+        // Per-chat scoping: when the server tags the payload with a
+        // top-level `chatId`, apply the per-chat fields ONLY to that
+        // chat. Otherwise (legacy / initial post-`initialize` push)
+        // fan the values out to every chat so existing tabs all pick
+        // up the session defaults.
+        if (config.chatId) {
+            dispatch(applyConfigToChat({ chatId: config.chatId, chat: config.chat }));
+        } else if (config.chat) {
+            dispatch(applyConfigToAllChats({ chat: config.chat }));
+        }
     });
 
     useWebviewListener('providers/updated', (provider: ProviderStatus) => {
@@ -239,46 +255,52 @@ const RootWrapper = () => {
     //
     // The host reads `selectedChat` at dispatch time so we can safely pin it
     // in the listener deps — the listener closure will re-register whenever
-    // the selection changes, ensuring the right chat is targeted. `EMPTY`
-    // is the pre-send placeholder chat and is ignored for destructive ops.
+    // the selection changes, ensuring the right chat is targeted. Empty
+    // placeholder chats (the new replacement for the old `'EMPTY'`
+    // sentinel — see the `isEmpty` flag on `Chat`) are ignored for
+    // destructive ops.
     const selectedChat = useSelector((state: State) => state.chat.selectedChat);
+    const selectedChatIsEmpty = useSelector(
+        (state: State) => !!state.chat.chats[state.chat.selectedChat]?.isEmpty,
+    );
+    const selectedChatActionable = !!selectedChat && !selectedChatIsEmpty;
 
     useWebviewListener('chat/closeCurrent', async () => {
-        if (selectedChat && selectedChat !== 'EMPTY') {
+        if (selectedChatActionable) {
             dispatch(deleteChat({ chatId: selectedChat }));
         }
-    }, [selectedChat]);
+    }, [selectedChat, selectedChatActionable]);
 
     useWebviewListener('chat/renameCurrent', async () => {
-        if (selectedChat && selectedChat !== 'EMPTY') {
+        if (selectedChatActionable) {
             // ChatHeader listens for this DOM event and enters rename mode
             // on the currently-selected tab. Using a DOM event avoids
             // threading rename state through Redux for a transient UI mode.
             document.dispatchEvent(new CustomEvent('eca:requestRenameCurrent'));
         }
-    }, [selectedChat]);
+    }, [selectedChat, selectedChatActionable]);
 
     useWebviewListener('chat/clearCurrent', async () => {
-        if (selectedChat && selectedChat !== 'EMPTY') {
+        if (selectedChatActionable) {
             dispatch(clearChat({ chatId: selectedChat }));
             webviewSend('chat/clearChat', { chatId: selectedChat });
         }
-    }, [selectedChat]);
+    }, [selectedChat, selectedChatActionable]);
 
     useWebviewListener('chat/exportCurrent', async () => {
-        if (selectedChat && selectedChat !== 'EMPTY') {
+        if (selectedChatActionable) {
             // ChatSubHeader owns the markdown serialization; surface the
             // request as a DOM event so the component runs its existing
             // `exportChat()` flow without duplicating logic here.
             document.dispatchEvent(new CustomEvent('eca:requestExportCurrent'));
         }
-    }, [selectedChat]);
+    }, [selectedChat, selectedChatActionable]);
 
     useWebviewListener('chat/stopCurrent', async () => {
-        if (selectedChat && selectedChat !== 'EMPTY') {
+        if (selectedChatActionable) {
             dispatch(stopPrompt({ chatId: selectedChat }));
         }
-    }, [selectedChat]);
+    }, [selectedChat, selectedChatActionable]);
 
     useEffect(() => {
         // Reset stale chat state before requesting fresh state from the bridge.

@@ -82,13 +82,20 @@ interface Props {
 export function ChatSubHeader({ chatId }: Props) {
     const dispatch = useEcaDispatch();
     const navigate = useNavigate();
-    const trust = useSelector((state: State) => state.server.trust);
+    // Per-chat trust (populated by scoped `config/updated`) takes
+    // precedence over the global mirror so each tab can show its own
+    // auto-approval state. Falls back to the global value for chats
+    // that haven't seen a scoped update yet.
+    const globalTrust = useSelector((state: State) => state.server.trust);
+    const perChatTrust = useSelector((state: State) => state.chat.chats[chatId]?.trust);
+    const trust = perChatTrust ?? globalTrust;
+    const chatIsEmpty = useSelector((state: State) => !!state.chat.chats[chatId]?.isEmpty);
 
     const toggleTrust = () => {
         const newTrust = !trust;
         dispatch(setTrust(newTrust));
         webviewSend('server/setTrust', newTrust);
-        if (chatId && chatId !== 'EMPTY') {
+        if (chatId && !chatIsEmpty) {
             webviewSend('chat/update', { chatId, trust: newTrust });
         }
     };

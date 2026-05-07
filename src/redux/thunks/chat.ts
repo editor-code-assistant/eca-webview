@@ -34,7 +34,11 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
 
         webviewSend('chat/userPrompt',
             {
-                chatId: chatId !== 'EMPTY' ? chatId : undefined,
+                // The webview now mints chat ids up-front (UUID) and
+                // sends them on every prompt, including the very first.
+                // Unknown ids tell the server "create this chat for
+                // me", which it confirms via `chat/opened`.
+                chatId,
                 requestId,
                 prompt,
                 contexts: contexts.map((c) => refineContext(c, state.chat.cursorFocus)).filter(x => x !== null),
@@ -115,21 +119,21 @@ export const forkFromFlag = createAsyncThunk<void, { chatId: string, contentId: 
 export const queryContext = createAsyncThunk<void, { chatId?: string, query: string, contexts: ChatPreContext[] }, ThunkApiType>(
     "chat/queryContext",
     async ({ chatId, query, contexts }, _) => {
-        webviewSend('chat/queryContext', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query, contexts });
+        webviewSend('chat/queryContext', { chatId, query, contexts });
     }
 );
 
 export const queryCommands = createAsyncThunk<void, { chatId?: string, query: string }, ThunkApiType>(
     "chat/queryCommands",
     async ({ chatId, query }, _) => {
-        webviewSend('chat/queryCommands', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query });
+        webviewSend('chat/queryCommands', { chatId, query });
     }
 );
 
 export const queryFiles = createAsyncThunk<void, { chatId?: string, query: string }, ThunkApiType>(
     "chat/queryFiles",
     async ({ chatId, query }, _) => {
-        webviewSend('chat/queryFiles', { chatId: chatId !== 'EMPTY' ? chatId : undefined, query });
+        webviewSend('chat/queryFiles', { chatId, query });
     }
 );
 
@@ -164,9 +168,19 @@ export const sendPromptToCurrentChat = createAsyncThunk<void, { prompt: string }
     async ({ prompt }, { dispatch, getState }) => {
         const state = getState();
         const chatId = state.chat.selectedChat;
-        const model = state.server.config.chat.selectModel || state.server.config.chat.models[0];
-        const agent = state.server.config.chat.selectAgent || state.server.config.chat.agents[0];
-        const variant = state.server.config.chat.selectedVariant;
+        const chat = state.chat.chats[chatId];
+        // Prefer per-chat selection (set via scoped `config/updated`)
+        // before falling back to the global last-known mirrors and
+        // finally the first-available list entry.
+        const model = chat?.selectedModel
+            || state.server.config.chat.selectModel
+            || state.server.config.chat.models[0];
+        const agent = chat?.selectedAgent
+            || state.server.config.chat.selectAgent
+            || state.server.config.chat.agents[0];
+        const variant = chat?.selectedVariant !== undefined
+            ? chat.selectedVariant
+            : state.server.config.chat.selectedVariant;
 
         if (model && agent) {
             dispatch(sendPrompt({ prompt, chatId, model, agent, variant }));

@@ -112,6 +112,16 @@ export const serverSlice = createSlice({
             state.initTasks = [];
         },
         setConfig: (state, action) => {
+            // When `chatId` is present at the top level, the per-chat
+            // trust value is for that chat alone (handled by the chat
+            // slice's `applyConfigToChat`). The global `state.trust`
+            // mirror should NOT be flipped — otherwise switching
+            // between two chats with different trust would constantly
+            // flicker the global icon. Selection mirrors (selectModel
+            // / selectAgent / selectVariant) are still updated globally
+            // so newly-created chats inherit the most recently selected
+            // values per the per-chat scoping spec.
+            const scopedToChat: boolean = !!action.payload.chatId;
             if (action.payload.usageStringFormat !== undefined) {
                 state.config.usageStringFormat = action.payload.usageStringFormat;
             }
@@ -141,8 +151,10 @@ export const serverSlice = createSlice({
                 // align the chat trust indicator with the server's
                 // persisted per-chat :trust so the icon matches the
                 // auto-approval behavior the server will apply for
-                // subsequent tool calls in the resumed chat.
-                if (action.payload.chat.selectTrust !== undefined) {
+                // subsequent tool calls in the resumed chat. Only
+                // applied for non-scoped (legacy / session-wide)
+                // payloads — see scopedToChat note above.
+                if (!scopedToChat && action.payload.chat.selectTrust !== undefined) {
                     state.trust = action.payload.chat.selectTrust;
                 }
             }

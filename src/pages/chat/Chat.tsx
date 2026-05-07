@@ -21,8 +21,12 @@ export function Chat() {
     const allChats = useSelector((state: State) => state.chat.chats);
     const chatsList = Object.values(allChats);
 
+    // `selectedChat` is now always a real client-minted UUID (no more
+    // 'EMPTY' sentinel). If the selection somehow doesn't resolve to a
+    // chat (race during reset / restore) we fall back to the selection
+    // itself so downstream components still receive a defined string.
     const found = chatsList.find(c => c.id === selectedChat);
-    let currentChatId = found ? found.id : 'EMPTY';
+    let currentChatId = found ? found.id : selectedChat;
 
     const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 

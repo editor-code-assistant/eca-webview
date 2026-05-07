@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { newChatId } from "../../util";
 
 interface ChatMessageText {
     type: 'text',
@@ -74,6 +75,27 @@ export interface Chat {
     taskState?: TaskDetails | null,
     taskLoading?: boolean,
     pendingQuestion?: PendingQuestion,
+    /**
+     * `true` for a freshly minted chat that hasn't seen any user or
+     * assistant text yet — i.e. the placeholder slot that used to be
+     * keyed by the literal `'EMPTY'`. Cleared on the first text content
+     * event. Used by the chat-tab list to render the "Empty chat" pill
+     * and hide the "+ new chat" button while one already exists.
+     */
+    isEmpty?: boolean,
+    /**
+     * Per-chat selection state. Populated from `config/updated` payloads
+     * that carry a top-level `chatId`. The server-side fields are
+     * `selectModel` / `selectAgent` / `selectVariant` / `selectTrust`;
+     * we mirror them here under more idiomatic webview names. When
+     * unset, the UI falls back to the global last-known values on
+     * `state.server.config.chat` so newly-created chats inherit the
+     * most recently selected session defaults.
+     */
+    selectedModel?: string,
+    selectedAgent?: ChatAgent,
+    selectedVariant?: string | null,
+    trust?: boolean,
 }
 
 interface ChatUsage {
@@ -88,16 +110,36 @@ interface ChatUsage {
 
 const defaultContexts = [{ type: 'cursor' }];
 
-const emptyStateChats = {
-    'EMPTY': {
-        id: 'EMPTY',
+/**
+ * Build a fresh empty chat record. The chat id is a client-minted UUID
+ * (see `newChatId` in src/util.ts) so it can be sent on the very first
+ * `chat/prompt` — the server will auto-create the matching record and
+ * echo back a `chat/opened` notification.
+ *
+ * `localId` is taken from and increments the slice's `chatLocalId`
+ * counter so each empty slot gets a stable "Chat N" fallback title
+ * (matches the previous behaviour driven by `chatTitle()`).
+ */
+function makeEmptyChat(localId: number): Chat {
+    return {
+        id: newChatId(),
+        isEmpty: true,
         lastRequestId: 0,
         messages: [],
-        addedContexts: defaultContexts,
-        localId: 1,
+        addedContexts: defaultContexts as ChatPreContext[],
+        localId,
         pendingPrompts: [],
-    }
-} as { [key: string]: Chat };
+    };
+}
+
+// Initial empty-chat slot built once at module load so the
+// `initialState` literal below stays a plain value (Redux Toolkit
+// requires this; you can't compute initial state inside the slice
+// definition without losing some type inference).
+const _initialChat = makeEmptyChat(1);
+const initialChats: { [key: string]: Chat } = {
+    [_initialChat.id]: _initialChat,
+};
 
 export interface CursorFocus {
     path: string,
@@ -368,11 +410,29 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
 
     let chat;
     if (isNewChat) {
-        state.chats = Object.fromEntries(Object.entries(state.chats).filter(([_k, v]) => v.id !== 'EMPTY'));;
-        chat = { id: chatId, lastRequestId: 0, messages: [], localId: state.chatLocalId++, addedContexts: defaultContexts, pendingPrompts: [] } as Chat;
+        // With client-minted UUIDs the chat record almost always exists
+        // before content streams in (created by `newChat` / `chatOpened`
+        // / `resetChats`). This branch still covers chat-resume edge
+        // cases where the server replays content for an unknown id.
+        // No EMPTY-sentinel filtering needed any more.
+        chat = {
+            id: chatId,
+            lastRequestId: 0,
+            messages: [],
+            localId: state.chatLocalId++,
+            addedContexts: defaultContexts,
+            pendingPrompts: [],
+        } as Chat;
         state.selectedChat = chatId;
     } else {
         chat = state.chats[chatId];
+    }
+
+    // Clear `isEmpty` on the first user/assistant text — that's the
+    // moment a placeholder chat becomes a "real" chat in the tab list
+    // (so the "+" new-chat button reappears, etc).
+    if (chat.isEmpty && content.type === 'text' && (role === 'user' || role === 'assistant')) {
+        chat.isEmpty = false;
     }
 
     // Register subagent mapping for spawn_agent tool calls.
@@ -487,9 +547,10 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
-        chats: emptyStateChats,
-        chatLocalId: 1,
-        selectedChat: 'EMPTY',
+        chats: initialChats,
+        // 1 was consumed by `_initialChat`; next slot is 2.
+        chatLocalId: 2,
+        selectedChat: _initialChat.id,
         contexts: undefined,
         commands: undefined,
         files: undefined,
@@ -525,11 +586,14 @@ export const chatSlice = createSlice({
         },
         resetChat: (state, action) => {
             const chatId = action.payload;
-            const { [chatId]: oldChat, ...newChats } = state.chats;
+            const { [chatId]: _oldChat, ...newChats } = state.chats;
             state.chats = newChats;
             if (Object.values(state.chats).length === 0) {
-                state.chats = emptyStateChats;
-                state.selectedChat = 'EMPTY';
+                // Last chat removed — replace it with a freshly minted
+                // empty placeholder so the UI never has zero chats.
+                const fresh = makeEmptyChat(state.chatLocalId++);
+                state.chats = { [fresh.id]: fresh };
+                state.selectedChat = fresh.id;
                 return;
             }
 
@@ -538,27 +602,112 @@ export const chatSlice = createSlice({
             }
         },
         resetChats: (state) => {
-            state.chats = emptyStateChats;
-            state.selectedChat = 'EMPTY';
+            const fresh = makeEmptyChat(state.chatLocalId++);
+            state.chats = { [fresh.id]: fresh };
+            state.selectedChat = fresh.id;
         },
         newChat: (state) => {
-            state.chats = { ...state.chats, ...emptyStateChats };
-            state.selectedChat = 'EMPTY';
+            // Preserve the original "only one empty chat at a time"
+            // behaviour (the EMPTY sentinel naturally enforced this by
+            // sharing a key). If an empty placeholder already exists,
+            // just select it; otherwise mint a new UUID-keyed slot.
+            const existingEmpty = Object.values(state.chats).find(c => c.isEmpty);
+            if (existingEmpty) {
+                state.selectedChat = existingEmpty.id;
+                return;
+            }
+            const fresh = makeEmptyChat(state.chatLocalId++);
+            state.chats[fresh.id] = fresh;
+            state.selectedChat = fresh.id;
         },
         chatOpened: (state, action) => {
             const { chatId, title } = action.payload;
-            state.chats[chatId] = {
-                id: chatId,
-                title: title,
-                lastRequestId: 0,
-                messages: [],
-                localId: state.chatLocalId++,
-                addedContexts: defaultContexts,
-                pendingPrompts: [],
-            } as Chat;
+            // Idempotent: the server may emit `chat/opened` for a chat
+            // the client already created via UUID-upfront flow, in
+            // which case we don't want to clobber its state. Only
+            // create if missing.
+            if (!state.chats[chatId]) {
+                state.chats[chatId] = {
+                    id: chatId,
+                    title: title,
+                    lastRequestId: 0,
+                    messages: [],
+                    localId: state.chatLocalId++,
+                    addedContexts: defaultContexts,
+                    pendingPrompts: [],
+                    isEmpty: true,
+                } as Chat;
+            } else if (title) {
+                state.chats[chatId].title = title;
+            }
         },
         selectChat: (state, action) => {
             state.selectedChat = action.payload;
+        },
+        /**
+         * Apply per-chat selection fields (model / agent / variant /
+         * trust) carried by a `config/updated` whose top-level `chatId`
+         * names a specific chat. Only that chat's slot is touched —
+         * the global `state.server.config.chat.*` mirrors are updated
+         * separately by the server slice's `setConfig` reducer so newly
+         * created chats inherit the most recently selected values.
+         */
+        applyConfigToChat: (state, action) => {
+            const { chatId, chat: chatConfig } = action.payload as {
+                chatId: string;
+                chat?: {
+                    selectModel?: string;
+                    selectAgent?: ChatAgent;
+                    selectVariant?: string | null;
+                    selectTrust?: boolean;
+                };
+            };
+            const chat = state.chats[chatId];
+            if (!chat || !chatConfig) return;
+            if (chatConfig.selectModel !== undefined) {
+                chat.selectedModel = chatConfig.selectModel;
+            }
+            if (chatConfig.selectAgent !== undefined) {
+                chat.selectedAgent = chatConfig.selectAgent;
+            }
+            if (chatConfig.selectVariant !== undefined) {
+                chat.selectedVariant = chatConfig.selectVariant;
+            }
+            if (chatConfig.selectTrust !== undefined) {
+                chat.trust = chatConfig.selectTrust;
+            }
+        },
+        /**
+         * Legacy "apply to all chats" path used when `config/updated`
+         * arrives without a `chatId` (e.g. the initial post-`initialize`
+         * push that fans the session-default model/agent out across
+         * every chat). Mirrors the per-field semantics of
+         * `applyConfigToChat` but iterates every chat in the slice.
+         */
+        applyConfigToAllChats: (state, action) => {
+            const { chat: chatConfig } = action.payload as {
+                chat?: {
+                    selectModel?: string;
+                    selectAgent?: ChatAgent;
+                    selectVariant?: string | null;
+                    selectTrust?: boolean;
+                };
+            };
+            if (!chatConfig) return;
+            for (const chat of Object.values(state.chats)) {
+                if (chatConfig.selectModel !== undefined) {
+                    chat.selectedModel = chatConfig.selectModel;
+                }
+                if (chatConfig.selectAgent !== undefined) {
+                    chat.selectedAgent = chatConfig.selectAgent;
+                }
+                if (chatConfig.selectVariant !== undefined) {
+                    chat.selectedVariant = chatConfig.selectVariant;
+                }
+                if (chatConfig.selectTrust !== undefined) {
+                    chat.trust = chatConfig.selectTrust;
+                }
+            }
         },
         addContentReceived: (state, action) => {
             processContentEvent(state, action.payload as ChatContentReceivedParams);
@@ -700,6 +849,8 @@ export const {
     chatOpened,
     setCursorFocus,
     selectChat,
+    applyConfigToChat,
+    applyConfigToAllChats,
     setContexts,
     addContext,
     removeContext,

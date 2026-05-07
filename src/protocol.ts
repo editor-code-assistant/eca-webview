@@ -33,6 +33,11 @@ export interface InitializeResult {
 }
 
 export interface ChatPromptParams {
+    // Optional on the wire for back-compat with older servers, but the
+    // webview now always populates it (UUID minted client-side, see
+    // `newChatId` in src/util.ts). The server treats an unknown id as
+    // a signal to auto-create the chat record and reply with
+    // `chat/opened`.
     chatId?: string;
     requestId: string;
     message: string;
@@ -41,6 +46,57 @@ export interface ChatPromptParams {
     variant?: string;
     trust?: boolean;
     contexts?: ChatContext[];
+}
+
+/**
+ * Outbound `chat/selectedModelChanged` notification. When `chatId` is
+ * provided AND the chat exists server-side, the server persists the
+ * model/variant on `[:chats chat-id]` and echoes back a `config/updated`
+ * carrying that same `chatId` so the client can scope the update.
+ *
+ * When `chatId` is omitted the server falls back to its legacy
+ * session-wide path and the resulting `config/updated` has no chatId.
+ */
+export interface ChatSelectedModelChangedParams {
+    chatId?: string;
+    model: string;
+    variant?: string;
+}
+
+/**
+ * Outbound `chat/selectedAgentChanged` notification. Per-chat semantics
+ * mirror `ChatSelectedModelChangedParams` above.
+ */
+export interface ChatSelectedAgentChangedParams {
+    chatId?: string;
+    agent: ChatAgent;
+}
+
+/**
+ * Inbound `config/updated` notification.
+ *
+ * When `chatId` is present at the top level, the per-chat fields under
+ * `chat` (selectModel / selectAgent / selectVariant / selectTrust) apply
+ * ONLY to the chat with that id; other config fields (models, agents,
+ * welcomeMessage, …) still apply globally.
+ *
+ * When `chatId` is absent, the payload is the legacy session-wide
+ * config push and per-chat fields should be applied to every existing
+ * chat (so the initial post-`initialize` push still fans out).
+ */
+export interface ConfigUpdatedParams {
+    chatId?: string;
+    usageStringFormat?: string;
+    chat?: {
+        models?: string[];
+        agents?: string[];
+        selectModel?: string;
+        selectAgent?: ChatAgent;
+        welcomeMessage?: string;
+        variants?: string[];
+        selectVariant?: string | null;
+        selectTrust?: boolean;
+    };
 }
 
 interface FileContext {
