@@ -8,7 +8,15 @@
     border: 1px solid transparent;
     color: var(--eca-item-selectable-fg);
     background-color: var(--eca-input-bg);
-    transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease, border-color 150ms ease;
+    // Opacity-only hover matches the chat subheader MCP/jobs/usage `%item`
+    // pattern. We tried swapping `background-color` to `--eca-base-hover` on
+    // hover, but that token is wired to `Borders.ContrastBorderColor`, which
+    // is a dark border accent on every IntelliJ light LAF — rendering a black
+    // block under dark text. Opacity transitions are theme-robust because no
+    // new color is introduced; the user just sees the at-rest surface get
+    // brighter on hover.
+    opacity: 0.8;
+    transition: color 150ms ease, opacity 150ms ease, border-color 150ms ease;
     font-size: 0.8em;
     cursor: pointer;
     white-space: nowrap;
@@ -38,14 +46,24 @@
 
     &:hover {
         color: var(--eca-input-fg);
-        background-color: var(--eca-base-hover);
         opacity: 1;
     }
 }
 
 .select-tooltip {
     padding: 0.3em 0 !important;
-    background-color: var(--eca-tooltip-bg) !important;
+    // A select-box dropdown is a popup MENU, not a tooltip. `--eca-tooltip-bg`
+    // maps to `ToolTip.background` which in IntelliJ New UI is intentionally a
+    // dark "balloon" surface even on Light LAFs (to match the OS-style hint
+    // bubbles in Windows 11 / macOS). Painting the dropdown with that produced
+    // dark popover-on-light-IDE, indistinguishable from a JetBrains hint
+    // balloon. `--eca-panel-bg` maps to `Editor.background`, which is reliably
+    // light in Light and dark in Dark — i.e. the LAF the IDE itself uses for
+    // its own popup menus / lists. The `!important` stays so the parent
+    // `.eca-tooltip` rule (set on every `<ToolTip>` instance by the shared
+    // wrapper) does not win the cascade.
+    background-color: var(--eca-panel-bg) !important;
+    color: var(--eca-input-fg);
     border: 1px solid var(--eca-base-border);
     border-radius: 0.4em;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
@@ -64,7 +82,14 @@
         &:hover,
         &.highlighted {
             opacity: 1;
-            background-color: var(--eca-panel-bg);
+            // A `color-mix` overlay of the text color over transparent gives
+            // a perceptible hover highlight regardless of LAF: on Light themes
+            // (dark text on white) it paints a subtle dark tint, on Dark
+            // themes (light text on dark) it paints a subtle light tint.
+            // Avoids depending on any of the dark-on-light theme tokens
+            // (`--eca-base-hover`, `--eca-tooltip-bg`) that have historically
+            // produced black blocks on Light LAFs in this codebase.
+            background-color: color-mix(in srgb, currentColor 12%, transparent);
         }
 
         &.active {

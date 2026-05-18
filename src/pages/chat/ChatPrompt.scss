@@ -223,10 +223,11 @@
             padding: 0.3em;
             margin: 0 0.1em;
             border-radius: 0.3em;
-            transition: background-color 150ms ease, opacity 150ms ease, transform 150ms ease;
+            opacity: 0.7;
+            transition: opacity 150ms ease, transform 150ms ease;
 
             &:hover {
-                background-color: var(--eca-base-hover);
+                opacity: 1;
                 transform: scale(1.1);
             }
 

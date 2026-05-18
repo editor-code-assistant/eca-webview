@@ -26,10 +26,11 @@
         cursor: pointer;
         padding: 0.2em 0.4em;
         border-radius: 0.2em;
-        transition: background 0.1s;
+        opacity: 0.8;
+        transition: opacity 0.1s;
 
         &:hover {
-            background-color: var(--eca-base-hover);
+            opacity: 1;
         }
 
         &--cancel {

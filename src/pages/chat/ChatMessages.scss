@@ -84,6 +84,8 @@
     border: 1px solid var(--eca-base-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
     cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 150ms ease;
     z-index: 2;
 
     .codicon {
@@ -92,7 +94,7 @@
     }
 
     &:hover {
-        background-color: var(--eca-base-hover);
+        opacity: 1;
     }
 
     &:focus-visible {
