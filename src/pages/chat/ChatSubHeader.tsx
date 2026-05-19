@@ -147,6 +147,7 @@ export function ChatSubHeader({ chatId }: Props) {
 
     let failed = 0;
     let starting = 0;
+    let requiresAuth = 0;
     let running = 0;
 
     mcpServers.forEach((mcp: any) => {
@@ -156,6 +157,9 @@ export function ChatSubHeader({ chatId }: Props) {
                 break;
             case 'starting':
                 starting++;
+                break;
+            case 'requires-auth':
+                requiresAuth++;
                 break;
             case 'running':
                 running++;
@@ -170,11 +174,15 @@ export function ChatSubHeader({ chatId }: Props) {
                     <span>MCPs </span>
                     {failed > 0 &&
                         <span className="failed">{failed}</span>}
-                    {(failed > 0 && (starting > 0 || running > 0)) &&
+                    {(failed > 0 && (starting > 0 || requiresAuth > 0 || running > 0)) &&
                         <span>/</span>}
                     {starting > 0 &&
                         <span className="starting">{starting}</span>}
-                    {(starting > 0 && running > 0) &&
+                    {(starting > 0 && (requiresAuth > 0 || running > 0)) &&
+                        <span>/</span>}
+                    {requiresAuth > 0 &&
+                        <span className="requires-auth">{requiresAuth}</span>}
+                    {(requiresAuth > 0 && running > 0) &&
                         <span>/</span>}
                     {running > 0 &&
                         <span className="running">{running}</span>}
@@ -182,6 +190,7 @@ export function ChatSubHeader({ chatId }: Props) {
                 <ToolTip id="details-mcps" className="details-tooltip">
                     <p>Failed: {failed}</p>
                     <p>Starting: {starting}</p>
+                    <p>Requires auth: {requiresAuth}</p>
                     <p>Running: {running}</p>
                     <p>Click for more details.</p>
                 </ToolTip>

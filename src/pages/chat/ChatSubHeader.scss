@@ -41,7 +41,8 @@
             .running {
                 color: var(--eca-success-fg);
             }
-            .starting {
+            .starting,
+            .requires-auth {
                 color: var(--eca-warning-fg);
             }
             .failed {
