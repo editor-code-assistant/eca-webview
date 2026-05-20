@@ -8,11 +8,14 @@
 .resume-picker-backdrop {
     position: fixed;
     inset: 0;
-    // Slight darken so the panel reads as foreground even on themes
-    // whose chat surface already uses --eca-base-bg. Keeping it tinted
-    // rather than solid black so VS Code's high-contrast themes stay
-    // legible underneath.
-    background-color: color-mix(in srgb, var(--eca-base-bg) 60%, transparent);
+    // Fixed dark translucent dim instead of a theme-derived tint. The
+    // earlier `color-mix(--eca-base-bg, transparent)` inverted on Light
+    // LAFs: `--eca-base-bg` is white on light themes, so the backdrop
+    // turned into a translucent white veil that washed the IDE out
+    // instead of dimming it. A neutral dark overlay reads as a "modal
+    // dim" on both light and dark themes — same convention as native
+    // OS dialogs.
+    background-color: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     display: flex;
@@ -29,9 +32,15 @@
     max-height: min(70vh, 32em);
     display: flex;
     flex-direction: column;
-    background-color: var(--eca-tooltip-bg, var(--eca-base-bg));
+    // `--eca-panel-bg` maps to the host's Editor.background — reliably
+    // light on Light LAFs and dark on Dark LAFs. We deliberately do NOT
+    // use `--eca-tooltip-bg` here: per `SelectBox.scss`, that token is
+    // wired to IntelliJ's `ToolTip.background`, which stays a dark
+    // balloon surface even on Light themes (matching OS hint bubbles),
+    // so it produced a dark popover-on-light-IDE for this modal.
+    background-color: var(--eca-panel-bg, var(--eca-base-bg));
     color: var(--eca-base-fg);
-    border: 1px solid var(--eca-base-border);
+    border: 1px solid var(--eca-panel-border, var(--eca-base-border));
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
     overflow: hidden;
@@ -45,7 +54,7 @@
     align-items: center;
     gap: 0.4em;
     padding: 0.5em 0.6em;
-    border-bottom: 1px solid var(--eca-base-border);
+    border-bottom: 1px solid var(--eca-panel-border, var(--eca-base-border));
     flex-shrink: 0;
 }
 
@@ -88,7 +97,10 @@
     transition: background-color 120ms ease, opacity 120ms ease;
 
     &:hover {
-        background-color: var(--eca-base-hover);
+        // currentColor-derived tint: dark on light themes, light on dark
+        // themes. Avoids `--eca-base-hover`, which renders as a black
+        // block on IntelliJ Light LAFs (see SelectBox.scss).
+        background-color: color-mix(in srgb, currentColor 12%, transparent);
     }
 
     &:disabled {
@@ -118,7 +130,10 @@
     gap: 0.2em;
     padding: 0.55em 0.8em;
     cursor: pointer;
-    border-bottom: 1px solid color-mix(in srgb, var(--eca-base-border) 35%, transparent);
+    // Separator derived from the row's own foreground rather than
+    // `--eca-base-border`, which is a near-invisible faint grey on
+    // Light LAFs and disappears against a light panel.
+    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
     transition: background-color 100ms ease;
 
     &:last-child {
@@ -126,7 +141,10 @@
     }
 
     &.selected {
-        background-color: var(--eca-base-hover);
+        // Same currentColor-derived tint as the close button. Replaces
+        // `--eca-base-hover`, which produced a black block under dark
+        // text on IntelliJ Light LAFs.
+        background-color: color-mix(in srgb, currentColor 12%, transparent);
     }
 }
 
