@@ -4,13 +4,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SyncLoader } from "react-spinners";
 import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
-import { answerQuestion, cancelQuestion, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
+import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
 import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { selectInitProgressString, setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
 import { ChatFileMentions } from "./ChatFileMentions";
+import { ChatResumePicker } from "../components/ChatResumePicker";
 import './ChatPrompt.scss';
 import { ChatCommand } from "../../protocol";
 import { editorReadInput } from "../../redux/thunks/editor";
@@ -64,6 +65,18 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const currentProgress = useSelector((state: State) => state.chat.chats[chatId]?.progress);
     const loading = currentProgress !== undefined;
 
+    // Resume picker. Visible only on an empty chat once we know the
+    // server has resumable chats; the cache itself lives on the redux
+    // slice (`state.chat.resumableChats`) so the picker can render
+    // immediately without a second RPC roundtrip. We refetch whenever
+    // we land in a new empty chat to keep `relativeTime()` honest.
+    const [resumePickerOpen, setResumePickerOpen] = useState(false);
+    const chatIsEmpty = useSelector((state: State) => !!state.chat.chats[chatId]?.isEmpty);
+    const chatMessagesEmpty = useSelector((state: State) => (state.chat.chats[chatId]?.messages?.length ?? 0) === 0);
+    const resumableChats = useSelector((state: State) => state.chat.resumableChats);
+    const isResumableSlot = chatIsEmpty && chatMessagesEmpty;
+    const showResumeHint = enabled && isResumableSlot && !currentProgress && (resumableChats?.length ?? 0) > 0;
+
     // ECA server init-progress line (eca-emacs parity). When the server
     // is still starting up, we prefer this live "N/M · title" over the
     // static "Waiting for ECA server…" so the user can see what the
@@ -95,6 +108,19 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const pendingQuestion = useSelector((state: State) => state.chat.chats[chatId]?.pendingQuestion);
     const isAnswerMode = !!pendingQuestion && !pendingQuestion.answer && !pendingQuestion.cancelled && !!pendingQuestion.allowFreeform;
     const isQuestionPending = !!pendingQuestion && !pendingQuestion.answer && !pendingQuestion.cancelled;
+
+    // Fetch the resumable-chats list whenever the user is sitting in
+    // an empty placeholder. Cheap when the cache is already populated
+    // (the thunk just overwrites it with the latest); does nothing
+    // useful while the server isn't running yet (the host returns an
+    // error envelope, the thunk sets the cache to `[]`, and the hint
+    // stays hidden). Re-fires on `chatId` change so a brand-new "+"
+    // chat picks up a fresh list.
+    useEffect(() => {
+        if (enabled && isResumableSlot) {
+            dispatch(listChats());
+        }
+    }, [enabled, isResumableSlot, chatId]);
 
     useEffect(() => {
         if (selectModel !== undefined) {
@@ -399,7 +425,43 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                         <span onClick={onStop} className="stop">Stop</span>
                     </motion.div>
                 )}
+                {showResumeHint && (
+                    <motion.div
+                        key="resume-hint"
+                        className="resume-hint"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Resume a previous chat (${resumableChats!.length} available)`}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                        onClick={() => setResumePickerOpen(true)}
+                        onKeyDown={(e) => {
+                            // Keyboard parity with the click handler — Enter
+                            // and Space open the picker. We deliberately
+                            // don't bind these on the wrapping prompt card
+                            // so users typing in the textarea above aren't
+                            // hijacked.
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setResumePickerOpen(true);
+                            }
+                        }}
+                    >
+                        <i className="codicon codicon-history" />
+                        <span className="resume-hint-text">Resume a previous chat</span>
+                        <span className="resume-hint-count">{resumableChats!.length}</span>
+                    </motion.div>
+                )}
             </AnimatePresence>
+            {resumePickerOpen && resumableChats && (
+                <ChatResumePicker
+                    chats={resumableChats}
+                    originatingChatId={chatId}
+                    onClose={() => setResumePickerOpen(false)}
+                />
+            )}
             <ChatContexts enabled={enabled} chatId={chatId} />
             <ChatCommands
                 input={inputRef.current}

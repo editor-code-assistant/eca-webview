@@ -83,6 +83,71 @@
         }
     }
 
+    // Resume-picker hint. Shown in the same slot as `.progress-area`
+    // when the current chat is empty and the server has at least one
+    // resumable chat. Styling mirrors `.prompt-waiting-hint` (muted
+    // placeholder-fg, small) so it reads as ambient text rather than
+    // a CTA — until hovered, where the link color comes through. The
+    // codicon-history sits before the label and a small count badge
+    // pinned to the right summarises "how many chats are waiting".
+    // Same `overflow: hidden` trick as `.progress-area` so the height
+    // animation behind AnimatePresence stays clipped.
+    .resume-hint {
+        width: 100%;
+        flex-basis: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+        padding: 0.2em 0.1em 0.35em;
+        border-bottom: 1px solid var(--eca-base-border);
+        color: var(--eca-input-placeholder-fg);
+        font-size: 0.85em;
+        cursor: pointer;
+        user-select: none;
+        overflow: hidden;
+        transition: color 120ms ease;
+
+        // Hover/focus: lift the muted treatment to the regular fg so
+        // the line reads as actively clickable. We don't recolor the
+        // codicon-history separately — it inherits.
+        &:hover,
+        &:focus-visible {
+            color: var(--eca-link-fg);
+            outline: none;
+        }
+
+        .codicon-history {
+            font-size: 1em;
+            opacity: 0.85;
+        }
+
+        .resume-hint-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        // Small count badge pinned to the right end of the row. Filled
+        // with a low-alpha placeholder-fg so it reads as a chip without
+        // competing with the text. Padding is generous (vertical too)
+        // so single-digit counts ("1") don't look cramped inside the
+        // pill.
+        .resume-hint-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.8em;
+            padding: 0.15em 0.7em;
+            border-radius: 1em;
+            font-size: 0.85em;
+            line-height: 1.2;
+            background-color: color-mix(in srgb, var(--eca-input-placeholder-fg) 22%, transparent);
+            color: var(--eca-base-fg);
+        }
+    }
+
     // Inline progress row (generating / stop). Rendered inside
     // `.prompt-area` so that it shares the prompt's layout animation
     // and card styling — no sibling tricks, no animation desync.

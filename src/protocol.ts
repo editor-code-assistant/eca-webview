@@ -443,6 +443,55 @@ export interface ChatClearedParams {
     messages: boolean;
 }
 
+// ── chat/list (resume picker) ──
+//
+// The server returns one summary per persisted, non-subagent chat
+// keyed by the chat's persistent id. Sorted descending by `updatedAt`
+// (or `createdAt` when `sortBy` requests it). `id` is guaranteed
+// non-nil — the server projects it from the chats-map key, so legacy
+// rows missing an inner `:id` still round-trip cleanly.
+export interface ChatListParams {
+    limit?: number;
+    sortBy?: 'updatedAt' | 'createdAt';
+}
+
+export interface ChatSummary {
+    id: string;
+    title?: string;
+    status: string;
+    messageCount: number;
+    createdAt?: number;
+    updatedAt?: number;
+    model?: string;
+}
+
+export interface ChatListResponse {
+    chats: ChatSummary[];
+}
+
+// ── chat/open (resume picker) ──
+//
+// Asks the server to replay a persisted chat. Side effects (in order)
+// emitted as notifications BEFORE this response returns:
+//   1. chat/cleared { chatId, messages: true }
+//   2. chat/opened  { chatId, title? }
+//   3. N × chat/contentReceived { chatId, role, content }
+//   4. config/updated { chatId, chat: { selectModel?, selectTrust? } }
+//
+// The webview lets those flow through the normal RootWrapper listeners
+// (so the resumed chat lands in `state.chat.chats[chatId]` naturally);
+// the response below is just the picker's signal to flip selection and
+// dismiss the modal.
+export interface ChatOpenParams {
+    chatId: string;
+}
+
+export interface ChatOpenResponse {
+    found: boolean;
+    chatId?: string;
+    title?: string;
+}
+
 export type ToolServerStatus = 'running' | 'starting' | 'stopped' | 'failed' | 'disabled' | 'requires-auth';
 
 export interface MCPServerUpdatedParams {

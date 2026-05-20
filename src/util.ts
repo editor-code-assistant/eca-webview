@@ -26,6 +26,29 @@ export function relativizeFromRoot(path: string, workspaceFolders: WorkspaceFold
 
 }
 
+/**
+ * Render `epochMs` as a short, human-readable "X ago" string for the
+ * resume picker. Buckets:
+ *   - < 60 s             → "just now"
+ *   - < 60 min           → "{n}m ago"
+ *   - < 24 h             → "{n}h ago"
+ *   - otherwise          → "{n}d ago"
+ *
+ * Matches the bucket boundaries used by `eca-chat--relative-time` in
+ * eca-emacs so the same chat reads identically across surfaces.
+ * Returns an empty string when `epochMs` is undefined/null/NaN so call
+ * sites can render `... · {relativeTime(undefined)}` without conditional
+ * branches.
+ */
+export function relativeTime(epochMs?: number | null): string {
+    if (epochMs == null || !Number.isFinite(epochMs)) return '';
+    const diffMs = Date.now() - epochMs;
+    if (diffMs < 60_000) return 'just now';
+    if (diffMs < 3_600_000) return `${Math.floor(diffMs / 60_000)}m ago`;
+    if (diffMs < 86_400_000) return `${Math.floor(diffMs / 3_600_000)}h ago`;
+    return `${Math.floor(diffMs / 86_400_000)}d ago`;
+}
+
 declare const vscode: any;
 
 export function editorName() {

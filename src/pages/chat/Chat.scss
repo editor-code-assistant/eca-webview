@@ -122,6 +122,40 @@
       }
   }
 
+  // Transient placeholder shown in the messages area between the
+  // moment the user picks a chat in the resume modal and the moment
+  // the server's first replayed content event lands. Keeps the same
+  // centered layout as `.welcome-message` so the swap is visually
+  // stable, but renders a small SyncLoader + "Resuming…" copy in
+  // muted text instead of the brand-y logo + welcome content. The
+  // `resuming` flag on the chat is set by `beginResume` (chat slice)
+  // and cleared by `processContentEvent` on the first event.
+  .resuming-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7em;
+      flex: 1;
+      width: 100%;
+      padding: 2em 1.5em;
+      box-sizing: border-box;
+      color: var(--eca-input-placeholder-fg);
+
+      p {
+          margin: 0;
+          font-size: 0.95em;
+          opacity: 0.85;
+      }
+
+      .spinner {
+          display: inline-block !important;
+          span {
+              background-color: var(--eca-input-placeholder-fg) !important;
+          }
+      }
+  }
+
   .welcome-message {
       display: flex;
       flex-direction: column;

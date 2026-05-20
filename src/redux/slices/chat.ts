@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 import { newChatId } from "../../util";
 
 interface ChatMessageText {
@@ -96,6 +96,14 @@ export interface Chat {
     selectedAgent?: ChatAgent,
     selectedVariant?: string | null,
     trust?: boolean,
+    /**
+     * Set by `beginResume` (resume-picker click) and cleared by the
+     * first content event for the chat. While `true` the welcome view
+     * is suppressed in favour of a small "Resuming…" indicator so the
+     * user doesn't briefly see a fresh-looking empty chat between the
+     * tab switch and the server's replayed content arriving.
+     */
+    resuming?: boolean,
 }
 
 interface ChatUsage {
@@ -164,6 +172,14 @@ interface ChatState {
     cursorFocus?: CursorFocus,
     subagentChatIdToToolCallId: { [subagentChatId: string]: SubagentMapping },
     promptHistory: string[],
+    /**
+     * Cached result of the most recent `chat/list` RPC. Used by the
+     * resume picker so re-opening the modal doesn't re-fetch. Refreshed
+     * on demand by the `listChats` thunk. `undefined` distinguishes
+     * "never loaded" (hide the resume hint until we know) from "loaded
+     * but empty" (hide the resume hint permanently).
+     */
+    resumableChats?: ChatSummary[],
 }
 
 const getCurrentChat = (state: ChatState): Chat => {
@@ -435,6 +451,14 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
         chat.isEmpty = false;
     }
 
+    // Clear the `resuming` flag the moment any content arrives for the
+    // chat. Set by `beginResume` so the welcome view is suppressed
+    // between tab-switch and first replayed content; once we've got at
+    // least one event the chat is no longer in "loading" state.
+    if (chat.resuming) {
+        chat.resuming = false;
+    }
+
     // Register subagent mapping for spawn_agent tool calls.
     // We register on all lifecycle events (including toolCallPrepare) because
     // during chat resume the server may replay events grouped by chatId,
@@ -557,6 +581,7 @@ export const chatSlice = createSlice({
         cursorFocus: undefined,
         subagentChatIdToToolCallId: {},
         promptHistory: [],
+        resumableChats: undefined,
     } as ChatState,
     reducers: {
         incRequestId: (state, action) => {
@@ -834,6 +859,89 @@ export const chatSlice = createSlice({
                 };
             }
         },
+        /**
+         * Resume-picker cache. Replace the cached list of resumable
+         * chats with whatever the latest `chat/list` returned. The
+         * thunk that drives this is also responsible for defensive
+         * filtering (drop nil-id entries and subagent-prefixed ids).
+         */
+        setResumableChats: (state, action) => {
+            state.resumableChats = action.payload as ChatSummary[];
+        },
+        clearResumableChats: (state) => {
+            state.resumableChats = undefined;
+        },
+        /**
+         * Rollback the optimistic update done by `beginResume`. Fired
+         * by the `openChat` thunk if the server returns `{found: false}`
+         * or the RPC fails. Drops the optimistic slot and falls back to
+         * a fresh empty placeholder so the user always has somewhere
+         * to be — rather than being stranded on a ghost chat that
+         * shows "Resuming…" forever with no content arriving.
+         */
+        rollbackResume: (state, action) => {
+            const { chatId } = action.payload as { chatId: string };
+            const { [chatId]: _dropped, ...rest } = state.chats;
+            state.chats = rest;
+            if (Object.keys(state.chats).length === 0) {
+                const fresh = makeEmptyChat(state.chatLocalId++);
+                state.chats = { [fresh.id]: fresh };
+                state.selectedChat = fresh.id;
+                return;
+            }
+            if (state.selectedChat === chatId) {
+                // Surface the most-recently-touched remaining chat as
+                // the new selection. The object's insertion order is
+                // updatedAt-ish for our purposes (newest at the end).
+                const keys = Object.keys(state.chats);
+                state.selectedChat = keys[keys.length - 1];
+            }
+        },
+        /**
+         * Optimistic update fired when the user picks a chat to resume.
+         * Pre-creates the chat slot (so it appears in the tab strip
+         * with the correct title), switches selection to it, and drops
+         * the originating empty placeholder if one was provided. The
+         * server's `chat/cleared` + `chat/opened` + `contentReceived`
+         * cascade runs against this slot afterwards — `chatOpened` is
+         * idempotent and `processContentEvent` finds the existing slot
+         * and fills its messages, clearing `resuming` on the first
+         * event so the "Resuming…" placeholder gives way to content.
+         */
+        beginResume: (state, action) => {
+            const { chatId, title, originatingChatId } = action.payload as {
+                chatId: string;
+                title?: string;
+                originatingChatId?: string;
+            };
+            if (!state.chats[chatId]) {
+                state.chats[chatId] = {
+                    id: chatId,
+                    title,
+                    lastRequestId: 0,
+                    messages: [],
+                    localId: state.chatLocalId++,
+                    addedContexts: defaultContexts as ChatPreContext[],
+                    pendingPrompts: [],
+                    isEmpty: false,
+                    resuming: true,
+                } as Chat;
+            } else {
+                state.chats[chatId].resuming = true;
+                state.chats[chatId].isEmpty = false;
+                if (title && !state.chats[chatId].title) {
+                    state.chats[chatId].title = title;
+                }
+            }
+            state.selectedChat = chatId;
+            if (originatingChatId && originatingChatId !== chatId) {
+                const orig = state.chats[originatingChatId];
+                if (orig?.isEmpty && orig.messages.length === 0) {
+                    const { [originatingChatId]: _dropped, ...rest } = state.chats;
+                    state.chats = rest;
+                }
+            }
+        },
     },
 });
 
@@ -866,4 +974,8 @@ export const {
     setPendingQuestion,
     clearPendingQuestion,
     answerPendingQuestion,
+    setResumableChats,
+    clearResumableChats,
+    beginResume,
+    rollbackResume,
 } = chatSlice.actions

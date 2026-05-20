@@ -195,6 +195,18 @@ const RootWrapper = () => {
         respondWebviewRequest(data.requestId, data);
     });
 
+    // Resume-picker round trips. The host forwards the JSON-RPC result
+    // back as a message keyed by `requestId`; we just close the pending
+    // promise. The thunks in `redux/thunks/chat.ts` handle the result
+    // shape (chats list / found+chatId, or { error }).
+    useWebviewListener('chat/list', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
+    useWebviewListener('chat/open', (data: any) => {
+        respondWebviewRequest(data.requestId, data);
+    });
+
     useWebviewListener('jobs/readOutput', (data: any) => {
         respondWebviewRequest(data.requestId, data);
     });
