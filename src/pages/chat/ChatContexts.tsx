@@ -92,7 +92,14 @@ function contextIcon(context: ChatPreContext): React.ReactNode {
 export const ChatContexts = memo(({ chatId, enabled }: Props) => {
     const [query, setQuery] = useState('');
     const contexts = useSelector((state: State) => state.chat.contexts);
-    const addedContexts = useSelector((state: State) => state.chat.chats[chatId].addedContexts);
+    // Optional-chain + default: `chats[chatId]` can be transiently
+    // missing right after the parent re-renders following a host-
+    // driven `chat/selectChat` (eca-desktop's native sidebar fires
+    // this before the server's `chat/opened` cascade lands). The
+    // `selectChat` reducer mints a placeholder slot to close the
+    // gap, but this defensive read also guards future code paths
+    // that might set `selectedChat` without ensuring the slot exists.
+    const addedContexts = useSelector((state: State) => state.chat.chats[chatId]?.addedContexts ?? []);
     const workspaceFolders = useSelector((state: State) => state.server.workspaceFolders);
     const dispatch = useEcaDispatch();
 

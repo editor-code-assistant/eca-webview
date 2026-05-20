@@ -667,7 +667,31 @@ export const chatSlice = createSlice({
             }
         },
         selectChat: (state, action) => {
-            state.selectedChat = action.payload;
+            const chatId = action.payload as string;
+            // External hosts can fire `chat/selectChat` for a chatId
+            // that hasn't been materialised in the webview yet — most
+            // notably eca-desktop's native sidebar
+            // (`bridge.selectChatInSession` immediately sends
+            // `chat/selectChat` to the renderer while the server-side
+            // `chat/open` RPC is still in flight, so the server's
+            // `chat/opened` notification arrives strictly later). Mint
+            // an empty placeholder so downstream consumers (ChatContexts,
+            // ChatPrompt, etc.) that deref `chats[selectedChat].*` don't
+            // crash on the transient state. `chatOpened` is idempotent
+            // and will fill in the title once it lands;
+            // `processContentEvent` fills the messages.
+            if (!state.chats[chatId]) {
+                state.chats[chatId] = {
+                    id: chatId,
+                    lastRequestId: 0,
+                    messages: [],
+                    localId: state.chatLocalId++,
+                    addedContexts: defaultContexts as ChatPreContext[],
+                    pendingPrompts: [],
+                    isEmpty: true,
+                } as Chat;
+            }
+            state.selectedChat = chatId;
         },
         /**
          * Apply per-chat selection fields (model / agent / variant /
