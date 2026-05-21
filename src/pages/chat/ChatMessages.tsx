@@ -206,6 +206,15 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
     const [userScrolled, setUserScrolled] = useState(false);
     const userMsgsCount = useMemo(() => messages.filter((msg) => 'role' in msg && msg.role === 'user').length, [messages.length]);
 
+    // Active "header toggle" anchor. While set, the ResizeObserver below
+    // freezes scrollTop to the value captured at click time instead of
+    // pinning the chat to the bottom — that way the start of the block
+    // the user just clicked stays at the same on-screen position
+    // throughout the open/close animation, regardless of what other
+    // scroll mechanisms (browser scroll anchoring, our own RO pin, etc.)
+    // might try to do during the layout shift.
+    const headerToggleRef = useRef<{ endsAt: number; frozenScrollTop: number } | null>(null);
+
     useEffect(() => {
         setUserScrolled(false);
     }, [userMsgsCount]);
@@ -217,18 +226,77 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
             const elem = ref.current;
             if (!elem) return;
 
+            // A user scroll during the animation window cancels the freeze
+            // so we don't fight them. Self-induced scrolls from the freeze
+            // restore land exactly on `frozenScrollTop`, so they don't
+            // trip this check.
+            const anchor = headerToggleRef.current;
+            if (anchor && Math.abs(elem.scrollTop - anchor.frozenScrollTop) > 1) {
+                headerToggleRef.current = null;
+            }
+
             const isAtBottom =
                 Math.abs(elem.scrollHeight - elem.scrollTop - elem.clientHeight) < AT_BOTTOM_THRESHOLD_PX;
             setUserScrolled(!isAtBottom);
         };
 
+        // Detect clicks on any expandable header so we can freeze scrollTop
+        // for the duration of the open/close animation. All expandable cards
+        // in the chat (`ChatToolCall`, `ChatReason`, `ChatTask`,
+        // `ChatSubagentToolCall`, and the generic `ChatCollapsableMessage`)
+        // mark their header with `data-collapsible-header`, so a single
+        // capture-phase listener on the container catches them all and runs
+        // before React's onClick toggles the state.
+        const handleHeaderClick = (e: Event) => {
+            const target = e.target as HTMLElement | null;
+            if (!target?.closest('[data-collapsible-header]')) return;
+            const elem = ref.current;
+            if (!elem) return;
+            // Framer Motion's height-auto spring runs ~250–400ms for typical
+            // content; 800ms gives a comfortable margin for tall bodies and
+            // slower frames before we re-arm auto-pin.
+            headerToggleRef.current = {
+                endsAt: performance.now() + 800,
+                frozenScrollTop: elem.scrollTop,
+            };
+        };
+
         const resizeObserver = new ResizeObserver(() => {
             const elem = ref.current;
-            if (!elem || userScrolled) return;
+            if (!elem) return;
+
+            // While a collapsible is animating, actively keep scrollTop at
+            // the value it had when the header was clicked. This neutralizes
+            // our own pin-to-bottom impulse AND any external mutator (e.g.
+            // a stray browser scroll-anchoring adjustment) that would move
+            // the just-opened block out of view.
+            const anchor = headerToggleRef.current;
+            if (anchor && performance.now() < anchor.endsAt) {
+                if (elem.scrollTop !== anchor.frozenScrollTop) {
+                    elem.scrollTop = anchor.frozenScrollTop;
+                }
+                return;
+            }
+            if (anchor) {
+                // Window expired. Clear the anchor and, if the expansion
+                // pushed the bottom out of view, flag the user as scrolled
+                // away so subsequent streaming chunks won't yank them back
+                // — and the floating "scroll to latest" button surfaces.
+                headerToggleRef.current = null;
+                const isAtBottom =
+                    Math.abs(elem.scrollHeight - elem.scrollTop - elem.clientHeight) < AT_BOTTOM_THRESHOLD_PX;
+                if (!isAtBottom) {
+                    setUserScrolled(true);
+                    return;
+                }
+            }
+
+            if (userScrolled) return;
             elem.scrollTop = elem.scrollHeight;
         });
 
         ref.current.addEventListener("scroll", handleScroll);
+        ref.current.addEventListener("click", handleHeaderClick, true);
 
         resizeObserver.observe(ref.current);
 
@@ -239,6 +307,7 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
         return () => {
             resizeObserver.disconnect();
             ref.current?.removeEventListener("scroll", handleScroll);
+            ref.current?.removeEventListener("click", handleHeaderClick, true);
         };
     }, [ref, messages.length, userScrolled]);
 

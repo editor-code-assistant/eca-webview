@@ -22,6 +22,13 @@
     // Allow the column to shrink to viewport width before children measure;
     // prevents brief horizontal-overflow during reflow on narrow viewports.
     min-width: 0;
+    // Disable browser scroll anchoring. With it on (the default), expanding
+    // a collapsible block while scrolled into the conversation causes the
+    // browser to auto-adjust scrollTop to keep a chosen anchor element
+    // stable — which pushes the just-opened block out of view. We manage
+    // the "stick to bottom while streaming" behavior ourselves in
+    // `useAutoScroll`, so anchoring would only fight us here.
+    overflow-anchor: none;
 
     /* When only the welcome-message child is present, center it */
     &:has(> .welcome-message:only-child) {
