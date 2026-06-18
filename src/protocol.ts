@@ -223,6 +223,22 @@ interface ChatProgressContent {
     text?: string;
 }
 
+export interface ContextBreakdownCategory {
+    name: string;
+    tokens: number;
+    color: string;
+    emoji: string;
+}
+
+export interface ContextBreakdown {
+    categories: ContextBreakdownCategory[];
+    usedTokens: number;
+    freeTokens?: number;
+    contextLimit?: number;
+    freeColor?: string;
+    freeEmoji?: string;
+}
+
 interface ChatUsageContent {
     type: 'usage';
     sessionTokens: number;
@@ -232,6 +248,7 @@ interface ChatUsageContent {
         context: number;
         output: number;
     }
+    contextBreakdown?: ContextBreakdown;
 }
 
 interface ChatToolCallPrepareContent {

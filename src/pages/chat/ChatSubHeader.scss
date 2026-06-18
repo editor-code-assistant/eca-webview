@@ -57,6 +57,12 @@
 
         .usage {
             @extend %item;
+            // Stack the token string above the context bar inside the
+            // same pill so the bar inherits the pill's hover tooltip.
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 110px;
         }
     }
     .actions {
@@ -129,10 +135,17 @@
     @media (max-width: 600px) {
         .details {
             font-size: 0.85em;
-            // Hide the verbose token usage string on narrow screens — it
-            // wraps to multiple lines and can crowd the actions row. The
-            // MCP/jobs counters are short enough to keep.
-            .usage {
+            // Without a context bar (older server) there is only the
+            // verbose token string, which wraps and crowds the actions
+            // row on narrow screens, so keep hiding it.
+            .usage:not(.has-bar) {
+                display: none;
+            }
+            // With a context bar present, keep the compact bar visible —
+            // the side panel is the common vscode/intellij layout and the
+            // bar is the whole point — and only drop the verbose token
+            // text (still available in the hover tooltip).
+            .usage.has-bar > span {
                 display: none;
             }
         }

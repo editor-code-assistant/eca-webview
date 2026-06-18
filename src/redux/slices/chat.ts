@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, ContextBreakdown, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 import { newChatId } from "../../util";
 
 interface ChatMessageText {
@@ -114,6 +114,7 @@ interface ChatUsage {
         context: number;
         output: number;
     }
+    contextBreakdown?: ContextBreakdown,
 }
 
 const defaultContexts = [{ type: 'cursor' }];

@@ -10,6 +10,8 @@ import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
 import { webviewSend } from '../../hooks';
 import { ChatTimeline } from './ChatTimeline';
+import { ContextBar, ContextLegend } from './ContextBar';
+import { sendPromptToCurrentChat } from '../../redux/thunks/chat';
 
 function formatNumber(n: number): string {
     if (n >= 1_000_000) {
@@ -109,6 +111,10 @@ export function ChatSubHeader({ chatId }: Props) {
         navigate(ROUTES.SETTINGS);
     }
 
+    const showContext = () => {
+        dispatch(sendPromptToCurrentChat({ prompt: '/context' }));
+    };
+
     const chat = useSelector((state: State) => state.chat.chats[chatId]);
 
     const exportChat = () => {
@@ -201,16 +207,27 @@ export function ChatSubHeader({ chatId }: Props) {
                 )}
                 {usageString && (
                     <div>
-                        <div data-tooltip-id="details-usage" className="usage">
+                        <div
+                            data-tooltip-id="details-usage"
+                            className={`usage${usage?.contextBreakdown ? ' has-bar' : ''}`}
+                            onClick={showContext}
+                        >
                             <span>{usageString}</span>
+                            {usage?.contextBreakdown && (
+                                <ContextBar breakdown={usage.contextBreakdown} />
+                            )}
                         </div>
                         {usage && (
-                            <ToolTip id="details-usage" className="details-tooltip">
-                                <p>Session tokens: {usage.sessionTokens.toLocaleString()}</p>
+                            <ToolTip id="details-usage" className="details-tooltip context-usage-tooltip">
+                                <p>Session tokens: {formatNumber(usage.sessionTokens)}</p>
                                 <p>Last message cost: ${usage.lastMessageCost}</p>
                                 <p>Session cost: ${usage.sessionCost}</p>
-                                <p>Context limit: {usage.limit?.context?.toLocaleString()}</p>
-                                <p>Output limit: {usage.limit?.output?.toLocaleString()}</p>
+                                <p>Context limit: {usage.limit?.context != null ? formatNumber(usage.limit.context) : ''}</p>
+                                <p>Output limit: {usage.limit?.output != null ? formatNumber(usage.limit.output) : ''}</p>
+                                {usage.contextBreakdown && (
+                                    <ContextLegend breakdown={usage.contextBreakdown} />
+                                )}
+                                <p className="context-usage-hint">Click to run /context</p>
                             </ToolTip>
                         )}
                     </div>
