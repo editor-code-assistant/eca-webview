@@ -106,6 +106,21 @@
               }
           }
       }
+
+      // Stopped state: intentional, so no pulsing dot and neutral color
+      // (the server isn't doing anything, don't pretend it is starting).
+      &.startup-card-stopped {
+          .content {
+              .status-dot {
+                  animation: none;
+                  opacity: 0.6;
+                  background-color: var(--eca-input-placeholder-fg);
+              }
+              .image {
+                  opacity: 0.4;
+              }
+          }
+      }
   }
 
   // Pulsing halo used by both the top-level startup-card dot and the
@@ -306,6 +321,14 @@
 
         .status-dot {
           animation: none;
+        }
+      }
+
+      &.hero-status-stopped {
+        .status-dot {
+          animation: none;
+          opacity: 0.6;
+          background-color: var(--eca-input-placeholder-fg);
         }
       }
 

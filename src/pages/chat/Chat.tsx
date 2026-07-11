@@ -16,6 +16,17 @@ import { editorName } from "../../util";
 export function Chat() {
     const status = useSelector((state: State) => state.server.status);
     const running = status === ServerStatus.Running;
+    const failed = status === ServerStatus.Failed;
+    const stopped = status === ServerStatus.Stopped;
+    // Anything else (Starting/Initializing) is a live start attempt and gets
+    // the spinner treatment. Stopped used to render as "Starting ECA
+    // server…" forever, which hid dead servers from users.
+    const startingLike = !running && !failed && !stopped;
+    const statusLabel = failed
+        ? 'ECA server failed to start'
+        : stopped
+            ? 'ECA server is stopped'
+            : 'Starting ECA server…';
 
     const selectedChat = useSelector((state: State) => state.chat.selectedChat);
     const allChats = useSelector((state: State) => state.chat.chats);
@@ -69,7 +80,7 @@ export function Chat() {
             )}
 
             {!running && !isWeb && (
-                <div className={`startup-card${status === ServerStatus.Failed ? ' startup-card-failed' : ' startup-card-starting'}`}
+                <div className={`startup-card${failed ? ' startup-card-failed' : stopped ? ' startup-card-stopped' : ' startup-card-starting'}`}
                      role="status"
                      aria-live="polite">
                     <div className="content">
@@ -77,10 +88,10 @@ export function Chat() {
                         <div className="status-row">
                             <span className="status-dot" aria-hidden="true" />
                             <p className="title">
-                                {status === ServerStatus.Failed ? 'ECA server failed to start' : 'Starting ECA server…'}
+                                {statusLabel}
                             </p>
                         </div>
-                        {status !== ServerStatus.Failed && (
+                        {startingLike && (
                             <SyncLoader className="spinner" size={4} />
                         )}
                         {/*
@@ -114,7 +125,7 @@ export function Chat() {
                           animation finishes, which looks like a bug.
                         */}
                         <AnimatePresence mode="wait" initial={false}>
-                            {status === ServerStatus.Failed ? (
+                            {failed ? (
                                 <motion.p
                                     key="failed"
                                     className="subtitle"
@@ -124,6 +135,17 @@ export function Chat() {
                                     transition={{ duration: 0.22, ease: "easeOut" }}
                                 >
                                     Check the logs for details and try restarting.
+                                </motion.p>
+                            ) : stopped ? (
+                                <motion.p
+                                    key="stopped"
+                                    className="subtitle"
+                                    initial={{ opacity: 0, y: 4 }}
+                                    animate={{ opacity: 0.85, y: 0 }}
+                                    exit={{ opacity: 0, y: -2 }}
+                                    transition={{ duration: 0.22, ease: "easeOut" }}
+                                >
+                                    Start it with the &lsquo;ECA: Start server process&rsquo; command.
                                 </motion.p>
                             ) : initProgress ? (
                                 <motion.p
@@ -204,7 +226,7 @@ export function Chat() {
             </ChatMessages>
 
             {heroMode && (
-                <div className={`hero-status${running ? ' hero-status-ready' : ''}${status === ServerStatus.Failed ? ' hero-status-failed' : ''}`}
+                <div className={`hero-status${running ? ' hero-status-ready' : ''}${failed ? ' hero-status-failed' : ''}${stopped ? ' hero-status-stopped' : ''}`}
                      role="status"
                      aria-live="polite">
                     {!running && (
@@ -221,9 +243,9 @@ export function Chat() {
                             <div className="hero-status-row">
                                 <span className="status-dot" aria-hidden="true" />
                                 <p>
-                                    {status === ServerStatus.Failed ? 'ECA server failed to start' : 'Starting ECA server…'}
+                                    {statusLabel}
                                 </p>
-                                {status !== ServerStatus.Failed && (
+                                {startingLike && (
                                     <SyncLoader className="spinner" size={2} />
                                 )}
                             </div>
@@ -237,7 +259,7 @@ export function Chat() {
                               title text changes (keyed by the string).
                             */}
                             <AnimatePresence initial={false}>
-                                {status !== ServerStatus.Failed && initProgress && (
+                                {startingLike && initProgress && (
                                     <motion.p
                                         key={`progress:${initProgress}`}
                                         className="hero-status-progress"
