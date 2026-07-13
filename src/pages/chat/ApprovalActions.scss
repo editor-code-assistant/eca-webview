@@ -43,6 +43,11 @@
     }
 }
 
+// Command keys that an "Accept and remember" would newly save
+.approval-remember-keys {
+    font-family: var(--eca-monospace-font, "SF Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, "Liberation Mono", "Courier New", monospace);
+}
+
 // Button variants
 .approve-btn,
 .approve-remember-btn {

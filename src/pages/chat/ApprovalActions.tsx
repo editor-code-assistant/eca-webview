@@ -1,8 +1,10 @@
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { ToolCallDetails } from '../../protocol';
 import './ApprovalActions.scss';
 
 interface ApprovalActionsProps {
     waitingApproval: boolean;
+    details?: ToolCallDetails;
     onApprove: () => void;
     onApproveAndRemember: () => void;
     onReject: () => void;
@@ -18,8 +20,20 @@ const SWIPE_THRESHOLD = 80;
  * Mobile (≤767px): swipeable pill (RIGHT = approve, LEFT = reject)
  * with a compact "Accept & remember" link below.
  */
-export function ApprovalActions({ waitingApproval, onApprove, onApproveAndRemember, onReject }: ApprovalActionsProps) {
+export function ApprovalActions({ waitingApproval, details, onApprove, onApproveAndRemember, onReject }: ApprovalActionsProps) {
     const x = useMotionValue(0);
+
+    // Shell command breakdowns: only the keys that would be newly remembered —
+    // already-remembered commands are excluded from the label.
+    const shellDetails = details?.type === 'shellCommand' ? details : undefined;
+    const rememberKeys = shellDetails
+        ? [...new Set(shellDetails.commands
+            .filter((cmd) => cmd.approvalKey && !cmd.remembered)
+            .map((cmd) => cmd.approvalKey as string))]
+        : [];
+    // When remembering would save nothing new (no generalizable command, or
+    // everything already remembered), hide the remember action entirely.
+    const hideRemember = shellDetails !== undefined && rememberKeys.length === 0;
 
     // Map drag offset to underlay opacity: right (positive x) → approve green, left (negative x) → reject red
     const approveOpacity = useTransform(x, [0, SWIPE_THRESHOLD], [0, 1]);
@@ -74,11 +88,15 @@ export function ApprovalActions({ waitingApproval, onApprove, onApproveAndRememb
                             <span className="approval-description">for this session</span>
                             <span className="approval-shortcut">(Enter)</span>
                         </div>
-                        <div className="approval-option">
-                            <button onClick={onApproveAndRemember} className="approve-remember-btn">Accept and remember</button>
-                            <span className="approval-description">for this session</span>
-                            <span className="approval-shortcut">(Shift + Enter)</span>
-                        </div>
+                        {!hideRemember && (
+                            <div className="approval-option">
+                                <button onClick={onApproveAndRemember} className="approve-remember-btn">Accept and remember</button>
+                                {rememberKeys.length > 0
+                                    ? <span className="approval-description approval-remember-keys">{rememberKeys.join(', ')}</span>
+                                    : <span className="approval-description">for this session</span>}
+                                <span className="approval-shortcut">(Shift + Enter)</span>
+                            </div>
+                        )}
                         <div className="approval-option">
                             <button onClick={onReject} className="reject-btn">Reject</button>
                             <span className="approval-description">and tell ECA what to do differently</span>
@@ -125,10 +143,14 @@ export function ApprovalActions({ waitingApproval, onApprove, onApproveAndRememb
                         </div>
 
                         {/* Compact remember button below swipe */}
-                        <button className="mobile-remember-btn" onClick={onApproveAndRemember}>
-                            <i className="codicon codicon-pin" />
-                            Accept &amp; remember for this session
-                        </button>
+                        {!hideRemember && (
+                            <button className="mobile-remember-btn" onClick={onApproveAndRemember}>
+                                <i className="codicon codicon-pin" />
+                                {rememberKeys.length > 0
+                                    ? <>Accept &amp; remember <span className="approval-remember-keys">{rememberKeys.join(', ')}</span></>
+                                    : <>Accept &amp; remember for this session</>}
+                            </button>
+                        )}
                     </div>
                 </motion.div>
             )}

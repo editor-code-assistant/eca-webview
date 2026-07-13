@@ -119,6 +119,51 @@
             opacity: 0.7;
             font-weight: 500;
         }
+
+        // Shell command breakdown (details type shellCommand)
+        .shell-command-body {
+            font-family: var(--eca-monospace-font, "SF Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, "Liberation Mono", "Courier New", monospace);
+            font-size: 0.85em;
+            padding-top: 0.3em;
+
+            .shell-command-line {
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+
+            .shell-command-prefix {
+                opacity: 0.5;
+            }
+
+            .shell-command-word {
+                font-weight: 600;
+
+                // Approval already remembered for this session
+                &.remembered {
+                    color: var(--eca-success-fg, #73c991);
+                }
+
+                // Would be remembered by an "Accept and remember"
+                &.not-remembered {
+                    color: var(--eca-warning-fg, #cca700);
+                }
+            }
+
+            .shell-command-breakdown {
+                margin-top: 0.5em;
+            }
+
+            .shell-command-always-asks {
+                opacity: 0.5;
+                font-style: italic;
+            }
+
+            .shell-command-meta {
+                margin-top: 0.3em;
+                opacity: 0.6;
+                font-size: 0.9em;
+            }
+        }
     }
 
 }

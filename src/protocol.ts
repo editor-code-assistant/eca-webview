@@ -318,7 +318,7 @@ export interface ToolCallOutput {
 
 export type ToolCallOrigin = 'mcp' | 'native';
 
-export type ToolCallDetails = FileChangeDetails | JsonOutputsDetails | SubagentDetails | TaskDetails;
+export type ToolCallDetails = FileChangeDetails | JsonOutputsDetails | SubagentDetails | TaskDetails | ShellCommandDetails;
 
 export interface FileChangeDetails {
     type: 'fileChange';
@@ -339,6 +339,35 @@ export interface SubagentDetails {
     agentName?: string;
     step?: number;
     maxSteps?: number;
+}
+
+/**
+ * Breakdown of a shell command tool call.
+ * Present when the server could safely parse the command; clients can use it
+ * to show what an "approve & remember" would remember.
+ */
+export interface ShellCommandDetails {
+    type: 'shellCommand';
+    /** Individual commands extracted from the shell invocation (split on &&, ||, ;, |). */
+    commands: ShellCommandBreakdown[];
+    /** Whether the command runs in background as a job. */
+    background?: boolean;
+}
+
+export interface ShellCommandBreakdown {
+    /** The command being executed, e.g. "ls", "git". */
+    command: string;
+    /** All arguments to the command, including flags. */
+    args: string[];
+    /**
+     * The key that "approve & remember" would remember for this command,
+     * e.g. "git checkout" or "rg". Absent when this command can never be
+     * auto-approved (wrappers like sudo/xargs, output redirections, dynamic
+     * command words).
+     */
+    approvalKey?: string;
+    /** Whether approvalKey is already remembered for this session. */
+    remembered?: boolean;
 }
 
 export interface TaskDetails {

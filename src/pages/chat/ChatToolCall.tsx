@@ -4,7 +4,7 @@ import 'react-diff-view/style/index.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
 import { useSelector } from 'react-redux';
-import { FileChangeDetails, JsonOutputsDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
+import { FileChangeDetails, JsonOutputsDetails, ShellCommandBreakdown, ShellCommandDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
 import { selectJobByToolCallId } from '../../redux/slices/jobs';
 import { EcaDispatch, State, useEcaDispatch } from '../../redux/store';
@@ -130,6 +130,73 @@ function GenericToolCallBody({ props }: { props: Props }) {
                     <p>Result:</p>
                     {(props.outputs ?? []).filter(Boolean).map((output, index) => {
                         const outputTxt = output.text ? '```javascript\n' + output.text + '\n```' : 'Empty';
+                        return (<MarkdownContent codeClassName='output' key={props.toolCallId + index} content={outputTxt} />);
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/** Class conveying the remember state of a breakdown command. */
+function shellCommandStateClass(cmd: ShellCommandBreakdown): string {
+    if (!cmd.approvalKey) return 'neutral';
+    return cmd.remembered ? 'remembered' : 'not-remembered';
+}
+
+function ShellCommandBody({ props }: { props: Props }) {
+    const details = props.details as ShellCommandDetails;
+    const commands = details.commands ?? [];
+
+    let args: { command?: string, working_directory?: string, background?: string } = {};
+    try {
+        args = JSON.parse(props.argumentsText || '{}');
+    } catch { /* ignore partial json */ }
+
+    const rawCommand = args.command ?? '';
+    const workingDirectory = args.working_directory;
+    const background = args.background ?? details.background;
+
+    // `(always asks)` only helps while pending approval; on trusted/auto-allowed
+    // or finished calls it would contradict the fact the call already ran.
+    const annotateAlwaysAsks = props.manualApproval && props.status === 'run';
+    // The raw command is always shown verbatim; the derived per-command lines
+    // are added only when they help: chained commands or always-asks annotations.
+    const showBreakdown = commands.length > 1
+        || (annotateAlwaysAsks && commands.some((cmd) => !cmd.approvalKey));
+    // Single command: the raw line is the command itself, so it carries the
+    // remember-state color directly.
+    const rawClass = commands.length === 1 ? shellCommandStateClass(commands[0]) : 'raw';
+
+    const showOutput = props.status === 'succeeded' || props.status === 'failed';
+
+    return (
+        <div className="shell-command-body">
+            <div className="shell-command-line">
+                <span className="shell-command-prefix">$ </span>
+                <span className={`shell-command-word ${rawClass}`}>{rawCommand}</span>
+            </div>
+            {showBreakdown && (
+                <div className="shell-command-breakdown">
+                    {commands.map((cmd, index) => (
+                        <div className="shell-command-line" key={index}>
+                            <span className="shell-command-prefix">{index === 0 ? '$ ' : '↳ '}</span>
+                            <span className={`shell-command-word ${shellCommandStateClass(cmd)}`}>{cmd.command}</span>
+                            {(cmd.args ?? []).length > 0 && <span className="shell-command-args"> {cmd.args.join(' ')}</span>}
+                            {annotateAlwaysAsks && !cmd.approvalKey && (
+                                <span className="shell-command-always-asks"> (always asks)</span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+            {workingDirectory && <div className="shell-command-meta">in {workingDirectory}</div>}
+            {background && <div className="shell-command-meta">background: {String(background)}</div>}
+            {showOutput && (
+                <div>
+                    <p>Output:</p>
+                    {(props.outputs ?? []).filter(Boolean).map((output, index) => {
+                        const outputTxt = output.text ? '```\n' + output.text + '\n```' : 'Empty';
                         return (<MarkdownContent codeClassName='output' key={props.toolCallId + index} content={outputTxt} />);
                     })}
                 </div>
@@ -302,6 +369,7 @@ function chatToolCall(props: Props) {
     const approvalComp = (
         <ApprovalActions
             waitingApproval={waitingApproval}
+            details={props.details}
             onApprove={approveToolCall}
             onApproveAndRemember={approveToolCallAndRemember}
             onReject={rejectToolCall}
@@ -338,6 +406,20 @@ function chatToolCall(props: Props) {
                 extraClassName={bgCardClass}
                 headerContent={<FileChangeHeader props={props} dispatch={dispatch} />}
                 bodyContent={<FileChangeBody props={props} />}
+                approvalComp={approvalComp}
+            />
+        );
+    }
+
+    // Shell command card with per-command breakdown and remember state
+    if (props.details?.type === 'shellCommand') {
+        return (
+            <ToolCallCard
+                props={props}
+                iconClass={iconClass}
+                extraClassName={bgCardClass}
+                headerContent={<GenericToolCallHeader props={props} />}
+                bodyContent={<ShellCommandBody props={props} />}
                 approvalComp={approvalComp}
             />
         );
