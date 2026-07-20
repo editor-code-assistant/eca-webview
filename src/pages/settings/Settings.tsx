@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
-import { MCPsTab } from './MCPsTab';
-import { ProvidersTab } from './ProvidersTab';
-import { GlobalConfigTab } from './GlobalConfigTab';
-import { JobsTab } from './JobsTab';
-import { LogsTab } from './LogsTab';
 import { resolveSettingsTab } from './settingsNavigation';
 import type { SettingsTabKey } from './settingsNavigation';
 import './Settings.scss';
+
+const MCPsTab = lazy(async () => ({ default: (await import('./MCPsTab')).MCPsTab }));
+const ProvidersTab = lazy(async () => ({ default: (await import('./ProvidersTab')).ProvidersTab }));
+const GlobalConfigTab = lazy(async () => ({ default: (await import('./GlobalConfigTab')).GlobalConfigTab }));
+const JobsTab = lazy(async () => ({ default: (await import('./JobsTab')).JobsTab }));
+const LogsTab = lazy(async () => ({ default: (await import('./LogsTab')).LogsTab }));
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'mcps', label: '🧩 MCPs', icon: '' },
@@ -54,11 +55,13 @@ export function Settings() {
             </div>
 
             <div className="settings-tab-content">
-                {activeTab === 'mcps' && <MCPsTab />}
-                {activeTab === 'providers' && <ProvidersTab />}
-                {activeTab === 'jobs' && <JobsTab />}
-                {activeTab === 'logs' && <LogsTab />}
-                {activeTab === 'config' && <GlobalConfigTab />}
+                <Suspense fallback={<div className="settings-tab-loading">Loading settingsâ€¦</div>}>
+                    {activeTab === 'mcps' && <MCPsTab />}
+                    {activeTab === 'providers' && <ProvidersTab />}
+                    {activeTab === 'jobs' && <JobsTab />}
+                    {activeTab === 'logs' && <LogsTab />}
+                    {activeTab === 'config' && <GlobalConfigTab />}
+                </Suspense>
             </div>
         </div>
     );
