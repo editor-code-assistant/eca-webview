@@ -1,7 +1,7 @@
 import { memo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBackgroundCollapse } from '../../hooks';
-import './ChatCollapsableMessage.scss';
+import './ChatCollapsableMessage.css';
 
 interface Props {
     className: string,

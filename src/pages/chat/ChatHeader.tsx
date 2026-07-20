@@ -8,7 +8,7 @@ import type { State} from '../../redux/store';
 import { useEcaDispatch } from '../../redux/store';
 import { deleteChat } from '../../redux/thunks/chat';
 import { editorName } from '../../util';
-import './ChatHeader.scss';
+import './ChatHeader.css';
 
 interface Props {
     chats: Chat[];

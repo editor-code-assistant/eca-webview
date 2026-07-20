@@ -1,6 +1,6 @@
 import { memo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import './ChatReason.scss';
+import './ChatReason.css';
 import { useBackgroundCollapse } from '../../hooks';
 import { ChatTime } from "./ChatTime";
 import { MarkdownContent } from "./MarkdownContent";

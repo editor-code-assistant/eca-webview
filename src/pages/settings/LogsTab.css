@@ -1,0 +1,123 @@
+.logs-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.logs-tab .tab-description {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin: 0 0 0.8em;
+}
+.logs-tab .logs-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  flex-wrap: wrap;
+  padding: 0.4em 0;
+  margin-bottom: 0.4em;
+  border-bottom: 1px solid var(--eca-base-border);
+}
+.logs-tab .logs-toolbar .logs-filter,
+.logs-tab .logs-toolbar .logs-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.8em;
+  opacity: 0.85;
+}
+.logs-tab .logs-toolbar .logs-filter select {
+  background: var(--eca-input-bg);
+  color: var(--eca-input-fg);
+  border: 1px solid var(--eca-base-border);
+  border-radius: 0.3em;
+  padding: 0.2em 0.4em;
+  font-size: 0.85em;
+}
+.logs-tab .logs-toolbar .logs-checkbox input[type=checkbox] {
+  accent-color: var(--eca-link-fg);
+}
+.logs-tab .logs-toolbar .logs-spacer {
+  flex: 1;
+}
+.logs-tab .logs-toolbar .logs-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  background: none;
+  border: 1px solid var(--eca-base-border);
+  color: var(--eca-input-fg);
+  cursor: pointer;
+  padding: 0.3em 0.6em;
+  border-radius: 0.3em;
+  font-size: 0.8em;
+  opacity: 0.8;
+  transition: opacity 0.15s, background 0.15s;
+}
+.logs-tab .logs-toolbar .logs-action-btn:hover {
+  opacity: 1;
+}
+.logs-tab .logs-toolbar .logs-action-btn .codicon {
+  font-size: 1em;
+}
+.logs-tab .logs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  padding: 2em 1em;
+  opacity: 0.6;
+}
+.logs-tab .logs-empty .codicon {
+  font-size: 2em;
+  margin-bottom: 0.3em;
+}
+.logs-tab .logs-empty p {
+  margin: 0;
+  font-size: 0.95em;
+}
+.logs-tab .logs-empty .empty-hint {
+  font-size: 0.8em;
+  text-align: center;
+  max-width: 25em;
+}
+.logs-tab .logs-viewport {
+  flex: 1;
+  overflow: auto;
+  background: var(--eca-input-bg);
+  border-radius: 0.3em;
+  padding: 0.4em 0.6em;
+  min-height: 10em;
+}
+.logs-tab .logs-content {
+  margin: 0;
+  font-size: 0.78em;
+  line-height: 1.45;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.logs-tab .logs-content .log-row {
+  display: inline;
+}
+.logs-tab .logs-content .log-row .log-ts {
+  opacity: 0.55;
+  margin-right: 0.6em;
+}
+.logs-tab .logs-content .log-row .log-session {
+  opacity: 0.55;
+  margin-right: 0.6em;
+  display: inline-block;
+  min-width: 4.5em;
+}
+.logs-tab .logs-content .log-row .log-level {
+  font-weight: 600;
+  margin-right: 0.6em;
+  display: inline-block;
+  min-width: 2.2em;
+}
+.logs-tab .logs-content .log-row.level-error .log-level, .logs-tab .logs-content .log-row.level-error .log-text {
+  color: var(--eca-error-fg, #f14c4c);
+}
+.logs-tab .logs-content .log-row.level-info .log-level {
+  opacity: 0.6;
+}

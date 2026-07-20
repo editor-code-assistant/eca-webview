@@ -9,7 +9,7 @@ import { setTrust } from '../../redux/slices/server';
 import type { State} from '../../redux/store';
 import { useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
-import './ChatSubHeader.scss';
+import './ChatSubHeader.css';
 import { webviewSend } from '../../hooks';
 import { ChatTimeline } from './ChatTimeline';
 import { ContextBar, ContextLegend } from './ContextBar';

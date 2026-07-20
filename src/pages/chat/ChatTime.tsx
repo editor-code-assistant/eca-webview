@@ -1,4 +1,4 @@
-import './ChatTime.scss';
+import './ChatTime.css';
 
 interface Props {
     ms: number,

@@ -4,7 +4,7 @@ import type { ChatSummary } from "../../protocol";
 import { useEcaDispatch } from "../../redux/store";
 import { openChat } from "../../redux/thunks/chat";
 import { relativeTime } from "../../util";
-import './ChatResumePicker.scss';
+import './ChatResumePicker.css';
 
 interface ChatResumePickerProps {
     chats: ChatSummary[];

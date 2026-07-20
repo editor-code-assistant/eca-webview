@@ -1,0 +1,202 @@
+.providers-tab {
+  display: flex;
+  flex-direction: column;
+}
+.providers-tab .tab-description {
+  font-size: 0.85em;
+  color: var(--eca-input-placeholder-fg);
+  margin: 0 0 0.6em;
+}
+.providers-tab .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2em 0;
+  gap: 0.5em;
+  opacity: 0.6;
+}
+.providers-tab .empty-state .codicon {
+  font-size: 2.5em;
+  margin-bottom: 0.2em;
+}
+.providers-tab .empty-state p {
+  margin: 0;
+  font-size: 0.95em;
+}
+.providers-tab .section-divider {
+  font-size: 0.75em;
+  color: var(--eca-input-placeholder-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  padding: 0.8em 0 0.4em;
+  border-top: 1px solid var(--eca-base-border);
+  margin-top: 0.6em;
+}
+.providers-tab .provider-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+.providers-tab .provider-card {
+  background-color: var(--eca-input-bg);
+  border: 1px solid transparent;
+  border-radius: 0.5em;
+  transition: border-color 0.15s;
+}
+.providers-tab .provider-card .provider-header {
+  display: flex;
+  align-items: center;
+  padding: 0.55em 0.7em;
+  gap: 0.5em;
+}
+.providers-tab .provider-card .provider-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex: 1;
+  min-width: 0;
+}
+.providers-tab .provider-card .status-dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.providers-tab .provider-card .status-dot.authenticated {
+  background-color: var(--eca-success-fg);
+}
+.providers-tab .provider-card .status-dot.local {
+  background-color: var(--eca-link-fg);
+}
+.providers-tab .provider-card .status-dot.unauthenticated {
+  background-color: var(--eca-input-placeholder-fg);
+}
+.providers-tab .provider-card .provider-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.providers-tab .provider-card .auth-status {
+  font-size: 0.78em;
+  white-space: nowrap;
+}
+.providers-tab .provider-card .auth-status.authenticated {
+  color: var(--eca-success-fg);
+}
+.providers-tab .provider-card .auth-status.local {
+  color: var(--eca-link-fg);
+}
+.providers-tab .provider-card .auth-status.unauthenticated {
+  color: var(--eca-input-placeholder-fg);
+}
+.providers-tab .provider-card .provider-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  flex-shrink: 0;
+}
+.providers-tab .provider-card .action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  background: none;
+  border: 1px solid var(--eca-base-border);
+  color: var(--eca-input-fg);
+  border-radius: 0.3em;
+  padding: 0.2em 0.55em;
+  font-size: 0.78em;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s, background-color 0.15s;
+  white-space: nowrap;
+}
+.providers-tab .provider-card .action-btn .codicon {
+  font-size: 0.9em;
+}
+.providers-tab .provider-card .action-btn:hover {
+  opacity: 1;
+}
+.providers-tab .provider-card .action-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.providers-tab .provider-card .login-btn {
+  border-color: var(--eca-link-fg);
+  color: var(--eca-link-fg);
+}
+.providers-tab .provider-card .login-btn:hover:not(:disabled) {
+  background-color: rgba(0, 120, 212, 0.1);
+}
+.providers-tab .provider-card .provider-body {
+  border-top: 1px solid var(--eca-base-border);
+  padding: 0.4em 0.7em 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+.providers-tab .provider-card .auth-info {
+  font-size: 0.78em;
+  color: var(--eca-input-placeholder-fg);
+}
+.providers-tab .provider-card .provider-error {
+  font-size: 0.78em;
+  color: var(--eca-error-fg);
+}
+.providers-tab .provider-card .models-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+.providers-tab .provider-card .models-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  background: none;
+  border: none;
+  color: var(--eca-input-placeholder-fg);
+  font-size: 0.8em;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.providers-tab .provider-card .models-toggle:hover {
+  color: var(--eca-input-fg);
+}
+.providers-tab .provider-card .models-toggle .codicon {
+  font-size: 0.9em;
+}
+.providers-tab .provider-card .models-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  padding-left: 0.3em;
+}
+.providers-tab .provider-card .model-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.3em;
+  font-size: 0.82em;
+}
+.providers-tab .provider-card .model-name {
+  font-family: monospace;
+  opacity: 0.85;
+}
+.providers-tab .provider-card .model-caps {
+  display: flex;
+  gap: 0.25em;
+}
+.providers-tab .provider-card .cap-badge {
+  font-size: 0.7em;
+  padding: 0.05em 0.35em;
+  border-radius: 0.3em;
+  background-color: var(--eca-panel-bg);
+  color: var(--eca-input-placeholder-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

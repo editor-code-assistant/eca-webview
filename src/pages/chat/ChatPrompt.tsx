@@ -13,7 +13,7 @@ import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
 import { ChatFileMentions } from "./ChatFileMentions";
 import { ChatResumePicker } from "../components/ChatResumePicker";
-import './ChatPrompt.scss';
+import './ChatPrompt.css';
 import type { ChatCommand } from "../../protocol";
 import { editorReadInput } from "../../redux/thunks/editor";
 
@@ -30,7 +30,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const [isFocused, setIsFocused] = useState(false);
     // One-shot shake played when the user presses Enter while the server
     // isn't Running. Controlled from handleKeyDown; reset via setTimeout
-    // after the CSS animation duration defined in ChatPrompt.scss.
+    // after the CSS animation duration defined in ChatPrompt.css.
     const [shake, setShake] = useState(false);
     const inputCompleting = commandCompleting || fileCompleting;
     const dispatch = useEcaDispatch();
@@ -242,7 +242,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
         if (!enabled && e.key === "Enter") {
             e.preventDefault();
             setShake(true);
-            // Duration matches the prompt-shake keyframes in ChatPrompt.scss.
+            // Duration matches the prompt-shake keyframes in ChatPrompt.css.
             window.setTimeout(() => { setShake(false); }, 320);
             return;
         }

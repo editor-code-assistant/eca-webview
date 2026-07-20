@@ -1,0 +1,512 @@
+.mcps-tab {
+  display: flex;
+  flex-direction: column;
+}
+.mcps-tab .tab-description {
+  font-size: 0.85em;
+  color: var(--eca-input-placeholder-fg);
+  margin: 0 0 0.6em;
+}
+.mcps-tab .tab-description a {
+  color: var(--eca-link-fg);
+  text-decoration: none;
+}
+.mcps-tab .tab-description a:hover {
+  text-decoration: underline;
+}
+.mcps-tab .failed-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.7em;
+  margin-bottom: 0.6em;
+  border-radius: 0.4em;
+  font-size: 0.85em;
+  background-color: rgba(241, 76, 76, 0.08);
+  border: 1px solid rgba(241, 76, 76, 0.25);
+  color: var(--eca-error-fg);
+}
+.mcps-tab .failed-banner .codicon {
+  font-size: 1em;
+}
+.mcps-tab .failed-banner a {
+  color: var(--eca-error-fg);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mcps-tab .action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  background: none;
+  border: 1px solid var(--eca-base-border);
+  color: var(--eca-input-fg);
+  border-radius: 0.3em;
+  padding: 0.2em 0.55em;
+  font-size: 0.78em;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s, background-color 0.15s;
+  white-space: nowrap;
+}
+.mcps-tab .action-btn .codicon {
+  font-size: 0.9em;
+}
+.mcps-tab .action-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+.mcps-tab .action-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.mcps-tab .editable-field {
+  font-size: 0.8em;
+  font-family: monospace;
+  background-color: var(--eca-panel-bg);
+  padding: 0.35em 0.5em;
+  border-radius: 0.3em;
+  color: var(--eca-input-fg);
+  border: 1px solid transparent;
+  outline: none;
+  transition: border-color 0.15s, width 0.1s;
+  opacity: 0.85;
+  flex: 0 1 auto;
+  min-width: 4em;
+  max-width: 100%;
+}
+.mcps-tab .editable-field::placeholder {
+  color: var(--eca-input-placeholder-fg);
+  opacity: 0.7;
+}
+.mcps-tab .editable-field:focus {
+  border-color: var(--eca-link-fg);
+  opacity: 1;
+}
+.mcps-tab .url-field {
+  flex: 1 1 auto;
+}
+.mcps-tab .save-btn {
+  flex-shrink: 0;
+  font-size: 0.75em;
+  padding: 0.3em 0.6em;
+  border-radius: 0.3em;
+  border: 1px solid var(--eca-link-fg);
+  background: transparent;
+  color: var(--eca-link-fg);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+.mcps-tab .save-btn:hover:not(:disabled) {
+  background-color: rgba(0, 120, 212, 0.1);
+}
+.mcps-tab .save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.mcps-tab .add-server-area {
+  margin-bottom: 0.6em;
+}
+.mcps-tab .add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.35em 0.7em;
+  font-size: 0.85em;
+}
+.mcps-tab .add-btn .codicon {
+  font-size: 1em;
+}
+.mcps-tab .add-server-form {
+  background-color: var(--eca-input-bg);
+  border: 1px solid var(--eca-base-border);
+  border-radius: 0.5em;
+  padding: 0.7em 0.8em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+}
+.mcps-tab .add-server-form .form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.15em;
+}
+.mcps-tab .add-server-form .form-title {
+  font-weight: 600;
+  font-size: 0.9em;
+}
+.mcps-tab .add-server-form .icon-btn {
+  background: none;
+  border: none;
+  color: var(--eca-input-fg);
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0.2em;
+  border-radius: 0.25em;
+}
+.mcps-tab .add-server-form .icon-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+.mcps-tab .add-server-form .icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.mcps-tab .add-server-form .icon-btn .codicon {
+  font-size: 0.95em;
+}
+.mcps-tab .add-server-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+.mcps-tab .add-server-form .form-label {
+  font-size: 0.75em;
+  color: var(--eca-input-placeholder-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+.mcps-tab .add-server-form .form-label .optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  opacity: 0.7;
+}
+.mcps-tab .add-server-form .field-hint {
+  font-size: 0.75em;
+  color: var(--eca-input-placeholder-fg);
+  opacity: 0.8;
+}
+.mcps-tab .add-server-form .field-hint code {
+  background-color: var(--eca-panel-bg);
+  padding: 0 0.3em;
+  border-radius: 0.2em;
+  font-size: 0.95em;
+}
+.mcps-tab .add-server-form .field-hint.error {
+  color: var(--eca-error-fg);
+  opacity: 1;
+}
+.mcps-tab .add-server-form .editable-field.multiline {
+  font-family: monospace;
+  min-height: 3.5em;
+  resize: vertical;
+  width: 100%;
+  padding: 0.4em 0.5em;
+}
+.mcps-tab .add-server-form .editable-field.has-error {
+  border-color: var(--eca-error-fg);
+  opacity: 1;
+}
+.mcps-tab .add-server-form .transport-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  border-radius: 0.35em;
+  overflow: hidden;
+  border: 1px solid var(--eca-base-border);
+}
+.mcps-tab .add-server-form .toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  background: transparent;
+  border: none;
+  color: var(--eca-input-fg);
+  padding: 0.3em 0.7em;
+  font-size: 0.82em;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+.mcps-tab .add-server-form .toggle-btn .codicon {
+  font-size: 0.9em;
+}
+.mcps-tab .add-server-form .toggle-btn:hover {
+  opacity: 1;
+}
+.mcps-tab .add-server-form .toggle-btn.active {
+  background-color: var(--eca-panel-bg);
+  opacity: 1;
+  color: var(--eca-link-fg);
+}
+.mcps-tab .add-server-form .toggle-btn + .toggle-btn {
+  border-left: 1px solid var(--eca-base-border);
+}
+.mcps-tab .add-server-form .form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.35em 0.5em;
+  border-radius: 0.3em;
+  font-size: 0.8em;
+  background-color: rgba(241, 76, 76, 0.08);
+  border: 1px solid rgba(241, 76, 76, 0.25);
+  color: var(--eca-error-fg);
+}
+.mcps-tab .add-server-form .form-error .codicon {
+  font-size: 0.95em;
+}
+.mcps-tab .add-server-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4em;
+  margin-top: 0.2em;
+}
+.mcps-tab .add-server-form .primary-btn {
+  border-color: var(--eca-link-fg);
+  color: var(--eca-link-fg);
+}
+.mcps-tab .add-server-form .primary-btn:hover:not(:disabled) {
+  background-color: rgba(0, 120, 212, 0.1);
+}
+.mcps-tab .add-server-form .primary-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.mcps-tab .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2em 0;
+  gap: 0.5em;
+  opacity: 0.6;
+}
+.mcps-tab .empty-state .codicon {
+  font-size: 2.5em;
+  margin-bottom: 0.2em;
+}
+.mcps-tab .empty-state p {
+  margin: 0;
+  font-size: 0.95em;
+}
+.mcps-tab .empty-state a {
+  font-size: 0.85em;
+  color: var(--eca-link-fg);
+  text-decoration: none;
+}
+.mcps-tab .empty-state a:hover {
+  text-decoration: underline;
+}
+.mcps-tab .server-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+.mcps-tab .server-card {
+  background-color: var(--eca-input-bg);
+  border: 1px solid transparent;
+  border-radius: 0.5em;
+  transition: border-color 0.15s;
+}
+.mcps-tab .server-card.failed {
+  border-color: rgba(241, 76, 76, 0.2);
+}
+.mcps-tab .server-card.requires-auth {
+  border-color: rgba(204, 167, 0, 0.2);
+}
+.mcps-tab .server-card .server-header {
+  display: flex;
+  align-items: center;
+  padding: 0.55em 0.7em;
+  gap: 0.5em;
+}
+.mcps-tab .server-card .server-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex: 1;
+  min-width: 0;
+}
+.mcps-tab .server-card .status-dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.mcps-tab .server-card .status-dot.running {
+  background-color: var(--eca-success-fg);
+}
+.mcps-tab .server-card .status-dot.starting {
+  background-color: var(--eca-warning-fg);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.mcps-tab .server-card .status-dot.failed, .mcps-tab .server-card .status-dot.stopped {
+  background-color: var(--eca-error-fg);
+}
+.mcps-tab .server-card .status-dot.disabled {
+  background-color: var(--eca-input-placeholder-fg);
+}
+.mcps-tab .server-card .status-dot.requires-auth {
+  background-color: var(--eca-warning-fg);
+}
+.mcps-tab .server-card .status-dot.failed {
+  cursor: pointer;
+}
+.mcps-tab .server-card .server-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mcps-tab .server-card .server-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  flex-shrink: 0;
+}
+.mcps-tab .server-card .connect-btn {
+  border-color: var(--eca-warning-fg);
+  color: var(--eca-warning-fg);
+}
+.mcps-tab .server-card .connect-btn:hover {
+  background-color: rgba(204, 167, 0, 0.1);
+}
+.mcps-tab .server-card .disable-btn {
+  border-color: orange;
+  color: orange;
+}
+.mcps-tab .server-card .disable-btn:hover {
+  background-color: rgba(255, 165, 0, 0.1);
+}
+.mcps-tab .server-card .enable-btn,
+.mcps-tab .server-card .start-btn {
+  border-color: var(--eca-success-fg);
+  color: var(--eca-success-fg);
+}
+.mcps-tab .server-card .enable-btn:hover,
+.mcps-tab .server-card .start-btn:hover {
+  background-color: rgba(0, 180, 0, 0.1);
+}
+.mcps-tab .server-card .stop-btn {
+  border-color: var(--eca-error-fg);
+  color: var(--eca-error-fg);
+}
+.mcps-tab .server-card .stop-btn:hover {
+  background-color: rgba(241, 76, 76, 0.1);
+}
+.mcps-tab .server-card .icon-only {
+  padding: 0.2em 0.35em;
+}
+.mcps-tab .server-card .icon-only .codicon {
+  font-size: 0.9em;
+}
+.mcps-tab .server-card .remove-btn {
+  border-color: var(--eca-input-placeholder-fg);
+  color: var(--eca-input-placeholder-fg);
+}
+.mcps-tab .server-card .remove-btn:hover {
+  border-color: var(--eca-error-fg);
+  color: var(--eca-error-fg);
+  background-color: rgba(241, 76, 76, 0.08);
+  opacity: 1;
+}
+.mcps-tab .server-card .confirm-prompt {
+  font-size: 0.8em;
+  color: var(--eca-error-fg);
+  margin-right: 0.25em;
+}
+.mcps-tab .server-card .server-body {
+  border-top: 1px solid var(--eca-base-border);
+  padding: 0.45em 0.7em 0.55em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+}
+.mcps-tab .server-card .section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+.mcps-tab .server-card .section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.75em;
+  color: var(--eca-input-placeholder-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+.mcps-tab .server-card .section-label .codicon {
+  font-size: 1em;
+}
+.mcps-tab .server-card .section-label .count {
+  background-color: var(--eca-panel-bg);
+  padding: 0 0.4em;
+  border-radius: 0.6em;
+  font-size: 0.9em;
+  min-width: 1.2em;
+  text-align: center;
+}
+.mcps-tab .server-card .chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+.mcps-tab .server-card .chip {
+  display: inline-block;
+  padding: 0.15em 0.45em;
+  border-radius: 0.3em;
+  font-size: 0.82em;
+  background-color: var(--eca-panel-bg);
+  color: var(--eca-input-fg);
+  opacity: 0.75;
+  transition: opacity 0.12s;
+  cursor: default;
+}
+.mcps-tab .server-card .chip:hover {
+  opacity: 1;
+}
+.mcps-tab .server-card .chip.disabled {
+  text-decoration: line-through;
+  color: var(--eca-input-placeholder-fg);
+  opacity: 0.75;
+}
+.mcps-tab .server-card .connection-section {
+  gap: 0.25em;
+}
+.mcps-tab .server-card .editable-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+.mcps-tab .mcp-detail {
+  padding: 7px 10px;
+}
+.mcps-tab .tooltip-title {
+  font-weight: 600;
+  margin: 0 0 0.2em;
+}
+.mcps-tab .tooltip-params {
+  margin-top: 0.4em;
+}
+.mcps-tab .tooltip-params span {
+  font-weight: 500;
+  font-size: 1em;
+  color: var(--eca-input-placeholder-fg);
+}
+.mcps-tab .tooltip-params pre {
+  margin: 0.2em 0 0;
+  font-size: 0.95em;
+  white-space: pre-wrap;
+}
+.mcps-tab .tooltip-meta {
+  margin-top: 0.3em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}

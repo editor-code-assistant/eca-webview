@@ -1,0 +1,144 @@
+.diff {
+  margin: 0.5em 0;
+}
+
+.diff-code-normal {
+  background-color: var(--eca-diff-unchanged-bg) !important;
+}
+
+.diff-code-insert {
+  background-color: var(--eca-diff-insert-bg) !important;
+}
+
+.diff-code-delete {
+  background-color: var(--eca-diff-delete-bg) !important;
+}
+
+.tool-call-card {
+  border-left: 2px solid var(--eca-base-border);
+  border-radius: 0 0.3em 0.3em 0;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-base-border) 4%);
+  margin: 0.2em 0;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.tool-call-card.active {
+  border-left-color: var(--eca-accent-fg, #007acc);
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-accent-fg, #007acc) 4%);
+}
+.tool-call-card.failed, .tool-call-card.rejected {
+  border-left-color: var(--eca-error-fg, #f14c4c);
+}
+.tool-call-card.succeeded {
+  border-left-color: var(--eca-success-fg, #4ec9b0);
+}
+.tool-call-card.background-running {
+  border-left-color: var(--eca-warning-fg, #cca700);
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-warning-fg, #cca700) 4%);
+}
+.tool-call-card .tool-call-card-header {
+  display: flex;
+  align-items: center;
+  padding: 0.45em 0.6em;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 100ms;
+  gap: 0.4em;
+}
+.tool-call-card .tool-call-card-header:hover {
+  opacity: 1;
+}
+.tool-call-card .tool-call-card-header .chevron {
+  font-size: 0.85em;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.tool-call-card .tool-call-card-header .spacing {
+  flex: 1;
+}
+.tool-call-card .tool-call-card-header .tool-call-description {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tool-call-card .tool-call-card-header .tool-call-name {
+  font-style: italic;
+  border-radius: 0.2em;
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+  color: var(--eca-input-fg);
+  background-color: var(--eca-input-bg);
+  white-space: nowrap;
+}
+.tool-call-card .tool-call-card-header .tool-call-status {
+  flex-shrink: 0;
+  font-size: 0.9em;
+}
+.tool-call-card .tool-call-card-header .tool-call-status.succeeded {
+  color: var(--eca-success-fg);
+}
+.tool-call-card .tool-call-card-header .tool-call-status.failed {
+  color: var(--eca-error-fg);
+}
+.tool-call-card .tool-call-card-header .tool-call-status.background-running {
+  color: var(--eca-warning-fg, #cca700);
+}
+.tool-call-card .tool-call-card-header .tool-call-status.background-killed {
+  color: var(--eca-input-placeholder-fg, #6e6e6e);
+}
+.tool-call-card .tool-call-card-header .file-change-name:hover {
+  text-decoration: underline;
+}
+.tool-call-card .tool-call-card-header .file-change-lines-added {
+  color: var(--eca-success-fg);
+  font-size: 0.9em;
+}
+.tool-call-card .tool-call-card-header .file-change-lines-removed {
+  color: var(--eca-error-fg);
+  font-size: 0.9em;
+}
+.tool-call-card .tool-call-card-body {
+  padding: 0 0.6em 0.4em 1.6em;
+  cursor: pointer;
+}
+.tool-call-card .tool-call-card-body .args {
+  white-space: pre-wrap;
+}
+.tool-call-card .tool-call-card-body p {
+  margin: 0.3em 0;
+  font-size: 0.85em;
+  opacity: 0.7;
+  font-weight: 500;
+}
+.tool-call-card .tool-call-card-body .shell-command-body {
+  font-family: var(--eca-monospace-font, "SF Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, "Liberation Mono", "Courier New", monospace);
+  font-size: 0.85em;
+  padding-top: 0.3em;
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-prefix {
+  opacity: 0.5;
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-word {
+  font-weight: 600;
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-word.remembered {
+  color: var(--eca-success-fg, #73c991);
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-word.not-remembered {
+  color: var(--eca-warning-fg, #cca700);
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-breakdown {
+  margin-top: 0.5em;
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-always-asks {
+  opacity: 0.5;
+  font-style: italic;
+}
+.tool-call-card .tool-call-card-body .shell-command-body .shell-command-meta {
+  margin-top: 0.3em;
+  opacity: 0.6;
+  font-size: 0.9em;
+}

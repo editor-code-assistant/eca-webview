@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { PendingQuestion } from '../../protocol';
 import { useEcaDispatch } from '../../redux/store';
 import { answerQuestion, cancelQuestion } from '../../redux/thunks/chat';
-import './ChatQuestion.scss';
+import './ChatQuestion.css';
 
 interface Props {
     chatId: string;

@@ -1,0 +1,165 @@
+.global-config-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  min-height: 0;
+  flex: 1;
+}
+.global-config-tab .tab-description {
+  font-size: 0.85em;
+  color: var(--eca-input-placeholder-fg);
+  margin: 0;
+}
+.global-config-tab .tab-description a {
+  color: var(--eca-link-fg);
+  text-decoration: none;
+}
+.global-config-tab .tab-description a:hover {
+  text-decoration: underline;
+}
+.global-config-tab .path-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.35em 0.6em;
+  border-radius: 0.35em;
+  background-color: rgba(127, 127, 127, 0.07);
+  font-size: 0.82em;
+}
+.global-config-tab .path-row .codicon-file {
+  color: var(--eca-input-placeholder-fg);
+}
+.global-config-tab .path-row .config-path {
+  flex: 1;
+  font-family: var(--eca-code-font, monospace);
+  color: var(--eca-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: text;
+}
+.global-config-tab .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--eca-fg);
+  padding: 0.25em;
+  border-radius: 0.25em;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+.global-config-tab .icon-btn:hover:not(:disabled) {
+  opacity: 1;
+  background-color: rgba(127, 127, 127, 0.12);
+}
+.global-config-tab .icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.global-config-tab .icon-btn .codicon {
+  font-size: 0.95em;
+}
+.global-config-tab .editor-container {
+  flex: 1;
+  min-height: 260px;
+  border: 1px solid var(--eca-input-border, rgba(127, 127, 127, 0.3));
+  border-radius: 0.4em;
+  overflow: hidden;
+  background-color: var(--eca-input-bg, transparent);
+}
+.global-config-tab .editor-container .cm-editor {
+  height: 100%;
+}
+.global-config-tab .editor-container .cm-editor.cm-focused {
+  outline: none;
+}
+.global-config-tab .action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+.global-config-tab .action-bar .primary-btn,
+.global-config-tab .action-bar .secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.45em 0.9em;
+  font-size: 0.85em;
+  border-radius: 0.35em;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.global-config-tab .action-bar .primary-btn .codicon,
+.global-config-tab .action-bar .secondary-btn .codicon {
+  font-size: 0.95em;
+}
+.global-config-tab .action-bar .primary-btn:disabled,
+.global-config-tab .action-bar .secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.global-config-tab .action-bar .primary-btn {
+  background-color: var(--eca-link-fg);
+  color: var(--eca-btn-primary-fg, #fff);
+  border: 1px solid var(--eca-link-fg);
+}
+.global-config-tab .action-bar .primary-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+.global-config-tab .action-bar .secondary-btn {
+  background: none;
+  border: 1px solid var(--eca-link-fg);
+  color: var(--eca-link-fg);
+}
+.global-config-tab .action-bar .secondary-btn:hover:not(:disabled) {
+  background-color: rgba(0, 120, 212, 0.1);
+}
+.global-config-tab .action-bar .status-area {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.8em;
+  color: var(--eca-input-placeholder-fg);
+}
+.global-config-tab .action-bar .status-area .status-hint {
+  font-style: italic;
+}
+.global-config-tab .action-bar .status-area .dirty-indicator {
+  color: var(--eca-warning-fg, #d69e2e);
+}
+.global-config-tab .action-bar .status-area .parse-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  color: var(--eca-error-fg, #e53e3e);
+}
+.global-config-tab .action-bar .status-area .saved-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  color: var(--eca-success-fg, #38a169);
+}
+.global-config-tab .error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.75em;
+  border-radius: 0.35em;
+  background-color: rgba(229, 62, 62, 0.1);
+  border: 1px solid rgba(229, 62, 62, 0.35);
+  color: var(--eca-error-fg, #e53e3e);
+  font-size: 0.83em;
+}
+.global-config-tab .error-banner span {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.global-config-tab .error-banner .icon-btn {
+  color: var(--eca-error-fg, #e53e3e);
+}

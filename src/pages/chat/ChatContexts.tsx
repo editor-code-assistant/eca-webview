@@ -8,7 +8,7 @@ import { useEcaDispatch } from "../../redux/store";
 import { queryContext } from "../../redux/thunks/chat";
 import { relativizeFromRoot } from "../../util";
 import { ToolTip } from "../components/ToolTip";
-import './ChatContexts.scss';
+import './ChatContexts.css';
 
 interface Props {
     chatId: string,

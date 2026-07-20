@@ -1,6 +1,6 @@
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { ToolCallDetails } from '../../protocol';
-import './ApprovalActions.scss';
+import './ApprovalActions.css';
 
 interface ApprovalActionsProps {
     waitingApproval: boolean;

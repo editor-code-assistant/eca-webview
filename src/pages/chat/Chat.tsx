@@ -4,7 +4,7 @@ import { SyncLoader } from "react-spinners";
 import { selectInitProgressString, ServerStatus } from "../../redux/slices/server";
 import type { State } from "../../redux/store";
 import { useStickyString } from "../../hooks";
-import './Chat.scss';
+import './Chat.css';
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from './ChatMessages';
 import { ChatPrompt } from "./ChatPrompt";

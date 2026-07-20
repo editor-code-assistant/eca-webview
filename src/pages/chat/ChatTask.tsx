@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { State } from '../../redux/store';
 import type { Task } from '../../protocol';
 import { useBackgroundCollapse } from '../../hooks';
-import './ChatTask.scss';
+import './ChatTask.css';
 
 interface Props {
     chatId: string;

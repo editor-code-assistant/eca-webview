@@ -12,7 +12,7 @@ import { editorOpenFile } from '../../redux/thunks/editor';
 import { ApprovalActions } from './ApprovalActions';
 import { ChatSubagentToolCall } from './ChatSubagentToolCall';
 import { ChatTime } from './ChatTime';
-import './ChatToolCall.scss';
+import './ChatToolCall.css';
 import { MarkdownContent } from './MarkdownContent';
 
 const FileChangeDiff = lazy(() => import('./FileChangeDiff'));

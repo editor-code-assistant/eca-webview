@@ -10,7 +10,7 @@ import { addFlag, forkFromFlag, removeFlag, rollbackChat } from '../../redux/thu
 import { captureComponentStack } from '../../errorReporting';
 import { MessageErrorFallback } from '../components/ErrorFallback';
 import { ChatHook } from './ChatHook';
-import './ChatMessages.scss';
+import './ChatMessages.css';
 import { ChatQuestion } from './ChatQuestion';
 import { ChatReason } from './ChatReason';
 import { ChatTextMessage } from './ChatTextMessage';

@@ -16,7 +16,7 @@ import {
 } from '../../redux/thunks/mcp';
 import { openServerLogs } from '../../redux/thunks/server';
 import { ToolTip } from '../components/ToolTip';
-import './MCPsTab.scss';
+import './MCPsTab.css';
 
 const statusLabel: Record<ToolServerStatus, string> = {
     'running': 'Running',

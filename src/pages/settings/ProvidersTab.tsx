@@ -7,7 +7,7 @@ import { editorOpenUrl } from '../../redux/thunks/editor';
 import { listProviders, loginProvider, loginProviderInput, logoutProvider } from '../../redux/thunks/providers';
 import type { ActiveLoginAction} from './ProviderLoginDialog';
 import { ProviderLoginDialog } from './ProviderLoginDialog';
-import './ProvidersTab.scss';
+import './ProvidersTab.css';
 
 const authStatusLabel: Record<ProviderAuthStatus, string> = {
     'authenticated': '✓ Authenticated',

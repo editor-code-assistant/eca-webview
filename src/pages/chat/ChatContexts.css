@@ -1,0 +1,84 @@
+.contexts {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+.contexts .added-context, .contexts .add {
+  opacity: 0.8;
+  font-size: 0.9em;
+  color: var(--eca-input-fg);
+  border-radius: 0.3em;
+  background: none;
+  border: 1px solid var(--eca-base-border);
+  transition: opacity 150ms ease, background-color 150ms ease;
+  padding: 0.2em;
+  margin: 0.2em 0.2em;
+  cursor: pointer;
+}
+.contexts .added-context:hover, .contexts .add:hover {
+  opacity: 1;
+}
+.contexts #add-context {
+  background-color: var(--eca-panel-bg);
+  height: 30vh;
+  max-width: 80vw;
+  overflow: auto;
+  padding: 0.6em 0.4em;
+}
+.contexts #add-context input {
+  background-color: var(--eca-panel-bg);
+  outline: none;
+  border: none;
+  color: var(--eca-input-fg);
+  margin-bottom: 0.5em;
+}
+.contexts #add-context .loading {
+  text-align: center;
+}
+.contexts #add-context .context-item {
+  padding: 0.2em 0.5em;
+  opacity: 0.7;
+  transition: opacity 150ms ease, background-color 150ms ease;
+}
+.contexts #add-context .context-item:hover {
+  background-color: var(--eca-input-bg);
+  cursor: pointer;
+  opacity: 1;
+}
+.contexts #add-context .context-item .label {
+  color: var(--eca-input-fg);
+}
+.contexts #add-context .context-item .description {
+  margin-left: 0.8em;
+  font-size: 0.8em;
+  color: var(--eca-input-fg);
+  opacity: 0.5;
+}
+.contexts .context-icon {
+  font-size: 1em !important;
+  vertical-align: middle;
+  margin: 0 0.2em;
+}
+.contexts .context-icon.file {
+  color: var(--eca-context-file-fg);
+}
+.contexts .context-icon.directory {
+  color: var(--eca-context-directory-fg);
+}
+.contexts .context-icon.web {
+  color: var(--eca-context-web-fg);
+}
+.contexts .context-icon.repoMap {
+  color: var(--eca-context-repo-map-fg);
+}
+.contexts .context-icon.cursor {
+  color: var(--eca-context-cursor-fg);
+}
+.contexts .context-icon.mcpResource {
+  color: var(--eca-context-mcp-resource-fg);
+}
+.contexts .added-context:hover .context-icon:before {
+  font-family: var(--eca-icon-font-family);
+  color: var(--eca-input-fg);
+  content: "\ea76";
+}

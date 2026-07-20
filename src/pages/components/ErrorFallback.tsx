@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
 import { useNavigate, useRouteError } from 'react-router-dom';
 import { buildErrorReport, getComponentStack, normalizeError } from '../../errorReporting';
-import './ErrorFallback.scss';
+import './ErrorFallback.css';
 
 // ---------------------------------------------------------------------------
 // Component-stack capture

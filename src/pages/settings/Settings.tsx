@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
 import { resolveSettingsTab } from './settingsNavigation';
 import type { SettingsTabKey } from './settingsNavigation';
-import './Settings.scss';
+import './Settings.css';
 
 const MCPsTab = lazy(async () => ({ default: (await import('./MCPsTab')).MCPsTab }));
 const ProvidersTab = lazy(async () => ({ default: (await import('./ProvidersTab')).ProvidersTab }));

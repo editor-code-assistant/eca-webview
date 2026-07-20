@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import './Toggle.scss';
+import './Toggle.css';
 
 interface IToggle {
     className?: string,

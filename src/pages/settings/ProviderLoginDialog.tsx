@@ -1,7 +1,7 @@
 import type { FormEvent} from 'react';
 import { useEffect, useRef, useState } from 'react';
 import type { InputField, LoginAction, LoginMethod } from '../../protocol';
-import './ProviderLoginDialog.scss';
+import './ProviderLoginDialog.css';
 
 export type ActiveLoginAction = Exclude<LoginAction, { action: 'done' }>;
 

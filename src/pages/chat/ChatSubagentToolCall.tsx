@@ -11,7 +11,7 @@ import { ChatToolCall } from './ChatToolCall';
 import { ChatReason } from './ChatReason';
 import { ChatHook } from './ChatHook';
 import { ChatTime } from './ChatTime';
-import './ChatSubagentToolCall.scss';
+import './ChatSubagentToolCall.css';
 
 interface Props {
     chatId: string;

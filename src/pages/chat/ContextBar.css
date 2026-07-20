@@ -1,0 +1,61 @@
+.context-bar {
+  display: flex;
+  width: 100%;
+  min-width: 90px;
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: var(--eca-panel-bg);
+  box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.18);
+}
+.context-bar .context-bar-segment {
+  height: 100%;
+  flex-shrink: 0;
+  min-width: 2px;
+  transition: width 0.3s ease;
+}
+.context-bar .context-bar-free {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.context-legend {
+  margin-top: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  line-height: 1.4;
+}
+.context-legend .context-legend-title {
+  font-weight: 600;
+  opacity: 0.9;
+  margin-bottom: 0.1em;
+}
+.context-legend .context-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  white-space: nowrap;
+}
+.context-legend .context-legend-swatch {
+  display: inline-block;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: 2px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+.context-legend .context-legend-name {
+  flex: 1;
+}
+.context-legend .context-legend-tokens {
+  margin-left: 0.9em;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.context-usage-hint {
+  margin-top: 0.5em;
+  opacity: 0.7;
+  font-style: italic;
+}

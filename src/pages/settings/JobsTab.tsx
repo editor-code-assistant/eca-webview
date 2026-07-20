@@ -5,7 +5,7 @@ import { selectJobs } from '../../redux/slices/jobs';
 import { useEcaDispatch } from '../../redux/store';
 import { fetchJobsList, killJob } from '../../redux/thunks/jobs';
 import { JobOutput } from './JobOutput';
-import './JobsTab.scss';
+import './JobsTab.css';
 
 const statusIcon: Record<JobStatus, string> = {
     running: '🟡',

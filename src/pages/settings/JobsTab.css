@@ -1,0 +1,143 @@
+.jobs-tab .tab-description {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin: 0 0 0.8em;
+}
+.jobs-tab .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  padding: 2em 1em;
+  opacity: 0.6;
+}
+.jobs-tab .empty-state .codicon {
+  font-size: 2em;
+  margin-bottom: 0.3em;
+}
+.jobs-tab .empty-state p {
+  margin: 0;
+  font-size: 0.95em;
+}
+.jobs-tab .empty-state .empty-hint {
+  font-size: 0.8em;
+  text-align: center;
+  max-width: 25em;
+}
+.jobs-tab .job-group {
+  margin-bottom: 1em;
+}
+.jobs-tab .job-group .job-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 0;
+  font-size: 0.85em;
+  opacity: 0.7;
+  font-weight: 500;
+}
+.jobs-tab .job-group .job-group-header .job-group-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jobs-tab .job-group .job-group-header .job-group-count {
+  background: var(--eca-panel-bg);
+  padding: 0.1em 0.4em;
+  border-radius: 0.6em;
+  font-size: 0.85em;
+}
+.jobs-tab .job-group .job-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+.jobs-tab .job-card {
+  border-left: 2px solid var(--eca-base-border);
+  border-radius: 0 0.3em 0.3em 0;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 96%, var(--eca-base-border) 4%);
+  padding: 0.4em 0.6em;
+  transition: border-color 0.2s ease;
+}
+.jobs-tab .job-card.running {
+  border-left-color: var(--eca-warning-fg, #cca700);
+}
+.jobs-tab .job-card.completed {
+  border-left-color: var(--eca-success-fg, #4ec9b0);
+}
+.jobs-tab .job-card.failed {
+  border-left-color: var(--eca-error-fg, #f14c4c);
+}
+.jobs-tab .job-card.killed {
+  border-left-color: var(--eca-input-placeholder-fg, #6e6e6e);
+}
+.jobs-tab .job-card .job-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.jobs-tab .job-card .job-card-header .job-status-icon {
+  flex-shrink: 0;
+  font-size: 0.85em;
+}
+.jobs-tab .job-card .job-card-header .job-summary {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jobs-tab .job-card .job-card-header .job-elapsed {
+  font-size: 0.8em;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+.jobs-tab .job-card .job-card-header .job-exit-code {
+  font-size: 0.75em;
+  padding: 0.1em 0.3em;
+  border-radius: 0.3em;
+  white-space: nowrap;
+}
+.jobs-tab .job-card .job-card-header .job-exit-code.success {
+  color: var(--eca-success-fg);
+}
+.jobs-tab .job-card .job-card-header .job-exit-code.error {
+  color: var(--eca-error-fg);
+}
+.jobs-tab .job-card .job-card-header .job-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.2em;
+  flex-shrink: 0;
+}
+.jobs-tab .job-card .job-card-label {
+  font-size: 0.8em;
+  opacity: 0.5;
+  padding: 0.2em 0 0 1.6em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jobs-tab .job-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--eca-input-fg);
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0.2em;
+  border-radius: 0.3em;
+  transition: opacity 0.15s, background 0.15s;
+}
+.jobs-tab .job-action-btn:hover {
+  opacity: 1;
+}
+.jobs-tab .job-action-btn.kill-btn:hover {
+  color: var(--eca-error-fg);
+}
+.jobs-tab .job-action-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}

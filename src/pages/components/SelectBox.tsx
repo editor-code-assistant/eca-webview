@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { TooltipRefProps } from 'react-tooltip';
-import './SelectBox.scss';
+import './SelectBox.css';
 import { ToolTip } from './ToolTip';
 
 interface ISelectBox {

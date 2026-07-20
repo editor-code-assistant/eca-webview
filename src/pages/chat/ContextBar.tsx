@@ -1,5 +1,5 @@
 import type { ContextBreakdown } from '../../protocol';
-import './ContextBar.scss';
+import './ContextBar.css';
 
 // Local humanizer (mirrors the one in ChatSubHeader) so the legend can
 // label each category compactly, e.g. 12.3k.

@@ -35,7 +35,7 @@ import {
     editorReadGlobalConfig,
     editorWriteGlobalConfig,
 } from '../../redux/thunks/editor';
-import './GlobalConfigTab.scss';
+import './GlobalConfigTab.css';
 
 // ECA's config file accepts JSONC (JSON with Comments + trailing commas).
 // We lint with jsonc-parser so comments and trailing commas are not flagged.

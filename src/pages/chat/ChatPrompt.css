@@ -1,0 +1,258 @@
+.prompt-area {
+  display: flex;
+  padding: 0.6em;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  border: 1px solid var(--eca-base-border);
+  border-radius: 10px;
+  background-color: var(--eca-input-bg);
+  width: 100%;
+  max-width: 100%;
+  margin: 0.3em auto;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: border-color 200ms ease, border-radius 320ms cubic-bezier(0.2, 0.8, 0.2, 1), padding 320ms cubic-bezier(0.2, 0.8, 0.2, 1), max-width 400ms cubic-bezier(0.2, 0.8, 0.2, 1), font-size 320ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 280ms ease;
+}
+.prompt-area.focused {
+  border-color: color-mix(in srgb, var(--eca-link-fg) 35%, transparent);
+}
+.prompt-area.running {
+  border-color: color-mix(in srgb, var(--eca-warning-fg) 35%, transparent);
+}
+.prompt-area.waiting-approval {
+  border-color: color-mix(in srgb, var(--eca-approval-fg) 35%, transparent);
+}
+.prompt-area.waiting {
+  border-color: color-mix(in srgb, var(--eca-input-placeholder-fg) 55%, transparent);
+}
+.prompt-area.shake {
+  animation: prompt-shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+.prompt-area.hero {
+  font-size: 1.15em;
+  max-width: 40em;
+  padding: 1em 1.2em;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+.prompt-area.hero .field {
+  font-size: 1.25em;
+}
+.prompt-area.hero .send i.codicon {
+  font-size: 1.15em;
+}
+.prompt-area .resume-hint {
+  width: 100%;
+  flex-basis: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.2em 0.1em 0.35em;
+  border-bottom: 1px solid var(--eca-base-border);
+  color: var(--eca-input-placeholder-fg);
+  font-size: 0.85em;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  transition: color 120ms ease;
+}
+.prompt-area .resume-hint:hover, .prompt-area .resume-hint:focus-visible {
+  color: var(--eca-link-fg);
+  outline: none;
+}
+.prompt-area .resume-hint .codicon-history {
+  font-size: 1em;
+  opacity: 0.85;
+}
+.prompt-area .resume-hint .resume-hint-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prompt-area .resume-hint .resume-hint-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.8em;
+  padding: 0.15em 0.7em;
+  border-radius: 1em;
+  font-size: 0.85em;
+  line-height: 1.2;
+  background-color: color-mix(in srgb, var(--eca-input-placeholder-fg) 22%, transparent);
+  color: var(--eca-base-fg);
+}
+.prompt-area .progress-area {
+  width: 100%;
+  flex-basis: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--eca-base-border);
+  color: var(--eca-input-placeholder-fg);
+  font-size: 0.9em;
+  overflow: hidden;
+}
+.prompt-area .progress-area p {
+  margin: 0;
+  display: inline-block;
+}
+.prompt-area .progress-area .spinner {
+  display: inline-block !important;
+  margin: 0 0.2em;
+}
+@keyframes spinner-sync {
+  33% {
+    transform: translateY(2px);
+  }
+  66% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+.prompt-area .progress-area .spinner span {
+  background-color: var(--eca-input-placeholder-fg) !important;
+  animation-name: spinner-sync !important;
+}
+.prompt-area .progress-area .divider {
+  flex: 1;
+}
+.prompt-area .progress-area .stop {
+  opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.prompt-area .progress-area .stop:hover {
+  opacity: 1;
+}
+.prompt-area .field {
+  width: 100%;
+  background-color: var(--eca-input-bg);
+  margin: 0.3em 0;
+  border: none;
+  color: var(--eca-input-fg);
+  font-family: inherit;
+  font-size: 1em;
+  overflow: hidden;
+  resize: none;
+  field-sizing: content;
+  transition: font-size 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.prompt-area .field:focus {
+  outline: none;
+  border: none;
+}
+.prompt-area .field::placeholder {
+  color: var(--eca-input-placeholder-fg);
+  opacity: 0.5;
+}
+.prompt-area .toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  flex-wrap: wrap;
+}
+.prompt-area .prompt-waiting-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.82em;
+  color: var(--eca-input-placeholder-fg);
+  padding: 0.2em 0.1em;
+  user-select: none;
+}
+.prompt-area .prompt-waiting-hint .status-dot {
+  width: 0.45em;
+  height: 0.45em;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: var(--eca-warning-fg);
+  animation: prompt-hint-dot-pulse 1.4s ease-in-out infinite;
+}
+.prompt-area .steer-indicator, .prompt-area .queue-indicator {
+  font-size: 11px;
+  font-style: italic;
+  padding: 2px 8px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prompt-area .steer-indicator {
+  color: var(--vscode-editorInfo-foreground, #3794ff);
+}
+.prompt-area .queue-indicator {
+  color: var(--vscode-descriptionForeground, #888);
+}
+.prompt-area .spacing {
+  margin-left: auto;
+}
+.prompt-area .send {
+  display: flex;
+  align-items: center;
+}
+.prompt-area .send i {
+  cursor: pointer;
+  padding: 0.3em;
+  margin: 0 0.1em;
+  border-radius: 0.3em;
+  opacity: 0.7;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.prompt-area .send i:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+.prompt-area .send i:active {
+  transform: scale(0.95);
+}
+.prompt-area .send i.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+:root:not([data-editor=desktop]) .prompt-area {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
+@keyframes prompt-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-6px);
+  }
+  30% {
+    transform: translateX(6px);
+  }
+  45% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+  90% {
+    transform: translateX(2px);
+  }
+}
+@keyframes prompt-hint-dot-pulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}

@@ -1,0 +1,109 @@
+.subagent-card {
+  border-left: 2px solid #b180d7;
+  border-radius: 0 0.3em 0.3em 0;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #b180d7 5%);
+  margin: 0.2em 0;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.subagent-card.depth-0 {
+  border-left-color: #b180d7;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #b180d7 5%);
+}
+.subagent-card.depth-1 {
+  border-left-color: #d7ba7d;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #d7ba7d 5%);
+}
+.subagent-card.depth-2 {
+  border-left-color: #4ec9b0;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #4ec9b0 5%);
+}
+.subagent-card.depth-3 {
+  border-left-color: #e06c75;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #e06c75 5%);
+}
+.subagent-card.depth-4 {
+  border-left-color: #b180d7;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 95%, #b180d7 5%);
+}
+.subagent-card.failed, .subagent-card.rejected {
+  border-left-color: var(--eca-error-fg, #f14c4c);
+}
+.subagent-card .subagent-card-header {
+  display: flex;
+  align-items: center;
+  padding: 0.45em 0.6em;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 100ms;
+  gap: 0.4em;
+}
+.subagent-card .subagent-card-header:hover {
+  opacity: 1;
+}
+.subagent-card .subagent-card-header .chevron {
+  font-size: 0.85em;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.subagent-card .subagent-card-header .agent-icon {
+  font-size: 0.9em;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.subagent-card .subagent-card-header .subagent-description {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.subagent-card .subagent-card-header .subagent-steps-info {
+  font-size: 0.8em;
+  opacity: 0.55;
+  font-style: italic;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.subagent-card .subagent-card-header .spacing {
+  flex: 1;
+}
+.subagent-card .subagent-card-header .subagent-status {
+  flex-shrink: 0;
+  font-size: 0.9em;
+}
+.subagent-card .subagent-card-header .subagent-status.succeeded {
+  color: var(--eca-success-fg);
+}
+.subagent-card .subagent-card-header .subagent-status.failed {
+  color: var(--eca-error-fg);
+}
+.subagent-card .subagent-card-header .subagent-status.pending-approval {
+  color: var(--eca-warning-fg, #cca700);
+}
+.subagent-card .subagent-card-body {
+  padding: 0 0.6em 0.4em 1.6em;
+  cursor: pointer;
+}
+.subagent-card .subagent-card-body .subagent-info {
+  padding: 0.2em 0;
+}
+.subagent-card .subagent-card-body .subagent-info .subagent-task {
+  font-size: 0.85em;
+  opacity: 0.75;
+  font-style: italic;
+  line-height: 1.4;
+}
+.subagent-card .subagent-card-body .subagent-info .subagent-agent-name {
+  font-size: 0.85em;
+  opacity: 0.65;
+}
+.subagent-card .subagent-card-body .subagent-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+.subagent-card .subagent-card-body .subagent-messages .subagent-text-message {
+  font-size: 0.92em;
+}
+.subagent-card .subagent-card-body .subagent-messages .subagent-text-message .message {
+  padding: 0.2em 0;
+}

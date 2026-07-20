@@ -6,8 +6,8 @@ import type { State} from "../../redux/store";
 import { useEcaDispatch } from "../../redux/store";
 import { queryCommands } from "../../redux/thunks/chat";
 import { ToolTip } from "../components/ToolTip";
-import './ChatCommands.scss';
-import './ChatContexts.scss';
+import './ChatCommands.css';
+import './ChatContexts.css';
 
 interface Props {
     chatId: string,

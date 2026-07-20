@@ -1,6 +1,6 @@
 import type { ITooltip, TooltipRefProps } from "react-tooltip";
 import { Tooltip } from "react-tooltip";
-import './ToolTip.scss';
+import './ToolTip.css';
 import type { RefAttributes } from "react";
 
 export function ToolTip(props: (ITooltip & RefAttributes<TooltipRefProps>)) {

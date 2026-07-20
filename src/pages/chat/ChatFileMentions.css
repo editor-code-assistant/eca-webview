@@ -1,0 +1,30 @@
+.file-mentions-container {
+  padding: 0 !important;
+  background-color: var(--eca-panel-bg);
+  max-width: 90vw;
+}
+.file-mentions-container .file-mentions {
+  background-color: var(--eca-panel-bg);
+}
+.file-mentions-container .file-mentions .item {
+  padding: 0.3em 0.6em;
+  overflow: auto;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 150ms ease, background-color 150ms ease;
+}
+.file-mentions-container .file-mentions .item:hover {
+  opacity: 0.85;
+}
+.file-mentions-container .file-mentions .item.selected {
+  opacity: 1;
+  background-color: var(--eca-input-bg);
+}
+.file-mentions-container .file-mentions .item .icon {
+  font-size: 1em !important;
+  vertical-align: middle;
+  margin: 0 0.2em;
+}
+.file-mentions-container .file-mentions .item .label {
+  color: var(--eca-input-fg);
+}

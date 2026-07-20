@@ -54,6 +54,14 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
+      // Rolldown's timing heuristic accumulates concurrent hook wait time and
+      // flags Vite's built-in CSS plugins on clean Windows builds even after
+      // every stylesheet is static CSS. Keep all correctness checks enabled,
+      // but disable this non-actionable performance estimate; bundle budgets
+      // and warning-free production builds remain enforced independently.
+      checks: {
+        pluginTimings: false,
+      },
       input: {
         index: resolve(__dirname, "index.html"),
       },

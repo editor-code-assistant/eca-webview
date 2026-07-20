@@ -1,0 +1,25 @@
+.collapsable {
+  border: 0.1em solid var(--eca-base-border);
+  border-radius: 0.4em;
+}
+.collapsable .header {
+  padding: 0.5em 0.6em;
+  opacity: 0.8;
+  transition: opacity 100ms;
+  cursor: pointer;
+}
+.collapsable .header:hover {
+  opacity: 1;
+}
+.collapsable .header .chrevron {
+  margin-right: 0.5em;
+  vertical-align: middle;
+  display: inline-block;
+}
+.collapsable .header .header-content {
+  display: contents;
+}
+.collapsable .content {
+  padding: 0 0.6em;
+  cursor: pointer;
+}

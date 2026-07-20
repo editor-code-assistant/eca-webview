@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { State } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
-import './ChatTimeline.scss';
+import './ChatTimeline.css';
 
 interface Props {
     chatId: string;

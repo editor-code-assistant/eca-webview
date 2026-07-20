@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { ChatCollapsableMessage } from "./ChatCollapsableMessage";
-import './ChatHook.scss';
+import './ChatHook.css';
 
 interface Props {
     id: string,

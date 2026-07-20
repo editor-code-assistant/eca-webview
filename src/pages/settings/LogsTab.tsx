@@ -4,7 +4,7 @@ import { webviewSend } from '../../hooks';
 import type { LogEntry} from '../../redux/slices/logs';
 import { clearLogEntries, selectLogEntries, selectLogSessionIds } from '../../redux/slices/logs';
 import { useEcaDispatch } from '../../redux/store';
-import './LogsTab.scss';
+import './LogsTab.css';
 
 // 8-char truncation matches the formatting used in the on-disk log file
 // so copy/pasting from either surface produces recognisable IDs.

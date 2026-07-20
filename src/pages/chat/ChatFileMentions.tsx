@@ -7,8 +7,8 @@ import { useEcaDispatch } from "../../redux/store";
 import { queryFiles } from "../../redux/thunks/chat";
 import { uriToPath } from "../../util";
 import { ToolTip } from "../components/ToolTip";
-import './ChatFileMentions.scss';
-import './ChatContexts.scss';
+import './ChatFileMentions.css';
+import './ChatContexts.css';
 
 interface Props {
     chatId: string,

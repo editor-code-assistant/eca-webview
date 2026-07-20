@@ -1,0 +1,59 @@
+.user-message-card {
+  border-left: 2px solid var(--eca-fg, #cccccc);
+  border-radius: 0 0.3em 0.3em 0;
+  background: color-mix(in srgb, var(--eca-base-bg, #1e1e1e) 94%, var(--eca-fg, #cccccc) 6%);
+  padding: 0.45em 0.6em 0.35em;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3em;
+  line-height: 1.4;
+  font-size: 0.95em;
+}
+.user-message-card .user-message-content {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.user-message-card .user-message-content > :first-child {
+  margin-top: 0;
+}
+.user-message-card .user-message-content > :last-child {
+  margin-bottom: 0;
+}
+.user-message-card .user-message-content p {
+  margin: 0.75em 0;
+}
+.user-message-card .user-message-content pre {
+  margin: 0.75em 0;
+}
+.user-message-card .rollback-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--eca-fg);
+  opacity: 0.35;
+  padding: 0;
+  border-radius: 0.2em;
+  font-size: 0.7em;
+  line-height: 1;
+  transition: opacity 0.1s, background 0.1s;
+}
+.user-message-card .rollback-btn:hover {
+  opacity: 1;
+}
+
+.assistant-message {
+  line-height: 1.5;
+  padding: 0.1em 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.system-message {
+  color: var(--eca-warning-message-fg);
+  white-space: pre-wrap;
+  font-size: 0.9em;
+  opacity: 0.85;
+  padding: 0.2em 0;
+}

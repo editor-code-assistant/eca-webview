@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { MarkdownContent } from "./MarkdownContent";
-import './ChatTextMessage.scss';
+import './ChatTextMessage.css';
 
 interface Props {
     role: string,

@@ -3,7 +3,7 @@ import { normalizeError } from '../../errorReporting';
 import type { JobOutputLine } from '../../protocol';
 import { fetchJobOutput } from '../../redux/thunks/jobs';
 import { useEcaDispatch } from '../../redux/store';
-import './JobOutput.scss';
+import './JobOutput.css';
 
 interface Props {
     jobId: string;

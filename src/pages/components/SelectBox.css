@@ -1,0 +1,73 @@
+.select-box {
+  display: inline-block;
+}
+
+.select-box-button {
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  border: 1px solid transparent;
+  color: var(--eca-item-selectable-fg);
+  background-color: var(--eca-input-bg);
+  opacity: 0.8;
+  transition: color 150ms ease, opacity 150ms ease, border-color 150ms ease;
+  font-size: 0.8em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.select-box-button::after {
+  font-family: var(--eca-icon-font-family);
+  content: "\eab4";
+  width: 0.5em;
+  vertical-align: middle;
+  height: 0.5em;
+  margin-left: 0.25em;
+  font-size: 0.85em;
+}
+.select-box-button.selected {
+  border-color: var(--eca-base-border);
+}
+.select-box-button.selected::after {
+  content: "\eab7";
+}
+.select-box-button:active, .select-box-button:focus {
+  outline: none;
+  border-color: var(--eca-base-border);
+}
+.select-box-button:hover {
+  color: var(--eca-input-fg);
+  opacity: 1;
+}
+
+.select-tooltip {
+  padding: 0.3em 0 !important;
+  background-color: var(--eca-panel-bg) !important;
+  color: var(--eca-input-fg);
+  border: 1px solid var(--eca-base-border);
+  border-radius: 0.4em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  min-width: 8em;
+  max-height: 30em;
+  overflow-y: auto;
+}
+.select-tooltip .option {
+  cursor: pointer;
+  color: var(--eca-input-fg);
+  display: block;
+  padding: 0.35em 0.6em;
+  opacity: 0.8;
+  transition: opacity 150ms ease, background-color 150ms ease;
+}
+.select-tooltip .option:hover, .select-tooltip .option.highlighted {
+  opacity: 1;
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+.select-tooltip .option.active {
+  opacity: 1;
+  color: var(--eca-link-fg);
+}
+.select-tooltip .option:first-child {
+  border-radius: 0.3em 0.3em 0 0;
+}
+.select-tooltip .option:last-child {
+  border-radius: 0 0 0.3em 0.3em;
+}
