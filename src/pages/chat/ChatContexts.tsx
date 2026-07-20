@@ -4,7 +4,7 @@ import { WorkspaceFolder } from "../../protocol";
 import { addContext, ChatPreContext, CursorFocus, removeContext } from "../../redux/slices/chat";
 import { State, useEcaDispatch } from "../../redux/store";
 import { queryContext } from "../../redux/thunks/chat";
-import { relativizeFromRoot } from "../../util";
+import { pathBasename, relativizeFromRoot } from "../../util";
 import { ToolTip } from "../components/ToolTip";
 import './ChatContexts.scss';
 
@@ -14,7 +14,7 @@ interface Props {
 }
 
 function absPathToFilename(path: string) {
-    return path.split('/').pop() || path;
+    return pathBasename(path);
 }
 
 function contextLabel(context: ChatPreContext, cursorFocus: CursorFocus | undefined): string {
@@ -26,7 +26,7 @@ function contextLabel(context: ChatPreContext, cursorFocus: CursorFocus | undefi
             }
             return path;
         case 'directory':
-            return context.path.split('/').pop() || context.path;
+            return pathBasename(context.path);
         case 'web':
             return context.url;
         case 'repoMap':

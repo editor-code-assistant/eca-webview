@@ -10,20 +10,64 @@ import { WorkspaceFolder } from "./protocol";
  */
 export const newChatId = (): string => crypto.randomUUID();
 
-export function uriToPath(path: string) {
-    // TODO use a lib or improve to support all uri cases
-    return path.substring(path.indexOf('://') + 3).replace(/%20/g, ' ').replace(/\/\//g, '/');
+export function uriToPath(uri: string) {
+    const schemeIdx = uri.indexOf('://');
+    if (schemeIdx === -1) return uri;
+    let p = uri.substring(schemeIdx + 3).replace(/\/\//g, '/');
+    try {
+        p = decodeURIComponent(p);
+    } catch {
+        // Malformed escape (e.g. a literal % in the path): decode spaces only.
+        p = p.replace(/%20/g, ' ');
+    }
+    // Windows drive URI: file:///C:/Users/x → C:\Users\x
+    if (/^\/[A-Za-z]:([/\\]|$)/.test(p)) {
+        p = p.slice(1).replace(/\//g, '\\');
+    }
+    return p;
 }
 
-export function relativizeFromRoot(path: string, workspaceFolders: WorkspaceFolder[]) {
+/**
+ * Separator-normalized form for path comparisons; lowercased for Windows
+ * paths (case-insensitive filesystem, drive-letter casing varies between
+ * server and client).
+ */
+function comparablePath(p: string): string {
+    const normalized = p.replace(/\\/g, '/');
+    return /^[A-Za-z]:\//.test(normalized) ? normalized.toLowerCase() : normalized;
+}
+
+/**
+ * Path of `path` relative to the workspace root containing it ('' when it
+ * IS a root), or undefined when it lives outside all roots. Output always
+ * uses forward slashes; input may use `\` (Windows server paths).
+ */
+export function relativePathFromRoot(path: string, workspaceFolders: { uri: string }[]): string | undefined {
+    const target = comparablePath(path);
     for (const root of workspaceFolders) {
-        const rootPath = uriToPath(root.uri);
-        if (path.startsWith(rootPath)) {
-            const relativePath = path.substring(rootPath.length).replace(/^\//, '');
-            return relativePath.split('/').slice(0, -1).join('/');
+        const rootPath = comparablePath(uriToPath(root.uri));
+        const rootWithSep = rootPath.endsWith('/') ? rootPath : rootPath + '/';
+        if (target === rootPath) return '';
+        if (target.startsWith(rootWithSep)) {
+            // comparablePath is a 1:1 char map, so lengths line up with the
+            // separator-normalized original (preserving its casing).
+            return path.replace(/\\/g, '/').substring(rootWithSep.length);
         }
     }
+    return undefined;
+}
 
+/** Directory part (relative to its workspace root) of `path`, for descriptions. */
+export function relativizeFromRoot(path: string, workspaceFolders: WorkspaceFolder[]) {
+    const rel = relativePathFromRoot(path, workspaceFolders);
+    if (rel === undefined) return undefined;
+    return rel.split('/').slice(0, -1).join('/');
+}
+
+/** Last segment of a file path; separator-agnostic (handles C:\ paths). */
+export function pathBasename(path: string): string {
+    const parts = path.split(/[\\/]/).filter(Boolean);
+    return parts[parts.length - 1] ?? path;
 }
 
 /**

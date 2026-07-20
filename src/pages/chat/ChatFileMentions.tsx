@@ -4,7 +4,7 @@ import { TooltipRefProps } from "react-tooltip";
 import { ChatFile } from "../../protocol";
 import { State, useEcaDispatch } from "../../redux/store";
 import { queryFiles } from "../../redux/thunks/chat";
-import { uriToPath } from "../../util";
+import { relativePathFromRoot } from "../../util";
 import { ToolTip } from "../components/ToolTip";
 import './ChatFileMentions.scss';
 import './ChatContexts.scss';
@@ -48,13 +48,7 @@ function findHashQuery(input: HTMLTextAreaElement | null): HashQuery | null {
 }
 
 function relativeFilePath(path: string, workspaceFolders: { uri: string }[]): string {
-    for (const root of workspaceFolders) {
-        const rootPath = uriToPath(root.uri);
-        if (path.startsWith(rootPath)) {
-            return path.substring(rootPath.length).replace(/^\//, '');
-        }
-    }
-    return path;
+    return relativePathFromRoot(path, workspaceFolders) ?? path;
 }
 
 export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelected, onCompleting }: Props) => {

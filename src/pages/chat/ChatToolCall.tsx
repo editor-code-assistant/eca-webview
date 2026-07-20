@@ -10,6 +10,7 @@ import { selectJobByToolCallId } from '../../redux/slices/jobs';
 import { EcaDispatch, State, useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
+import { pathBasename } from '../../util';
 import { ApprovalActions } from './ApprovalActions';
 import { ChatSubagentToolCall } from './ChatSubagentToolCall';
 import { ChatTime } from './ChatTime';
@@ -224,7 +225,7 @@ function JsonOutputsBody({ props }: { props: Props }) {
 
 function FileChangeHeader({ props, dispatch }: { props: Props, dispatch: EcaDispatch }) {
     const { path, linesAdded, linesRemoved } = props.details as FileChangeDetails;
-    const fileName = path.split('/').pop();
+    const fileName = pathBasename(path);
 
     const openFile = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
         e.stopPropagation();
@@ -243,11 +244,13 @@ function FileChangeHeader({ props, dispatch }: { props: Props, dispatch: EcaDisp
 
 function FileChangeBody({ props }: { props: Props }) {
     const { path, diff } = props.details as FileChangeDetails;
+    // Windows servers may emit CRLF hunks; parse-diff expects LF.
+    const normalizedDiff = diff.replace(/\r\n/g, '\n');
     let fileDiffs;
-    if (diff.startsWith('---')) {
-        fileDiffs = parseDiff(diff);
+    if (normalizedDiff.startsWith('---')) {
+        fileDiffs = parseDiff(normalizedDiff);
     } else {
-        fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
+        fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + normalizedDiff);
     }
 
     return (

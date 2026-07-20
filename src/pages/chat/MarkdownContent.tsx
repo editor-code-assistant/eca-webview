@@ -13,8 +13,11 @@ interface Props {
 
 export function MarkdownContent({ content, codeClassName }: Props) {
     const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string | undefined) => {
+        e.preventDefault();
+        // Only http(s) goes to the OS browser; anything else (file://,
+        // C:\..., relative paths a model may emit) must not navigate the
+        // webview shell itself.
         if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
-            e.preventDefault();
             webviewSend('editor/openUrl', { url: href });
         }
     };
