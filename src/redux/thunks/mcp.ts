@@ -7,15 +7,7 @@ import {
     McpRemoveServerResponse,
 } from "../../protocol";
 import { ThunkApiType } from "../store";
-
-interface UpdateServerParams {
-    name: string;
-    command?: string;
-    args?: string[];
-    env?: Record<string, string>;
-    url?: string;
-    headers?: Record<string, string>;
-}
+import type { McpUpdateServerRequest } from '../../webviewProtocol';
 
 export const startServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/startServer",
@@ -59,7 +51,7 @@ export const enableServer = createAsyncThunk<void, { name: string }, ThunkApiTyp
     }
 );
 
-export const updateServer = createAsyncThunk<void, UpdateServerParams, ThunkApiType>(
+export const updateServer = createAsyncThunk<void, McpUpdateServerRequest, ThunkApiType>(
     "mcp/updateServer",
     async (params) => {
         await webviewSendAndGet('mcp/updateServer', params);
@@ -76,8 +68,7 @@ export const updateServer = createAsyncThunk<void, UpdateServerParams, ThunkApiT
 export const addServer = createAsyncThunk<McpAddServerResponse, McpAddServerRequest, ThunkApiType>(
     "mcp/addServer",
     async (params) => {
-        const result = await webviewSendAndGet<McpAddServerRequest>('mcp/addServer', params);
-        return result as McpAddServerResponse;
+        return await webviewSendAndGet('mcp/addServer', params);
     }
 );
 
@@ -89,7 +80,6 @@ export const addServer = createAsyncThunk<McpAddServerResponse, McpAddServerRequ
 export const removeServer = createAsyncThunk<McpRemoveServerResponse, McpRemoveServerRequest, ThunkApiType>(
     "mcp/removeServer",
     async (params) => {
-        const result = await webviewSendAndGet<McpRemoveServerRequest>('mcp/removeServer', params);
-        return result as McpRemoveServerResponse;
+        return await webviewSendAndGet('mcp/removeServer', params);
     }
 );

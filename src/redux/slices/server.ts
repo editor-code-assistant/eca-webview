@@ -1,28 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WorkspaceFolder } from "../../protocol";
+import { InitProgressTask, ServerStatus } from '../../webviewProtocol';
 
-export enum ServerStatus {
-    Stopped = 'Stopped',
-    Starting = 'Starting',
-    /**
-     * Server process is alive and the `initialize`/`initialized`
-     * handshake has completed, but the server is still running its
-     * post-`initialized` async work (sync models, resolve plugins,
-     * start MCP servers, cleanup). Announced via `$/progress`
-     * notifications — see `initTasks` / `selectInitProgressString`.
-     *
-     * Treated as "not ready" by the UI (startup card visible, chat
-     * prompt disabled) just like Starting, but distinguished from it
-     * so future consumers can surface different copy or telemetry.
-     * Set by the main process (see EcaServerStatus in
-     * src/main/server.ts) once `initialized` has been sent; cleared
-     * to Running once every known `$/progress` task has reached its
-     * matching `finish` pair.
-     */
-    Initializing = 'Initializing',
-    Running = 'Running',
-    Failed = 'Failed',
-}
+export { ServerStatus } from '../../webviewProtocol';
+export type { InitProgressTask } from '../../webviewProtocol';
 
 interface EcaConfig {
     usageStringFormat?: string;
@@ -50,12 +31,6 @@ interface EcaConfig {
  * `eca-chat--init-progress-str` which prepends to an alist and reads the
  * head to get the "latest" title.
  */
-export interface InitProgressTask {
-    taskId: string;
-    title: string;
-    type: 'start' | 'finish';
-}
-
 export const serverSlice = createSlice({
     name: 'server',
     initialState: {

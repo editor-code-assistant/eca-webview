@@ -1,18 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { State } from "../store";
+import { LogEntry } from '../../webviewProtocol';
+
+export type { LogEntry } from '../../webviewProtocol';
 
 // Kept structurally compatible with `LogEntry` in src/main/log-store.ts.
 // The desktop side is the authoritative producer; the webview only
 // consumes entries as read-only data.
-export interface LogEntry {
-    ts: number;
-    seq: number;
-    sessionId?: string;
-    source: 'server' | 'desktop';
-    level: 'info' | 'error';
-    text: string;
-}
-
 interface LogsState {
     entries: LogEntry[];
     maxEntries: number;

@@ -155,15 +155,15 @@ const RootWrapper = () => {
     // Main-side dispatches the RPC result back as an 'mcp/addServer'/'mcp/removeServer'
     // message keyed by requestId. `respondWebviewRequest` resolves the thunk's promise
     // so callers can surface validation errors from the server.
-    useWebviewListener('mcp/addServer', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('mcp/addServer', (data) => {
+        respondWebviewRequest('mcp/addServer', data.requestId, data);
     });
 
-    useWebviewListener('mcp/removeServer', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('mcp/removeServer', (data) => {
+        respondWebviewRequest('mcp/removeServer', data.requestId, data);
     });
 
-    useWebviewListener('config/updated', (config: { [key: string]: any }) => {
+    useWebviewListener('config/updated', (config) => {
         // Always update the global last-known mirrors (models list,
         // selectModel, selectAgent, …) so newly-created chats inherit
         // the most recently selected session defaults — including when
@@ -191,64 +191,64 @@ const RootWrapper = () => {
         dispatch(setJobs(data.jobs));
     });
 
-    useWebviewListener('jobs/list', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('jobs/list', (data) => {
+        respondWebviewRequest('jobs/list', data.requestId, data);
     });
 
     // Resume-picker round trips. The host forwards the JSON-RPC result
     // back as a message keyed by `requestId`; we just close the pending
     // promise. The thunks in `redux/thunks/chat.ts` handle the result
     // shape (chats list / found+chatId, or { error }).
-    useWebviewListener('chat/list', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('chat/list', (data) => {
+        respondWebviewRequest('chat/list', data.requestId, data);
     });
 
-    useWebviewListener('chat/open', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('chat/open', (data) => {
+        respondWebviewRequest('chat/open', data.requestId, data);
     });
 
-    useWebviewListener('jobs/readOutput', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('jobs/readOutput', (data) => {
+        respondWebviewRequest('jobs/readOutput', data.requestId, data);
     });
 
-    useWebviewListener('jobs/kill', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('jobs/kill', (data) => {
+        respondWebviewRequest('jobs/kill', data.requestId, data);
     });
 
-    useWebviewListener('editor/focusChanged', (focus: any) => {
+    useWebviewListener('editor/focusChanged', (focus) => {
         dispatch(focusChanged(focus))
     });
 
     useWebviewListener('editor/readInput', (data: { requestId: string, value: string | null }) => {
-        respondWebviewRequest(data.requestId, data.value);
+        respondWebviewRequest('editor/readInput', data.requestId, data.value);
     });
 
-    useWebviewListener('editor/readGlobalConfig', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('editor/readGlobalConfig', (data) => {
+        respondWebviewRequest('editor/readGlobalConfig', data.requestId, data);
     });
 
-    useWebviewListener('editor/writeGlobalConfig', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('editor/writeGlobalConfig', (data) => {
+        respondWebviewRequest('editor/writeGlobalConfig', data.requestId, data);
     });
 
-    useWebviewListener('providers/list', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('providers/list', (data) => {
+        respondWebviewRequest('providers/list', data.requestId, data);
     });
 
-    useWebviewListener('providers/login', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('providers/login', (data) => {
+        respondWebviewRequest('providers/login', data.requestId, data);
     });
 
-    useWebviewListener('providers/loginInput', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('providers/loginInput', (data) => {
+        respondWebviewRequest('providers/loginInput', data.requestId, data);
     });
 
-    useWebviewListener('providers/logout', (data: any) => {
-        respondWebviewRequest(data.requestId, data);
+    useWebviewListener('providers/logout', (data) => {
+        respondWebviewRequest('providers/logout', data.requestId, data);
     });
 
     useWebviewListener('editor/saveClipboardImage', (data: { requestId: string, path: string }) => {
-        respondWebviewRequest(data.requestId, { path: data.path });
+        respondWebviewRequest('editor/saveClipboardImage', data.requestId, { path: data.path });
     });
 
     useWebviewListener('chat/createNewChat', () => {

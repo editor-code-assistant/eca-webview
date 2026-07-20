@@ -1,5 +1,16 @@
-import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { DependencyList, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { editorName } from "./util";
+import type {
+    WebviewInboundMap,
+    WebviewInboundType,
+    WebviewMessage,
+    WebviewNotificationMap,
+    WebviewOutboundMap,
+    WebviewOutboundType,
+    WebviewRequestPayload,
+    WebviewRequestResponse,
+    WebviewRequestType,
+} from './webviewProtocol';
 
 /**
  * Allows collapsing an expanded block by clicking on its background area.
@@ -181,17 +192,23 @@ export function useStickyString(
     return display;
 }
 
-export function useWebviewListener<T>(
-    type: string,
-    handle: (message: T) => any,
-    dependencies: any[] = [],
+export function useWebviewListener<K extends WebviewInboundType>(
+    type: K,
+    handle: (message: WebviewInboundMap[K]) => void,
+    dependencies: DependencyList = [],
 ) {
     useEffect(
         () => {
-            const handler = (event: MessageEvent) => {
+            const handler = (event: MessageEvent<unknown>) => {
                 const message = event.data;
-                if (message.type === type) {
-                    handle(message.data);
+                if (
+                    typeof message === 'object'
+                    && message !== null
+                    && 'type' in message
+                    && 'data' in message
+                    && message.type === type
+                ) {
+                    handle(message.data as WebviewInboundMap[K]);
                 }
             };
             window.addEventListener('message', handler);
@@ -202,8 +219,8 @@ export function useWebviewListener<T>(
 }
 
 export function useKeyPressedListener(
-    handle: (event: KeyboardEvent) => any,
-    dependencies: any[] = [],
+    handle: (event: KeyboardEvent) => void,
+    dependencies: DependencyList = [],
 ) {
     useEffect(
         () => {
@@ -217,19 +234,23 @@ export function useKeyPressedListener(
     );
 }
 
-interface vscode {
-    postMessage(message: any): vscode;
+interface VsCodeApi {
+    postMessage(message: WebviewMessage): unknown;
 }
 
-declare const vscode: any;
+declare const vscode: VsCodeApi | undefined;
 
-export function webviewSend<T>(
-    type: string, data: T,
-) {
-    const msg = { type, data };
+function postWebviewMessage<K extends WebviewOutboundType>(
+    type: K,
+    data: WebviewOutboundMap[K],
+): void {
+    const msg: WebviewMessage<K> = { type, data };
 
     switch (editorName()) {
         case 'vscode': {
+            if (typeof vscode === 'undefined') {
+                throw new Error('VS Code webview API is unavailable');
+            }
             vscode.postMessage(msg);
             return;
         }
@@ -250,37 +271,66 @@ export function webviewSend<T>(
     console.error("No webview provider found to send message");
 }
 
-const pendingSyncRequests = new Map<string, {
-    resolve: (value: any | null) => void;
-    reject: (error: Error) => void;
-}>();
-
-export function respondRequest(requestId: string, value: any | null) {
-    const pending = pendingSyncRequests.get(requestId);
-    if (pending) {
-        pending.resolve(value);
-        pendingSyncRequests.delete(requestId);
-    }
+export function webviewSend<K extends keyof WebviewNotificationMap>(
+    type: K,
+    data: WebviewNotificationMap[K],
+): void {
+    postWebviewMessage(type, data as WebviewOutboundMap[K]);
 }
 
-export function webviewSendAndGet<T>(
-    type: string, data: T,
-): Promise<any> {
-    const requestId = Date.now().toString();
-    const promise = new Promise<any | null>((resolve, reject) => {
-        pendingSyncRequests.set(requestId, { resolve, reject });
+interface PendingRequest {
+    type: WebviewRequestType;
+    resolve: (value: unknown) => void;
+    reject: (error: Error) => void;
+    timeout: ReturnType<typeof setTimeout>;
+}
 
-        // Set a timeout to prevent hanging forever (30 seconds)
-        setTimeout(() => {
+const pendingSyncRequests = new Map<string, PendingRequest>();
+
+export function respondRequest<K extends WebviewRequestType>(
+    type: K,
+    requestId: string,
+    value: WebviewRequestResponse<K>,
+): void {
+    const pending = pendingSyncRequests.get(requestId);
+    if (!pending) {
+        return;
+    }
+
+    pendingSyncRequests.delete(requestId);
+    clearTimeout(pending.timeout);
+
+    if (pending.type !== type) {
+        pending.reject(new Error(`Mismatched webview response: expected ${pending.type}, received ${type}`));
+        return;
+    }
+
+    pending.resolve(value);
+}
+
+export function webviewSendAndGet<K extends WebviewRequestType>(
+    type: K,
+    data: WebviewRequestPayload<K>,
+): Promise<WebviewRequestResponse<K>> {
+    const requestId = crypto.randomUUID();
+    const promise = new Promise<WebviewRequestResponse<K>>((resolve, reject) => {
+        const timeout = setTimeout(() => {
             const pending = pendingSyncRequests.get(requestId);
             if (pending) {
                 pending.reject(new Error('Wait webview response timeout'));
                 pendingSyncRequests.delete(requestId);
             }
         }, 30000);
+
+        pendingSyncRequests.set(requestId, {
+            type,
+            resolve: (value) => resolve(value as WebviewRequestResponse<K>),
+            reject,
+            timeout,
+        });
     });
 
-    webviewSend(type, { ...data, requestId });
+    postWebviewMessage(type, { ...data, requestId } as WebviewOutboundMap[K]);
 
     return promise;
 }

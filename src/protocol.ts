@@ -9,7 +9,7 @@ export interface InitializeParams {
             chat: boolean;
         };
     };
-    initializationOptions?: any;
+    initializationOptions?: unknown;
     workspaceFolders: WorkspaceFolder[];
 }
 
@@ -147,7 +147,8 @@ interface McpResourceContext {
 }
 
 export type ChatContext = FileContext | DirectoryContext | WebContext | RepoMapContext | CursorContext | McpResourceContext;
-export type ChatAgent = 'agent' | 'chat';
+/** Server-defined agent identifier. Agent names are discovered at runtime. */
+export type ChatAgent = string;
 
 export interface ChatPromptResult {
     chatId: string;

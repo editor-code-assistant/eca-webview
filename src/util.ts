@@ -49,7 +49,7 @@ export function relativeTime(epochMs?: number | null): string {
     return `${Math.floor(diffMs / 86_400_000)}d ago`;
 }
 
-declare const vscode: any;
+declare const vscode: unknown;
 
 export function editorName() {
     if (getLocalStorage("editor") === "vscode" ||
