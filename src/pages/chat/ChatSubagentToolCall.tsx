@@ -32,11 +32,14 @@ interface Props {
 function parseAgentArgs(argumentsText?: string): { agent?: string; task?: string; activity?: string } {
     if (!argumentsText) return {};
     try {
-        const parsed = JSON.parse(argumentsText);
+        const parsed: unknown = JSON.parse(argumentsText);
+        if (typeof parsed !== 'object' || parsed === null) {
+            return {};
+        }
         return {
-            agent: parsed.agent,
-            task: parsed.task,
-            activity: parsed.activity,
+            agent: 'agent' in parsed && typeof parsed.agent === 'string' ? parsed.agent : undefined,
+            task: 'task' in parsed && typeof parsed.task === 'string' ? parsed.task : undefined,
+            activity: 'activity' in parsed && typeof parsed.activity === 'string' ? parsed.activity : undefined,
         };
     } catch {
         return {};

@@ -156,7 +156,7 @@ export function ChatSubHeader({ chatId }: Props) {
     let requiresAuth = 0;
     let running = 0;
 
-    mcpServers.forEach((mcp: any) => {
+    mcpServers.forEach((mcp) => {
         switch (mcp.status) {
             case 'failed':
                 failed++;

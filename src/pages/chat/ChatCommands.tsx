@@ -65,7 +65,7 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
         }
     }, [show]);
 
-    const selectCommand = (command: ChatCommand, event: any) => {
+    const selectCommand = (command: ChatCommand, event: Pick<Event, 'preventDefault'>) => {
         setShow(false);
         event.preventDefault();
         onCommandSelected(command);

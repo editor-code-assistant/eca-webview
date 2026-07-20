@@ -148,9 +148,20 @@ function ShellCommandBody({ props }: { props: Props }) {
     const details = props.details as ShellCommandDetails;
     const commands = details.commands ?? [];
 
-    let args: { command?: string, working_directory?: string, background?: string } = {};
+    let args: { command?: string, working_directory?: string, background?: boolean } = {};
     try {
-        args = JSON.parse(props.argumentsText || '{}');
+        const parsed: unknown = JSON.parse(props.argumentsText || '{}');
+        if (typeof parsed === 'object' && parsed !== null) {
+            args = {
+                command: 'command' in parsed && typeof parsed.command === 'string' ? parsed.command : undefined,
+                working_directory: 'working_directory' in parsed && typeof parsed.working_directory === 'string'
+                    ? parsed.working_directory
+                    : undefined,
+                background: 'background' in parsed && typeof parsed.background === 'boolean'
+                    ? parsed.background
+                    : undefined,
+            };
+        }
     } catch { /* ignore partial json */ }
 
     const rawCommand = args.command ?? '';
@@ -316,7 +327,7 @@ function ChatToolCallContent(props: Props) {
     });
 
     // Check if this is a background job tool call
-    const isBackground = props.details && 'background' in props.details && (props.details as any).background;
+    const isBackground = props.details?.type === 'shellCommand' && props.details.background === true;
     const bgJob = useSelector((state: State) =>
         isBackground && props.toolCallId ? selectJobByToolCallId(props.toolCallId)(state) : undefined
     );

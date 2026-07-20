@@ -95,7 +95,7 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
         setSelectedIndex(0);
     }, [files?.length]);
 
-    const selectFile = (file: ChatFile, event: any) => {
+    const selectFile = (file: ChatFile, event: Pick<Event, 'preventDefault'>) => {
         event.preventDefault();
         setShow(false);
         if (hashQuery) {

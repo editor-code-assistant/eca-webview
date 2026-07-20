@@ -421,7 +421,7 @@ export function MCPsTab() {
 
     const anyFailed = mcpServers.some(s => s.status === 'failed');
 
-    const onOpenServerLogs = (_: any) => {
+    const onOpenServerLogs = () => {
         dispatch(openServerLogs({}));
     };
 
