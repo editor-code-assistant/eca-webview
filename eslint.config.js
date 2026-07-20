@@ -34,4 +34,22 @@ export default defineConfig(
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
     },
   },
+  {
+    files: ['*.config.ts'],
+    languageOptions: {
+      globals: globals.node,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    files: ['eslint.config.js', 'scripts/**/*.mjs'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: globals.node,
+    },
+  },
 );
