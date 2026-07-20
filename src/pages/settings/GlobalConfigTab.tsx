@@ -1,107 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { EditorState } from '@codemirror/state';
-import {
-    EditorView,
-    highlightActiveLine,
-    highlightActiveLineGutter,
-    keymap,
-    lineNumbers,
-} from '@codemirror/view';
-import {
-    defaultKeymap,
-    history,
-    historyKeymap,
-    indentWithTab,
-} from '@codemirror/commands';
-import { json } from '@codemirror/lang-json';
-import type { Diagnostic} from '@codemirror/lint';
-import { linter, lintGutter } from '@codemirror/lint';
-import {
-    bracketMatching,
-    HighlightStyle,
-    indentOnInput,
-    syntaxHighlighting,
-} from '@codemirror/language';
-import { tags as t } from '@lezer/highlight';
-import {
-    parse as jsoncParse,
-    printParseErrorCode,
-    type ParseError,
-} from 'jsonc-parser';
-
+import { parse as jsoncParse, printParseErrorCode, type ParseError } from 'jsonc-parser';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { webviewSend } from '../../hooks';
 import { useEcaDispatch } from '../../redux/store';
-import {
-    editorReadGlobalConfig,
-    editorWriteGlobalConfig,
-} from '../../redux/thunks/editor';
+import { editorReadGlobalConfig, editorWriteGlobalConfig } from '../../redux/thunks/editor';
+import { loadGlobalConfigEditor } from './globalConfigEditorLoader';
 import './GlobalConfigTab.css';
 
-// ECA's config file accepts JSONC (JSON with Comments + trailing commas).
-// We lint with jsonc-parser so comments and trailing commas are not flagged.
+const GlobalConfigEditor = lazy(async () => ({
+    default: (await loadGlobalConfigEditor()).GlobalConfigEditor,
+}));
+
 const JSONC_PARSE_OPTIONS = {
     allowTrailingComma: true,
     allowEmptyContent: true,
 } as const;
 
-// Custom JSON highlight palette.
-//
-// `defaultHighlightStyle` ships colors tuned for CodeMirror's own docs
-// (bright red strings, teal numbers, …) which look jarring over a
-// VS Code / JetBrains / web panel background. The palette below prefers
-// VS Code's `--vscode-debugTokenExpression-*` CSS variables — those are
-// exposed to webviews and track the user's active theme, so light-theme
-// users get the Light+ JSON colors automatically — and falls back to
-// VS Code's Dark+ defaults on hosts that don't provide the variables.
-const jsonHighlightStyle = HighlightStyle.define([
-    // Strings: salmon/orange. Dark+ `#ce9178`, Light+ `#a31515`.
-    { tag: [t.string, t.special(t.string)], color: 'var(--vscode-debugTokenExpression-string, #ce9178)' },
-    // Numbers: muted green. Dark+ `#b5cea8`, Light+ `#098658`.
-    { tag: t.number, color: 'var(--vscode-debugTokenExpression-number, #b5cea8)' },
-    // Booleans / null: VS Code groups these as keywords; bright blue.
-    // Dark+ `#569cd6`, Light+ `#0000ff`.
-    {
-        tag: [t.bool, t.null, t.keyword, t.atom],
-        color: 'var(--vscode-debugTokenExpression-boolean, #569cd6)',
-    },
-    // Property names (object keys in JSON). Light blue.
-    // Dark+ `#9cdcfe`, Light+ `#0451a5`.
-    { tag: [t.propertyName, t.definition(t.propertyName)], color: 'var(--vscode-debugTokenExpression-name, #9cdcfe)' },
-    // Comments (JSONC only). Muted green, italic — matches VS Code default.
-    { tag: [t.comment, t.lineComment, t.blockComment], color: '#6a9955', fontStyle: 'italic' },
-    // Escapes inside strings. Gold, distinguishes `\n` from surrounding string.
-    { tag: t.escape, color: '#d7ba7d' },
-    // Invalid / error tokens — red, so JSONC parse errors are visually loud.
-    { tag: t.invalid, color: 'var(--eca-error-fg, #f14c4c)' },
-]);
-
-function jsoncLinter() {
-    return linter((view) => {
-        const diagnostics: Diagnostic[] = [];
-        const errors: ParseError[] = [];
-        const text = view.state.doc.toString();
-        jsoncParse(text, errors, JSONC_PARSE_OPTIONS);
-        const docLen = view.state.doc.length;
-        for (const err of errors) {
-            const from = Math.max(0, Math.min(err.offset, docLen));
-            const to = Math.max(from, Math.min(err.offset + err.length, docLen));
-            diagnostics.push({
-                from,
-                to: to > from ? to : Math.min(from + 1, docLen),
-                severity: 'error',
-                message: printParseErrorCode(err.error),
-            });
-        }
-        return diagnostics;
-    });
-}
-
 export function GlobalConfigTab() {
     const dispatch = useEcaDispatch();
-
-    const editorContainerRef = useRef<HTMLDivElement>(null);
-    const viewRef = useRef<EditorView | null>(null);
-
     const [configPath, setConfigPath] = useState<string>('');
     const [exists, setExists] = useState<boolean>(false);
     const [initialContents, setInitialContents] = useState<string>('');
@@ -114,30 +29,16 @@ export function GlobalConfigTab() {
 
     const dirty = currentContents !== initialContents;
 
-    // Parse-error check drives Save button disabled state. An empty document
-    // is considered "valid" so users can save an empty file to create a seed.
-    // Uses JSONC semantics so // and /* */ comments and trailing commas are
-    // accepted (matching ECA's own config parser).
     const parseError = useMemo<string | null>(() => {
         if (!currentContents.trim()) return null;
+
         const errors: ParseError[] = [];
         jsoncParse(currentContents, errors, JSONC_PARSE_OPTIONS);
         if (errors.length === 0) return null;
+
         const first = errors[0];
         return `${printParseErrorCode(first.error)} at offset ${first.offset}`;
     }, [currentContents]);
-
-    const applyToEditor = useCallback((contents: string) => {
-        const view = viewRef.current;
-        if (!view) return;
-        view.dispatch({
-            changes: {
-                from: 0,
-                to: view.state.doc.length,
-                insert: contents,
-            },
-        });
-    }, []);
 
     const reload = useCallback(async () => {
         setLoading(true);
@@ -149,85 +50,14 @@ export function GlobalConfigTab() {
             const contents = result.contents ?? '';
             setInitialContents(contents);
             setCurrentContents(contents);
-            applyToEditor(contents);
             if (result.error) setError(result.error);
-        } catch (err) {
-            setError((err as Error).message);
+        } catch (caughtError) {
+            setError((caughtError as Error).message);
         } finally {
             setLoading(false);
         }
-    }, [dispatch, applyToEditor]);
+    }, [dispatch]);
 
-    // Create the editor once on mount.
-    useEffect(() => {
-        if (!editorContainerRef.current || viewRef.current) return;
-
-        const updateListener = EditorView.updateListener.of((update) => {
-            if (update.docChanged) {
-                setCurrentContents(update.state.doc.toString());
-                setJustSaved(false);
-            }
-        });
-
-        const theme = EditorView.theme({
-            '&': {
-                height: '100%',
-                backgroundColor: 'transparent',
-                color: 'var(--eca-fg)',
-            },
-            '.cm-scroller': {
-                fontFamily: 'var(--eca-code-font, ui-monospace, SFMono-Regular, Menlo, monospace)',
-                fontSize: '0.9em',
-            },
-            '.cm-gutters': {
-                backgroundColor: 'transparent',
-                color: 'var(--eca-input-placeholder-fg)',
-                border: 'none',
-            },
-            '.cm-activeLineGutter, .cm-activeLine': {
-                backgroundColor: 'rgba(127, 127, 127, 0.08)',
-            },
-            '.cm-selectionBackground, ::selection': {
-                backgroundColor: 'rgba(0, 120, 212, 0.25)',
-            },
-            '.cm-cursor': {
-                borderLeftColor: 'var(--eca-fg)',
-            },
-        });
-
-        const state = EditorState.create({
-            doc: '',
-            extensions: [
-                lineNumbers(),
-                highlightActiveLine(),
-                highlightActiveLineGutter(),
-                history(),
-                bracketMatching(),
-                indentOnInput(),
-                syntaxHighlighting(jsonHighlightStyle, { fallback: true }),
-                json(),
-                jsoncLinter(),
-                lintGutter(),
-                keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
-                updateListener,
-                theme,
-            ],
-        });
-
-        const view = new EditorView({
-            state,
-            parent: editorContainerRef.current,
-        });
-        viewRef.current = view;
-
-        return () => {
-            view.destroy();
-            viewRef.current = null;
-        };
-    }, []);
-
-    // Initial load and refresh on window focus so external-editor changes
-    // are picked up automatically.
     useEffect(() => {
         void reload();
         const onFocus = () => { void reload(); };
@@ -235,14 +65,12 @@ export function GlobalConfigTab() {
         return () => { window.removeEventListener('focus', onFocus); };
     }, [reload]);
 
-    // Auto-clear the transient "Saved" indicator after a couple of seconds.
     useEffect(() => {
         if (!justSaved) return;
         const id = window.setTimeout(() => { setJustSaved(false); }, 2000);
         return () => { window.clearTimeout(id); };
     }, [justSaved]);
 
-    // Auto-clear the copy-path confirmation.
     useEffect(() => {
         if (!copied) return;
         const id = window.setTimeout(() => { setCopied(false); }, 1500);
@@ -251,12 +79,11 @@ export function GlobalConfigTab() {
 
     const onSave = useCallback(async () => {
         if (!dirty || parseError || saving) return;
+
         setSaving(true);
         setError(null);
         try {
-            const result = await dispatch(
-                editorWriteGlobalConfig({ contents: currentContents }),
-            ).unwrap();
+            const result = await dispatch(editorWriteGlobalConfig({ contents: currentContents })).unwrap();
             if (result.ok) {
                 setInitialContents(currentContents);
                 setExists(true);
@@ -264,35 +91,20 @@ export function GlobalConfigTab() {
             } else {
                 setError(result.error ?? 'Save failed.');
             }
-        } catch (err) {
-            setError((err as Error).message);
+        } catch (caughtError) {
+            setError((caughtError as Error).message);
         } finally {
             setSaving(false);
         }
     }, [currentContents, dirty, dispatch, parseError, saving]);
 
-    const onOpenExternal = () => {
-        webviewSend('editor/openGlobalConfig', {});
-    };
-
-    const onCopyPath = async () => {
-        if (!configPath) return;
-        try {
-            await navigator.clipboard.writeText(configPath);
-            setCopied(true);
-        } catch {
-            /* clipboard may be unavailable in some embedding contexts; swallow */
-        }
-    };
-
-    // Ctrl/Cmd+S on the tab triggers save when focus is inside the editor.
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        const onKey = (event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
                 const active = document.activeElement;
                 const inTab = !!active?.closest?.('.global-config-tab');
                 if (inTab) {
-                    e.preventDefault();
+                    event.preventDefault();
                     void onSave();
                 }
             }
@@ -300,6 +112,17 @@ export function GlobalConfigTab() {
         document.addEventListener('keydown', onKey);
         return () => { document.removeEventListener('keydown', onKey); };
     }, [onSave]);
+
+    const onCopyPath = async () => {
+        if (!configPath) return;
+
+        try {
+            await navigator.clipboard.writeText(configPath);
+            setCopied(true);
+        } catch {
+            // Clipboard access is optional in embedded clients.
+        }
+    };
 
     const saveDisabled = !dirty || !!parseError || saving;
 
@@ -326,7 +149,20 @@ export function GlobalConfigTab() {
                 </button>
             </div>
 
-            <div className="editor-container" ref={editorContainerRef}></div>
+            <Suspense
+                fallback={(
+                    <div
+                        className="editor-container editor-container-loading"
+                        aria-label="Loading configuration editor"
+                        aria-busy="true"
+                    ></div>
+                )}
+            >
+                <GlobalConfigEditor
+                    contents={currentContents}
+                    onContentsChange={setCurrentContents}
+                />
+            </Suspense>
 
             <div className="action-bar">
                 <button
@@ -351,7 +187,7 @@ export function GlobalConfigTab() {
 
                 <button
                     className="secondary-btn"
-                    onClick={onOpenExternal}
+                    onClick={() => { webviewSend('editor/openGlobalConfig', {}); }}
                     title="Open in your OS default editor"
                 >
                     <i className="codicon codicon-go-to-file"></i>

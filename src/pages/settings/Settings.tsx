@@ -1,15 +1,15 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../routes';
+import { GlobalConfigTab } from './GlobalConfigTab';
+import { JobsTab } from './JobsTab';
+import { LogsTab } from './LogsTab';
+import { MCPsTab } from './MCPsTab';
+import { preloadGlobalConfigEditor } from './globalConfigEditorLoader';
+import { ProvidersTab } from './ProvidersTab';
 import { resolveSettingsTab } from './settingsNavigation';
 import type { SettingsTabKey } from './settingsNavigation';
 import './Settings.css';
-
-const MCPsTab = lazy(async () => ({ default: (await import('./MCPsTab')).MCPsTab }));
-const ProvidersTab = lazy(async () => ({ default: (await import('./ProvidersTab')).ProvidersTab }));
-const GlobalConfigTab = lazy(async () => ({ default: (await import('./GlobalConfigTab')).GlobalConfigTab }));
-const JobsTab = lazy(async () => ({ default: (await import('./JobsTab')).JobsTab }));
-const LogsTab = lazy(async () => ({ default: (await import('./LogsTab')).LogsTab }));
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'mcps', label: '🧩 MCPs', icon: '' },
@@ -47,6 +47,8 @@ export function Settings() {
                     <button
                         key={tab.key}
                         className={`settings-tab ${activeTab === tab.key ? 'active' : ''}`}
+                        onFocus={tab.key === 'config' ? preloadGlobalConfigEditor : undefined}
+                        onPointerEnter={tab.key === 'config' ? preloadGlobalConfigEditor : undefined}
                         onClick={() => { setActiveTab(tab.key); }}>
                         {tab.icon && <i className={`codicon ${tab.icon}`}></i>}
                         {tab.label}
@@ -55,13 +57,11 @@ export function Settings() {
             </div>
 
             <div className="settings-tab-content">
-                <Suspense fallback={<div className="settings-tab-loading">Loading settingsâ€¦</div>}>
-                    {activeTab === 'mcps' && <MCPsTab />}
-                    {activeTab === 'providers' && <ProvidersTab />}
-                    {activeTab === 'jobs' && <JobsTab />}
-                    {activeTab === 'logs' && <LogsTab />}
-                    {activeTab === 'config' && <GlobalConfigTab />}
-                </Suspense>
+                {activeTab === 'mcps' && <MCPsTab />}
+                {activeTab === 'providers' && <ProvidersTab />}
+                {activeTab === 'jobs' && <JobsTab />}
+                {activeTab === 'logs' && <LogsTab />}
+                {activeTab === 'config' && <GlobalConfigTab />}
             </div>
         </div>
     );

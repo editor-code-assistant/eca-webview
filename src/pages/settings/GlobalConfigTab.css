@@ -70,6 +70,19 @@
   overflow: hidden;
   background-color: var(--eca-input-bg, transparent);
 }
+.global-config-tab .editor-container-loading {
+  background-image:
+    linear-gradient(90deg, rgba(127, 127, 127, 0.08) 2.75em, transparent 2.75em),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 1.35em,
+      rgba(127, 127, 127, 0.12) 1.35em,
+      rgba(127, 127, 127, 0.12) 1.45em,
+      transparent 1.45em,
+      transparent 1.8em
+    );
+}
 .global-config-tab .editor-container .cm-editor {
   height: 100%;
 }
