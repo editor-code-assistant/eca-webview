@@ -8,7 +8,7 @@ import { JobsTab } from './JobsTab';
 import { LogsTab } from './LogsTab';
 import './Settings.scss';
 
-type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs' | 'logs';
+export type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs' | 'logs';
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'mcps', label: '🧩 MCPs', icon: '' },
@@ -18,14 +18,21 @@ const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'config', label: '⚙️ Global Config', icon: '' },
 ];
 
-const validTabs = new Set<string>(tabs.map(t => t.key));
+function isSettingsTabKey(value: unknown): value is SettingsTabKey {
+    return typeof value === 'string' && tabs.some(({ key }) => key === value);
+}
+
+export function resolveSettingsTab(state: unknown): SettingsTabKey {
+    if (typeof state !== 'object' || state === null || !('tab' in state)) {
+        return 'mcps';
+    }
+
+    return isSettingsTabKey(state.tab) ? state.tab : 'mcps';
+}
 
 export function Settings() {
     const location = useLocation();
-    const initialTab = (location.state as any)?.tab;
-    const [activeTab, setActiveTab] = useState<SettingsTabKey>(
-        initialTab && validTabs.has(initialTab) ? initialTab : 'mcps'
-    );
+    const [activeTab, setActiveTab] = useState<SettingsTabKey>(() => resolveSettingsTab(location.state));
     const navigate = useNavigate();
 
     // React to subsequent `navigate(..., { state: { tab } })` calls
@@ -33,11 +40,8 @@ export function Settings() {
     // the "View Logs" menu item would be a no-op when the user is
     // already on the Settings page but looking at a different tab.
     useEffect(() => {
-        const tab = (location.state as any)?.tab;
-        if (tab && validTabs.has(tab) && tab !== activeTab) {
-            setActiveTab(tab as SettingsTabKey);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const tab = resolveSettingsTab(location.state);
+        setActiveTab(currentTab => currentTab === tab ? currentTab : tab);
     }, [location.state]);
 
     return (
