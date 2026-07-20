@@ -137,6 +137,11 @@
       color: var(--eca-input-placeholder-fg);
     }
 
+    .provider-error {
+      font-size: 0.78em;
+      color: var(--eca-error-fg);
+    }
+
     .models-section {
       display: flex;
       flex-direction: column;

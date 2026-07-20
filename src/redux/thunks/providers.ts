@@ -19,10 +19,10 @@ export const loginProvider = createAsyncThunk<LoginAction, { provider: string; m
     }
 );
 
-export const loginProviderInput = createAsyncThunk<void, { provider: string; data: Record<string, string> }, ThunkApiType>(
+export const loginProviderInput = createAsyncThunk<LoginAction, { provider: string; data: Record<string, string> }, ThunkApiType>(
     "providers/loginInput",
     async (params) => {
-        await webviewSendAndGet('providers/loginInput', params);
+        return await webviewSendAndGet('providers/loginInput', params);
     }
 );
 
