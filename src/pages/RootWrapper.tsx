@@ -37,7 +37,6 @@ const RootWrapper = () => {
                 navigate(data.path, data.state ? { state: data.state } : undefined);
             }
         },
-        [location, navigate],
     );
 
     // Desktop LogStore → Redux. `logs/snapshot` hydrates the slice on
@@ -281,7 +280,7 @@ const RootWrapper = () => {
         if (selectedChatActionable) {
             dispatch(deleteChat({ chatId: selectedChat }));
         }
-    }, [selectedChat, selectedChatActionable]);
+    });
 
     useWebviewListener('chat/renameCurrent', async () => {
         if (selectedChatActionable) {
@@ -290,14 +289,14 @@ const RootWrapper = () => {
             // threading rename state through Redux for a transient UI mode.
             document.dispatchEvent(new CustomEvent('eca:requestRenameCurrent'));
         }
-    }, [selectedChat, selectedChatActionable]);
+    });
 
     useWebviewListener('chat/clearCurrent', async () => {
         if (selectedChatActionable) {
             dispatch(clearChat({ chatId: selectedChat }));
             webviewSend('chat/clearChat', { chatId: selectedChat });
         }
-    }, [selectedChat, selectedChatActionable]);
+    });
 
     useWebviewListener('chat/exportCurrent', async () => {
         if (selectedChatActionable) {
@@ -306,13 +305,13 @@ const RootWrapper = () => {
             // `exportChat()` flow without duplicating logic here.
             document.dispatchEvent(new CustomEvent('eca:requestExportCurrent'));
         }
-    }, [selectedChat, selectedChatActionable]);
+    });
 
     useWebviewListener('chat/stopCurrent', async () => {
         if (selectedChatActionable) {
             dispatch(stopPrompt({ chatId: selectedChat }));
         }
-    }, [selectedChat, selectedChatActionable]);
+    });
 
     useEffect(() => {
         // Reset stale chat state before requesting fresh state from the bridge.

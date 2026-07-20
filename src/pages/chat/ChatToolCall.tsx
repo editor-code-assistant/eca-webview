@@ -313,7 +313,7 @@ function chatToolCall(props: Props) {
             rejectToolCall();
             return;
         }
-    }, [waitingApproval]);
+    });
 
     // Check if this is a background job tool call
     const isBackground = props.details && 'background' in props.details && (props.details as any).background;

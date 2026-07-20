@@ -169,7 +169,7 @@ function chatSubagentToolCall(props: Props) {
             rejectToolCall();
             return;
         }
-    }, [waitingApproval]);
+    });
 
     const isActive = props.status === 'preparing' || props.status === 'run' || props.status === 'running';
 

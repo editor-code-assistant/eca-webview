@@ -1,4 +1,4 @@
-import { DependencyList, RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { editorName } from "./util";
 import type {
     WebviewInboundMap,
@@ -195,43 +195,47 @@ export function useStickyString(
 export function useWebviewListener<K extends WebviewInboundType>(
     type: K,
     handle: (message: WebviewInboundMap[K]) => void,
-    dependencies: DependencyList = [],
 ) {
-    useEffect(
-        () => {
-            const handler = (event: MessageEvent<unknown>) => {
-                const message = event.data;
-                if (
-                    typeof message === 'object'
-                    && message !== null
-                    && 'type' in message
-                    && 'data' in message
-                    && message.type === type
-                ) {
-                    handle(message.data as WebviewInboundMap[K]);
-                }
-            };
-            window.addEventListener('message', handler);
-            return () => window.removeEventListener('message', handler);
-        },
-        dependencies,
-    );
+    const handleRef = useRef(handle);
+
+    useLayoutEffect(() => {
+        handleRef.current = handle;
+    }, [handle]);
+
+    useEffect(() => {
+        const handler = (event: MessageEvent<unknown>) => {
+            const message = event.data;
+            if (
+                typeof message === 'object'
+                && message !== null
+                && 'type' in message
+                && 'data' in message
+                && message.type === type
+            ) {
+                handleRef.current(message.data as WebviewInboundMap[K]);
+            }
+        };
+        window.addEventListener('message', handler);
+        return () => window.removeEventListener('message', handler);
+    }, [type]);
 }
 
 export function useKeyPressedListener(
     handle: (event: KeyboardEvent) => void,
-    dependencies: DependencyList = [],
 ) {
-    useEffect(
-        () => {
-            const onKeyDown = (e: KeyboardEvent) => {
-                return handle(e);
-            };
-            document.addEventListener("keydown", onKeyDown);
-            return () => document.removeEventListener("keydown", onKeyDown);
-        },
-        dependencies,
-    );
+    const handleRef = useRef(handle);
+
+    useLayoutEffect(() => {
+        handleRef.current = handle;
+    }, [handle]);
+
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            handleRef.current(event);
+        };
+        document.addEventListener("keydown", onKeyDown);
+        return () => document.removeEventListener("keydown", onKeyDown);
+    }, []);
 }
 
 interface VsCodeApi {
