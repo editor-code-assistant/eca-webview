@@ -6,13 +6,12 @@ import { ChatTime } from "./ChatTime";
 import { MarkdownContent } from "./MarkdownContent";
 
 interface Props {
-    id: string,
     status: string,
     content?: string,
     totalTimeMs?: number,
 }
 
-function ChatReasonContent({ id, status, content, totalTimeMs }: Props) {
+function ChatReasonContent({ status, content, totalTimeMs }: Props) {
     const [expanded, setExpanded] = useState(false);
     const isDone = status === 'done';
     const label = isDone ? 'Thought' : 'Thinking';

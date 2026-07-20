@@ -85,7 +85,6 @@ function SubagentMessages({ messages, subagentChatId, depth }: { messages: ChatM
                         return (
                             <div key={`subagent-reason-${index}`}>
                                 <ChatReason
-                                    id={message.id}
                                     status={message.status}
                                     totalTimeMs={message.totalTimeMs}
                                     content={message.content} />

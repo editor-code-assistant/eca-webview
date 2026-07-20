@@ -14,13 +14,6 @@ const statusIcon: Record<JobStatus, string> = {
     killed: '⚫',
 };
 
-const statusLabel: Record<JobStatus, string> = {
-    running: 'Running',
-    completed: 'Completed',
-    failed: 'Failed',
-    killed: 'Killed',
-};
-
 function formatElapsed(job: Job): string {
     if (job.status === 'running' && job.startedAt) {
         // Compute elapsed client-side for running jobs

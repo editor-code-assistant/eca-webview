@@ -6,11 +6,11 @@ describe('ChatReason', () => {
   it('preserves hook ownership across active and completed states', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const { rerender } = render(
-      <ChatReason id="reason-1" status="active" content="Working" />,
+      <ChatReason status="active" content="Working" />,
     );
 
-    rerender(<ChatReason id="reason-1" status="done" content="Finished" />);
-    rerender(<ChatReason id="reason-1" status="active" content="Working again" />);
+    rerender(<ChatReason status="done" content="Finished" />);
+    rerender(<ChatReason status="active" content="Working again" />);
 
     expect(consoleError).not.toHaveBeenCalled();
   });

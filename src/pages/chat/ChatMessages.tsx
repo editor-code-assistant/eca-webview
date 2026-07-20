@@ -95,7 +95,6 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                         case 'reason':
                             return (
                                 <ChatReason
-                                    id={message.id}
                                     status={message.status}
                                     totalTimeMs={message.totalTimeMs}
                                     content={message.content} />
