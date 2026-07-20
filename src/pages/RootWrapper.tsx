@@ -165,6 +165,10 @@ const RootWrapper = () => {
         respondWebviewRequest('mcp/removeServer', data.requestId, data);
     });
 
+    useWebviewListener('mcp/updateServer', (data) => {
+        respondWebviewRequest('mcp/updateServer', data.requestId, data);
+    });
+
     useWebviewListener('config/updated', (config) => {
         // Always update the global last-known mirrors (models list,
         // selectModel, selectAgent, …) so newly-created chats inherit

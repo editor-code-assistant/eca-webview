@@ -136,7 +136,7 @@ export interface WebviewRequestMap {
     };
     'mcp/updateServer': {
         request: McpUpdateServerRequest;
-        response: unknown;
+        response: Record<string, unknown>;
     };
     'mcp/addServer': {
         request: McpAddServerRequest;
