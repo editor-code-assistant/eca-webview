@@ -12,7 +12,7 @@ interface Props {
     totalTimeMs?: number,
 }
 
-function chatReason({ id, status, content, totalTimeMs }: Props) {
+function ChatReasonContent({ id, status, content, totalTimeMs }: Props) {
     const [expanded, setExpanded] = useState(false);
     const isDone = status === 'done';
     const label = isDone ? 'Thought' : 'Thinking';
@@ -59,13 +59,11 @@ function chatReason({ id, status, content, totalTimeMs }: Props) {
     );
 }
 
-const ChatReasonMemo = memo((props: Props) => {
-    return chatReason(props);
-});
+const ChatReasonMemo = memo(ChatReasonContent);
 
 export function ChatReason(props: Props) {
     if (props.status !== 'done') {
-        return chatReason(props);
+        return <ChatReasonContent {...props} />;
     }
 
     return (<div> <ChatReasonMemo {...props} /> </div>);

@@ -109,7 +109,7 @@ function SubagentMessages({ messages, subagentChatId, depth }: { messages: ChatM
     );
 }
 
-function chatSubagentToolCall(props: Props) {
+function ChatSubagentToolCallContent(props: Props) {
     const dispatch = useEcaDispatch();
     const depth = props.depth ?? 0;
     const { agent, task, activity } = useMemo(() => parseAgentArgs(props.argumentsText), [props.argumentsText]);
@@ -262,14 +262,12 @@ function chatSubagentToolCall(props: Props) {
     );
 }
 
-const ChatSubagentToolCallMemo = memo((props: Props) => {
-    return chatSubagentToolCall(props);
-});
+const ChatSubagentToolCallMemo = memo(ChatSubagentToolCallContent);
 
 export function ChatSubagentToolCall(props: Props) {
     // Don't memoize while status is still changing
     if (props.status === 'preparing' || props.status === 'running' || props.status === 'run') {
-        return chatSubagentToolCall(props);
+        return <ChatSubagentToolCallContent {...props} />;
     }
     return <ChatSubagentToolCallMemo {...props} />;
 }

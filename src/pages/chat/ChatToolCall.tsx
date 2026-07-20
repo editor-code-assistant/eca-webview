@@ -263,7 +263,7 @@ function FileChangeBody({ props }: { props: Props }) {
     );
 }
 
-function chatToolCall(props: Props) {
+function ChatToolCallContent(props: Props) {
     const dispatch = useEcaDispatch();
 
     // Hide active tool call while a question is pending (question shown in messages instead)
@@ -452,13 +452,11 @@ function chatToolCall(props: Props) {
     );
 }
 
-const ChatToolCallMemo = memo((props: Props) => {
-    return chatToolCall(props);
-});
+const ChatToolCallMemo = memo(ChatToolCallContent);
 
 export function ChatToolCall(props: Props) {
     if (props.status === 'preparing') {
-        return chatToolCall(props);
+        return <ChatToolCallContent {...props} />;
     }
 
     return (<div> <ChatToolCallMemo {...props} /> </div>);
