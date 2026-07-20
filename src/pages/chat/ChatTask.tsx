@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { State } from '../../redux/store';
-import { Task } from '../../protocol';
+import type { State } from '../../redux/store';
+import type { Task } from '../../protocol';
 import { useBackgroundCollapse } from '../../hooks';
 import './ChatTask.scss';
 
@@ -16,7 +16,7 @@ export function ChatTask({ chatId }: Props) {
     const taskState = useSelector((state: State) => state.chat.chats[chatId]?.taskState);
     const taskLoading = useSelector((state: State) => state.chat.chats[chatId]?.taskLoading);
     const cardRef = useRef<HTMLDivElement>(null);
-    const collapse = () => setExpanded(false);
+    const collapse = () => { setExpanded(false); };
     const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     if (!taskState && !taskLoading) {
@@ -35,7 +35,7 @@ export function ChatTask({ chatId }: Props) {
     const labelPrefix = inProgressTask ? 'Task: ' : 'Tasks ';
     const labelText = activeSummary ?? (inProgressTask?.subject || '') ;
 
-    const toggle = () => setExpanded(prev => !prev);
+    const toggle = () => { setExpanded(prev => !prev); };
 
     return (
         <div className="chat-task" ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>

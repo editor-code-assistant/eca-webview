@@ -5,7 +5,7 @@ import './ChatCollapsableMessage.scss';
 
 interface Props {
     className: string,
-    header: (toggleOpen: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void) => React.ReactNode,
+    header: (toggleOpen: () => void) => React.ReactNode,
     content?: React.ReactNode,
     defaultOpen?: boolean,
 }
@@ -13,10 +13,10 @@ interface Props {
 export const ChatCollapsableMessage = memo(({ header, content, className, defaultOpen }: Props) => {
     const [open, setOpen] = useState(defaultOpen || false);
     const cardRef = useRef<HTMLDivElement>(null);
-    const collapse = () => setOpen(false);
+    const collapse = () => { setOpen(false); };
     const { onMouseDown, onMouseUp } = useBackgroundCollapse(open, collapse, cardRef);
 
-    const toggleOpen = (_event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const toggleOpen = () => {
         setOpen(!open);
     }
 

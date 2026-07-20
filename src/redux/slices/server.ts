@@ -1,6 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { WorkspaceFolder } from "../../protocol";
-import { InitProgressTask, ServerStatus } from '../../webviewProtocol';
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { WorkspaceFolder } from "../../protocol";
+import type { InitProgressTask} from '../../webviewProtocol';
+import { ServerStatus } from '../../webviewProtocol';
 
 export { ServerStatus } from '../../webviewProtocol';
 export type { InitProgressTask } from '../../webviewProtocol';
@@ -18,6 +20,30 @@ interface EcaConfig {
     }
 }
 
+interface ServerState {
+    status: ServerStatus;
+    workspaceFolders: WorkspaceFolder[];
+    activeSessionId: string | null;
+    trust: boolean;
+    config: EcaConfig;
+    initTasks: InitProgressTask[];
+}
+
+interface ChatConfigUpdate {
+    chatId?: string;
+    usageStringFormat?: string;
+    chat?: Partial<{
+        models: string[];
+        agents: string[];
+        selectModel: string;
+        selectAgent: string;
+        welcomeMessage: string;
+        variants: string[];
+        selectVariant: string | null;
+        selectTrust: boolean;
+    }>;
+}
+
 /**
  * Single entry in the init-progress task list.
  *
@@ -31,12 +57,10 @@ interface EcaConfig {
  * `eca-chat--init-progress-str` which prepends to an alist and reads the
  * head to get the "latest" title.
  */
-export const serverSlice = createSlice({
-    name: 'server',
-    initialState: {
+const initialState: ServerState = {
         status: ServerStatus.Stopped,
-        workspaceFolders: [] as WorkspaceFolder[],
-        activeSessionId: null as string | null,
+        workspaceFolders: [],
+        activeSessionId: null,
         trust: false,
         config: {
             chat: {
@@ -46,19 +70,23 @@ export const serverSlice = createSlice({
                 variants: [],
                 selectedVariant: null,
             }
-        } as EcaConfig,
+        },
         // Init-progress tasks arriving via the `$/progress` JSON-RPC
         // notification. Stored as an ordered list (insertion order) so
         // `selectInitProgressString` can identify the most recently
         // started task for the "N/M · title" display. Empty when no
         // tasks have been received yet or after a session reset.
-        initTasks: [] as InitProgressTask[],
-    },
+        initTasks: [],
+};
+
+export const serverSlice = createSlice({
+    name: 'server',
+    initialState,
     reducers: {
-        setStatus: (state, action) => {
+        setStatus: (state, action: PayloadAction<ServerStatus>) => {
             state.status = action.payload;
         },
-        setWorkspaceFolders: (state, action) => {
+        setWorkspaceFolders: (state, action: PayloadAction<WorkspaceFolder[]>) => {
             state.workspaceFolders = action.payload;
         },
         /**
@@ -86,7 +114,7 @@ export const serverSlice = createSlice({
         resetInitProgress: (state) => {
             state.initTasks = [];
         },
-        setConfig: (state, action) => {
+        setConfig: (state, action: PayloadAction<ChatConfigUpdate>) => {
             // When `chatId` is present at the top level, the per-chat
             // trust value is for that chat alone (handled by the chat
             // slice's `applyConfigToChat`). The global `state.trust`
@@ -96,7 +124,7 @@ export const serverSlice = createSlice({
             // / selectAgent / selectVariant) are still updated globally
             // so newly-created chats inherit the most recently selected
             // values per the per-chat scoping spec.
-            const scopedToChat: boolean = !!action.payload.chatId;
+            const scopedToChat = !!action.payload.chatId;
             if (action.payload.usageStringFormat !== undefined) {
                 state.config.usageStringFormat = action.payload.usageStringFormat;
             }
@@ -134,13 +162,13 @@ export const serverSlice = createSlice({
                 }
             }
         },
-        setSelectedVariant: (state, action) => {
+        setSelectedVariant: (state, action: PayloadAction<string | null>) => {
             state.config.chat.selectedVariant = action.payload;
         },
-        setTrust: (state, action) => {
+        setTrust: (state, action: PayloadAction<boolean>) => {
             state.trust = action.payload;
         },
-        setActiveSessionId: (state, action) => {
+        setActiveSessionId: (state, action: PayloadAction<string | null>) => {
             state.activeSessionId = action.payload;
         },
     },

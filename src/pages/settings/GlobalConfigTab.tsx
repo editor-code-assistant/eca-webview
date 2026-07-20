@@ -14,7 +14,8 @@ import {
     indentWithTab,
 } from '@codemirror/commands';
 import { json } from '@codemirror/lang-json';
-import { Diagnostic, linter, lintGutter } from '@codemirror/lint';
+import type { Diagnostic} from '@codemirror/lint';
+import { linter, lintGutter } from '@codemirror/lint';
 import {
     bracketMatching,
     HighlightStyle,
@@ -142,7 +143,7 @@ export function GlobalConfigTab() {
         setLoading(true);
         setError(null);
         try {
-            const result = await dispatch(editorReadGlobalConfig({})).unwrap();
+            const result = await dispatch(editorReadGlobalConfig()).unwrap();
             setConfigPath(result.path);
             setExists(result.exists);
             const contents = result.contents ?? '';
@@ -228,27 +229,27 @@ export function GlobalConfigTab() {
     // Initial load and refresh on window focus so external-editor changes
     // are picked up automatically.
     useEffect(() => {
-        reload();
-        const onFocus = () => { reload(); };
+        void reload();
+        const onFocus = () => { void reload(); };
         window.addEventListener('focus', onFocus);
-        return () => window.removeEventListener('focus', onFocus);
+        return () => { window.removeEventListener('focus', onFocus); };
     }, [reload]);
 
     // Auto-clear the transient "Saved" indicator after a couple of seconds.
     useEffect(() => {
         if (!justSaved) return;
-        const id = window.setTimeout(() => setJustSaved(false), 2000);
-        return () => window.clearTimeout(id);
+        const id = window.setTimeout(() => { setJustSaved(false); }, 2000);
+        return () => { window.clearTimeout(id); };
     }, [justSaved]);
 
     // Auto-clear the copy-path confirmation.
     useEffect(() => {
         if (!copied) return;
-        const id = window.setTimeout(() => setCopied(false), 1500);
-        return () => window.clearTimeout(id);
+        const id = window.setTimeout(() => { setCopied(false); }, 1500);
+        return () => { window.clearTimeout(id); };
     }, [copied]);
 
-    const onSave = async () => {
+    const onSave = useCallback(async () => {
         if (!dirty || parseError || saving) return;
         setSaving(true);
         setError(null);
@@ -268,7 +269,7 @@ export function GlobalConfigTab() {
         } finally {
             setSaving(false);
         }
-    };
+    }, [currentContents, dirty, dispatch, parseError, saving]);
 
     const onOpenExternal = () => {
         webviewSend('editor/openGlobalConfig', {});
@@ -292,15 +293,13 @@ export function GlobalConfigTab() {
                 const inTab = !!active?.closest?.('.global-config-tab');
                 if (inTab) {
                     e.preventDefault();
-                    onSave();
+                    void onSave();
                 }
             }
         };
         document.addEventListener('keydown', onKey);
-        return () => document.removeEventListener('keydown', onKey);
-        // onSave is a closure over state; re-bind when deps change.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dirty, parseError, saving, currentContents]);
+        return () => { document.removeEventListener('keydown', onKey); };
+    }, [onSave]);
 
     const saveDisabled = !dirty || !!parseError || saving;
 
@@ -319,7 +318,7 @@ export function GlobalConfigTab() {
                 </span>
                 <button
                     className="icon-btn"
-                    onClick={onCopyPath}
+                    onClick={() => { void onCopyPath(); }}
                     title={copied ? 'Copied!' : 'Copy path'}
                     disabled={!configPath}
                 >
@@ -332,7 +331,7 @@ export function GlobalConfigTab() {
             <div className="action-bar">
                 <button
                     className="primary-btn"
-                    onClick={onSave}
+                    onClick={() => { void onSave(); }}
                     disabled={saveDisabled}
                     title={parseError ?? (saveDisabled && !dirty ? 'No changes' : undefined)}
                 >
@@ -342,7 +341,7 @@ export function GlobalConfigTab() {
 
                 <button
                     className="secondary-btn"
-                    onClick={reload}
+                    onClick={() => { void reload(); }}
                     disabled={loading || saving}
                     title="Re-read file from disk"
                 >
@@ -387,7 +386,7 @@ export function GlobalConfigTab() {
                     <span>{error}</span>
                     <button
                         className="icon-btn"
-                        onClick={() => setError(null)}
+                        onClick={() => { setError(null); }}
                         title="Dismiss"
                     >
                         <i className="codicon codicon-close"></i>

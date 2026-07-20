@@ -1,4 +1,5 @@
-import { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { RefObject} from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { editorName } from "./util";
 import type {
     WebviewInboundMap,
@@ -165,7 +166,7 @@ export function useStickyString(
                 commit(null);
                 return;
             }
-            timerRef.current = setTimeout(() => commit(null), trailingMs);
+            timerRef.current = setTimeout(() => { commit(null); }, trailingMs);
             return;
         }
 
@@ -176,7 +177,7 @@ export function useStickyString(
         if (current === null || elapsed >= minShowMs) {
             commit(value);
         } else {
-            timerRef.current = setTimeout(() => commit(value), minShowMs - elapsed);
+            timerRef.current = setTimeout(() => { commit(value); }, minShowMs - elapsed);
         }
     }, [value, minShowMs, trailingMs]);
 
@@ -216,7 +217,7 @@ export function useWebviewListener<K extends WebviewInboundType>(
             }
         };
         window.addEventListener('message', handler);
-        return () => window.removeEventListener('message', handler);
+        return () => { window.removeEventListener('message', handler); };
     }, [type]);
 }
 
@@ -234,7 +235,7 @@ export function useKeyPressedListener(
             handleRef.current(event);
         };
         document.addEventListener("keydown", onKeyDown);
-        return () => document.removeEventListener("keydown", onKeyDown);
+        return () => { document.removeEventListener("keydown", onKeyDown); };
     }, []);
 }
 
@@ -271,6 +272,8 @@ function postWebviewMessage<K extends WebviewOutboundType>(
             }
             return;
         }
+        case null:
+            break;
     }
     console.error("No webview provider found to send message");
 }
@@ -328,7 +331,7 @@ export function webviewSendAndGet<K extends WebviewRequestType>(
 
         pendingSyncRequests.set(requestId, {
             type,
-            resolve: (value) => resolve(value as WebviewRequestResponse<K>),
+            resolve: (value) => { resolve(value); },
             reject,
             timeout,
         });

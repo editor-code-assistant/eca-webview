@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { webviewSend } from '../../hooks';
-import { clearLogEntries, LogEntry, selectLogEntries, selectLogSessionIds } from '../../redux/slices/logs';
+import type { LogEntry} from '../../redux/slices/logs';
+import { clearLogEntries, selectLogEntries, selectLogSessionIds } from '../../redux/slices/logs';
 import { useEcaDispatch } from '../../redux/store';
 import './LogsTab.scss';
 
@@ -83,7 +84,7 @@ export function LogsTab() {
                     Session:
                     <select
                         value={sessionFilter}
-                        onChange={(e) => setSessionFilter(e.target.value)}>
+                        onChange={(e) => { setSessionFilter(e.target.value); }}>
                         <option value="__all__">All</option>
                         {sessionIds.length > 0 && <option value="__none__">(pre-session)</option>}
                         {sessionIds.map((id) => (
@@ -96,7 +97,7 @@ export function LogsTab() {
                     <input
                         type="checkbox"
                         checked={errorsOnly}
-                        onChange={(e) => setErrorsOnly(e.target.checked)} />
+                        onChange={(e) => { setErrorsOnly(e.target.checked); }} />
                     Errors only
                 </label>
 
@@ -104,7 +105,7 @@ export function LogsTab() {
                     <input
                         type="checkbox"
                         checked={autoscroll}
-                        onChange={(e) => setAutoscroll(e.target.checked)} />
+                        onChange={(e) => { setAutoscroll(e.target.checked); }} />
                     Autoscroll
                 </label>
 

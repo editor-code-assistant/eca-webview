@@ -1,5 +1,5 @@
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { ToolCallDetails } from '../../protocol';
+import type { ToolCallDetails } from '../../protocol';
 import './ApprovalActions.scss';
 
 interface ApprovalActionsProps {
@@ -29,7 +29,7 @@ export function ApprovalActions({ waitingApproval, details, onApprove, onApprove
     const rememberKeys = shellDetails
         ? [...new Set(shellDetails.commands
             .filter((cmd) => cmd.approvalKey && !cmd.remembered)
-            .map((cmd) => cmd.approvalKey as string))]
+            .map((cmd) => cmd.approvalKey!))]
         : [];
     // When remembering would save nothing new (no generalizable command, or
     // everything already remembered), hide the remember action entirely.

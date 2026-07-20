@@ -1,8 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
-import { ChatContext, ChatSummary } from "../../protocol";
-import { beginResume, clearPendingQuestion, ChatPreContext, CursorFocus, incRequestId, removeFlagMessage, resetChat, rollbackResume, setResumableChats } from "../slices/chat";
-import { ThunkApiType } from "../store";
+import type { ChatContext, ChatSummary } from "../../protocol";
+import type { ChatPreContext, CursorFocus} from "../slices/chat";
+import { beginResume, clearPendingQuestion, incRequestId, removeFlagMessage, resetChat, rollbackResume, setResumableChats } from "../slices/chat";
+import type { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
     switch (context.type) {
@@ -16,16 +17,20 @@ function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): Chat
             } else {
                 return null;
             }
-        default:
+        case 'file':
+        case 'directory':
+        case 'web':
+        case 'repoMap':
+        case 'mcpResource':
             return context;
     }
 }
 
 export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: string, model?: string, agent: string, variant?: string | null }, ThunkApiType>(
     "chat/sendPrompt",
-    async ({ prompt, chatId, model, agent, variant }, { dispatch, getState }) => {
+    ({ prompt, chatId, model, agent, variant }, { dispatch, getState }) => {
         const state = getState();
-        let requestId = state.chat.chats[chatId].lastRequestId;
+        const requestId = state.chat.chats[chatId].lastRequestId;
 
         dispatch(incRequestId(chatId));
 
@@ -53,35 +58,35 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
 
 export const toolCallApprove = createAsyncThunk<void, { chatId: string, toolCallId: string, save?: string }, ThunkApiType>(
     "chat/toolCallApprove",
-    async ({ chatId, toolCallId, save }, _) => {
+    ({ chatId, toolCallId, save }) => {
         webviewSend('chat/toolCallApprove', { chatId, toolCallId, save });
     }
 );
 
 export const toolCallReject = createAsyncThunk<void, { chatId: string, toolCallId: string }, ThunkApiType>(
     "chat/toolCallReject",
-    async ({ chatId, toolCallId }, _) => {
+    ({ chatId, toolCallId }) => {
         webviewSend('chat/toolCallReject', { chatId, toolCallId });
     }
 );
 
 export const stopPrompt = createAsyncThunk<void, { chatId: string }, ThunkApiType>(
     "chat/stopPrompt",
-    async ({ chatId }, _) => {
+    ({ chatId }) => {
         webviewSend('chat/promptStop', { chatId });
     }
 );
 
 export const steerPrompt = createAsyncThunk<void, { chatId: string, message: string }, ThunkApiType>(
     "chat/steerPrompt",
-    async ({ chatId, message }, _) => {
+    ({ chatId, message }) => {
         webviewSend('chat/promptSteer', { chatId, message });
     }
 );
 
 export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiType>(
     "chat/delete",
-    async ({ chatId }, { dispatch }) => {
+    ({ chatId }, { dispatch }) => {
         webviewSend('chat/delete', { chatId });
         dispatch(resetChat(chatId));
     }
@@ -89,21 +94,21 @@ export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiTyp
 
 export const rollbackChat = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/rollback",
-    async ({ chatId, contentId }, _) => {
+    ({ chatId, contentId }) => {
         webviewSend('chat/rollback', { chatId, contentId });
     }
 );
 
 export const addFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/addFlag",
-    async ({ chatId, contentId }, _) => {
+    ({ chatId, contentId }) => {
         webviewSend('chat/addFlag', { chatId, contentId });
     }
 );
 
 export const removeFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/removeFlag",
-    async ({ chatId, contentId }, { dispatch }) => {
+    ({ chatId, contentId }, { dispatch }) => {
         webviewSend('chat/removeFlag', { chatId, contentId });
         dispatch(removeFlagMessage({ chatId, contentId }));
     }
@@ -111,35 +116,35 @@ export const removeFlag = createAsyncThunk<void, { chatId: string, contentId: st
 
 export const forkFromFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/fork",
-    async ({ chatId, contentId }, _) => {
+    ({ chatId, contentId }) => {
         webviewSend('chat/fork', { chatId, contentId });
     }
 );
 
 export const queryContext = createAsyncThunk<void, { chatId?: string, query: string, contexts: ChatPreContext[] }, ThunkApiType>(
     "chat/queryContext",
-    async ({ chatId, query, contexts }, _) => {
+    ({ chatId, query, contexts }) => {
         webviewSend('chat/queryContext', { chatId, query, contexts });
     }
 );
 
 export const queryCommands = createAsyncThunk<void, { chatId?: string, query: string }, ThunkApiType>(
     "chat/queryCommands",
-    async ({ chatId, query }, _) => {
+    ({ chatId, query }) => {
         webviewSend('chat/queryCommands', { chatId, query });
     }
 );
 
 export const queryFiles = createAsyncThunk<void, { chatId?: string, query: string }, ThunkApiType>(
     "chat/queryFiles",
-    async ({ chatId, query }, _) => {
+    ({ chatId, query }) => {
         webviewSend('chat/queryFiles', { chatId, query });
     }
 );
 
 export const answerQuestion = createAsyncThunk<void, { chatId: string, answer: string }, ThunkApiType>(
     "chat/answerQuestion",
-    async ({ chatId, answer }, { dispatch, getState }) => {
+    ({ chatId, answer }, { dispatch, getState }) => {
         const state = getState();
         const chat = state.chat.chats[chatId];
         if (!chat?.pendingQuestion) return;
@@ -152,7 +157,7 @@ export const answerQuestion = createAsyncThunk<void, { chatId: string, answer: s
 
 export const cancelQuestion = createAsyncThunk<void, { chatId: string }, ThunkApiType>(
     "chat/cancelQuestion",
-    async ({ chatId }, { dispatch, getState }) => {
+    ({ chatId }, { dispatch, getState }) => {
         const state = getState();
         const chat = state.chat.chats[chatId];
         if (!chat?.pendingQuestion) return;
@@ -188,7 +193,7 @@ export const listChats = createAsyncThunk<ChatSummary[], void, ThunkApiType>(
                 dispatch(setResumableChats([]));
                 return [];
             }
-            const chats: ChatSummary[] = ((result.chats ?? []) as ChatSummary[]).filter(
+            const chats: ChatSummary[] = ((result.chats ?? [])).filter(
                 (c) => c.id && !c.id.startsWith('subagent-'),
             );
             dispatch(setResumableChats(chats));
@@ -263,7 +268,7 @@ export const openChat = createAsyncThunk<
 
 export const sendPromptToCurrentChat = createAsyncThunk<void, { prompt: string }, ThunkApiType>(
     "chat/sendPromptToCurrentChat",
-    async ({ prompt }, { dispatch, getState }) => {
+    ({ prompt }, { dispatch, getState }) => {
         const state = getState();
         const chatId = state.chat.selectedChat;
         const chat = state.chat.chats[chatId];
@@ -281,7 +286,7 @@ export const sendPromptToCurrentChat = createAsyncThunk<void, { prompt: string }
             : state.server.config.chat.selectedVariant;
 
         if (model && agent) {
-            dispatch(sendPrompt({ prompt, chatId, model, agent, variant }));
+            void dispatch(sendPrompt({ prompt, chatId, model, agent, variant }));
         }
     }
 );

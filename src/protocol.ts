@@ -293,7 +293,7 @@ interface ChatToolCallRejectedContent {
     id: string;
     name: string;
     server?: string;
-    arguments: { [key: string]: string };
+    arguments: Record<string, string>;
     details?: ToolCallDetails;
     summary?: string;
 }
@@ -457,7 +457,7 @@ export interface ChatQueryCommandsParams {
 
 export interface ChatQueryCommandsResponse {
     chatId: string;
-    contexts: ChatCommand[];
+    commands: ChatCommand[];
 }
 
 export interface ChatQueryFilesParams {
@@ -478,11 +478,11 @@ export interface ChatCommand {
     name: string;
     description: string;
     type: 'mcpPrompt' | 'native';
-    arguments?: Array<{
+    arguments?: {
         name: string;
         description?: string;
         required: boolean;
-    }> | null;
+    }[] | null;
 }
 
 export interface ChatClearedParams {
@@ -583,7 +583,7 @@ interface EcaServerUpdatedParams {
 export type ToolServerUpdatedParams = EcaServerUpdatedParams | MCPServerUpdatedParams;
 
 export interface ServerToolParameters {
-    properties: { [key: string]: { type: string, description?: string } },
+    properties: Record<string, { type: string, description?: string }>,
     required: string[],
 }
 

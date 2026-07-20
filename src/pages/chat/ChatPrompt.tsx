@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 import { SyncLoader } from "react-spinners";
 import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
-import { State, useEcaDispatch } from "../../redux/store";
+import type { State} from "../../redux/store";
+import { useEcaDispatch } from "../../redux/store";
 import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
 import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { selectInitProgressString, setSelectedVariant } from "../../redux/slices/server";
@@ -13,7 +14,7 @@ import { ChatContexts } from "./ChatContexts";
 import { ChatFileMentions } from "./ChatFileMentions";
 import { ChatResumePicker } from "../components/ChatResumePicker";
 import './ChatPrompt.scss';
-import { ChatCommand } from "../../protocol";
+import type { ChatCommand } from "../../protocol";
 import { editorReadInput } from "../../redux/thunks/editor";
 
 interface ChatPromptProps {
@@ -91,7 +92,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const initProgress = useStickyString(useSelector(selectInitProgressString));
 
     const onStop = () => {
-        dispatch(stopPrompt({ chatId }));
+        void dispatch(stopPrompt({ chatId }));
     };
     const waitingApproval = useSelector((state: State) => {
         const messages = state.chat.chats[chatId]?.messages ?? [];
@@ -118,9 +119,9 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     // chat picks up a fresh list.
     useEffect(() => {
         if (enabled && isResumableSlot) {
-            dispatch(listChats());
+            void dispatch(listChats());
         }
-    }, [enabled, isResumableSlot, chatId]);
+    }, [chatId, dispatch, enabled, isResumableSlot]);
 
     useEffect(() => {
         if (selectModel !== undefined) {
@@ -139,9 +140,9 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
         if (!loading && pendingPrompts.length > 0 && selectedAgent) {
             const nextPrompt = pendingPrompts[0];
             dispatch(dequeuePendingPrompt(chatId));
-            dispatch(sendPrompt({ prompt: nextPrompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
+            void dispatch(sendPrompt({ prompt: nextPrompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
         }
-    }, [loading]);
+    }, [chatId, dispatch, loading, pendingPrompts, selectedAgent, selectedModel, selectedVariant]);
 
     const sendPromptValue = () => {
         const prompt = promptValue.trim();
@@ -149,7 +150,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
 
         // Answer mode: send as question answer instead of chat prompt
         if (isAnswerMode) {
-            dispatch(answerQuestion({ chatId, answer: prompt }));
+            void dispatch(answerQuestion({ chatId, answer: prompt }));
             setPromptValue('');
             return;
         }
@@ -159,10 +160,10 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
             setHistoryIndex(-1);
             setDraftPrompt('');
             if (loading) {
-                dispatch(steerPrompt({ chatId, message: prompt }));
+            void dispatch(steerPrompt({ chatId, message: prompt }));
                 dispatch(setSteerMessage({ chatId, message: prompt }));
             } else {
-                dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
+            void dispatch(sendPrompt({ prompt: prompt, chatId, model: selectedModel, agent: selectedAgent, variant: selectedVariant }));
             }
             setPromptValue('')
         }
@@ -218,12 +219,12 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
         //   3. Blur the textarea so window-level shortcuts work.
         if (e.key === "Escape" && !inputCompleting) {
             if (isQuestionPending || isAnswerMode) {
-                dispatch(cancelQuestion({ chatId }));
+        void dispatch(cancelQuestion({ chatId }));
                 e.preventDefault();
                 return;
             }
             if (loading) {
-                dispatch(stopPrompt({ chatId }));
+        void dispatch(stopPrompt({ chatId }));
                 e.preventDefault();
                 return;
             }
@@ -242,7 +243,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
             e.preventDefault();
             setShake(true);
             // Duration matches the prompt-shake keyframes in ChatPrompt.scss.
-            window.setTimeout(() => setShake(false), 320);
+            window.setTimeout(() => { setShake(false); }, 320);
             return;
         }
 
@@ -368,10 +369,10 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
             const arg = args[i];
             prompt += " ";
             const message = `Arg: ${arg.name}\nDescription: ${arg.description}\n\nInput value:`;
-            const userArgInput = (await dispatch(editorReadInput({ message: message }))).payload as (string | null);
+            const userArgInput = await dispatch(editorReadInput({ message })).unwrap();
 
             if (userArgInput) {
-                if (userArgInput.indexOf(' ') >= 0) {
+                if (userArgInput.includes(' ')) {
                     prompt += `"${userArgInput}"`;
                 } else {
                     prompt += userArgInput;
@@ -436,7 +437,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.22, ease: "easeOut" }}
-                        onClick={() => setResumePickerOpen(true)}
+                        onClick={() => { setResumePickerOpen(true); }}
                         onKeyDown={(e) => {
                             // Keyboard parity with the click handler — Enter
                             // and Space open the picker. We deliberately
@@ -459,14 +460,14 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                 <ChatResumePicker
                     chats={resumableChats}
                     originatingChatId={chatId}
-                    onClose={() => setResumePickerOpen(false)}
+                    onClose={() => { setResumePickerOpen(false); }}
                 />
             )}
             <ChatContexts enabled={enabled} chatId={chatId} />
             <ChatCommands
                 input={inputRef.current}
                 chatId={chatId}
-                onCommandSelected={onCommandSelected}
+                        onCommandSelected={(command) => { void onCommandSelected(command); }}
                 onCompleting={setCommandCompleting}
             />
             <ChatFileMentions
@@ -483,8 +484,8 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                 onChange={onPromptChange}
                 onKeyDown={handleKeyDown}
                 onPaste={onPaste}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+                onFocus={() => { setIsFocused(true); }}
+                onBlur={() => { setIsFocused(false); }}
                 placeholder={placeholderText}
                 className="field"
                 disabled={isQuestionPending && !isAnswerMode}

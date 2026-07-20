@@ -1,4 +1,4 @@
-import { ContextBreakdown } from '../../protocol';
+import type { ContextBreakdown } from '../../protocol';
 import './ContextBar.scss';
 
 // Local humanizer (mirrors the one in ChatSubHeader) so the legend can

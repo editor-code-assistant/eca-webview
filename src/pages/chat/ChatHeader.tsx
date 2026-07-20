@@ -2,8 +2,10 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { webviewSend } from '../../hooks';
-import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
-import { State, useEcaDispatch } from '../../redux/store';
+import type { Chat} from '../../redux/slices/chat';
+import { newChat, renameChat, selectChat } from '../../redux/slices/chat';
+import type { State} from '../../redux/store';
+import { useEcaDispatch } from '../../redux/store';
 import { deleteChat } from '../../redux/thunks/chat';
 import { editorName } from '../../util';
 import './ChatHeader.scss';
@@ -34,10 +36,10 @@ export const ChatHeader = memo(({ chats }: Props) => {
     }, [renamingChatId]);
 
     const chatDelete = (chat: Chat) => {
-        dispatch(deleteChat({ chatId: chat.id }));
+        void dispatch(deleteChat({ chatId: chat.id }));
     };
 
-    const chatNew = (_: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
+    const chatNew = () => {
         dispatch(newChat());
     };
 
@@ -84,7 +86,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
             }
         };
         document.addEventListener('eca:requestRenameCurrent', handler);
-        return () => document.removeEventListener('eca:requestRenameCurrent', handler);
+        return () => { document.removeEventListener('eca:requestRenameCurrent', handler); };
     }, [chats, selectedChat]);
 
     // The "empty placeholder" chat is now identified by the `isEmpty`
@@ -118,7 +120,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
 
                     if (isEmpty) {
                         return (
-                            <span onClick={() => selectTab(chat.id)}
+                            <span onClick={() => { selectTab(chat.id); }}
                                 key={`chat-${chat.id}`}
                                 className={`chat empty ${isSelected ? 'selected' : ''}`}>
                                 Empty chat
@@ -134,7 +136,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
                     }
 
                     return (
-                        <span onClick={() => selectTab(chat.id)}
+                        <span onClick={() => { selectTab(chat.id); }}
                             onDoubleClick={(e) => {
                                 e.stopPropagation();
                                 startRename(chat);
@@ -146,10 +148,10 @@ export const ChatHeader = memo(({ chats }: Props) => {
                                     ref={renameInputRef}
                                     className="rename-input"
                                     value={renameValue}
-                                    onChange={(e) => setRenameValue(e.target.value)}
+                                    onChange={(e) => { setRenameValue(e.target.value); }}
                                     onKeyDown={handleRenameKeyDown}
                                     onBlur={commitRename}
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={(e) => { e.stopPropagation(); }}
                                 />
                             ) : (
                                 chatTitle(chat)

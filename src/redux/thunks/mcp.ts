@@ -1,52 +1,52 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
-import {
+import type {
     McpAddServerRequest,
     McpAddServerResponse,
     McpRemoveServerRequest,
     McpRemoveServerResponse,
 } from "../../protocol";
-import { ThunkApiType } from "../store";
+import type { ThunkApiType } from "../store";
 import type { McpUpdateServerRequest } from '../../webviewProtocol';
 
 export const startServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/startServer",
-    async ({ name }, {}) => {
+    ({ name }) => {
         webviewSend('mcp/startServer', { name });
     }
 );
 
 export const stopServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/stopServer",
-    async ({ name }, {}) => {
+    ({ name }) => {
         webviewSend('mcp/stopServer', { name });
     }
 );
 
 export const connectServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/connectServer",
-    async ({ name }, {}) => {
+    ({ name }) => {
         webviewSend('mcp/connectServer', { name });
     }
 );
 
 export const logoutServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/logoutServer",
-    async ({ name }, {}) => {
+    ({ name }) => {
         webviewSend('mcp/logoutServer', { name });
     }
 );
 
 export const disableServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/disableServer",
-    async ({ name }, {}) => {
+    ({ name }) => {
         webviewSend('mcp/disableServer', { name });
     }
 );
 
 export const enableServer = createAsyncThunk<void, { name: string }, ThunkApiType>(
     "mcp/enableServer",
-    async ({ name }, {}) => {
+    ({ name }) => {
         webviewSend('mcp/enableServer', { name });
     }
 );

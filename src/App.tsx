@@ -2,15 +2,12 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import Chat from "./pages";
-import { AppErrorFallback, RouteErrorFallback, captureComponentStack } from "./pages/components/ErrorFallback";
+import { captureComponentStack } from "./errorReporting";
+import { AppErrorFallback, RouteErrorFallback } from "./pages/components/ErrorFallback";
 import RootWrapper from "./pages/RootWrapper";
 import { Settings } from "./pages/settings/Settings";
 import { store } from "./redux/store";
-
-export const ROUTES = {
-    CHAT: "/",
-    SETTINGS: "/settings",
-};
+import { ROUTES } from "./routes";
 
 const router = createMemoryRouter([
     {

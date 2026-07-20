@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { PendingQuestion } from '../../protocol';
+import type { PendingQuestion } from '../../protocol';
 import { useEcaDispatch } from '../../redux/store';
 import { answerQuestion, cancelQuestion } from '../../redux/thunks/chat';
 import './ChatQuestion.scss';
@@ -13,11 +13,11 @@ export const ChatQuestion = memo(({ chatId, question }: Props) => {
     const dispatch = useEcaDispatch();
 
     const handleOptionClick = (label: string) => {
-        dispatch(answerQuestion({ chatId, answer: label }));
+        void dispatch(answerQuestion({ chatId, answer: label }));
     };
 
     const handleCancel = () => {
-        dispatch(cancelQuestion({ chatId }));
+        void dispatch(cancelQuestion({ chatId }));
     };
 
     return (
@@ -25,7 +25,7 @@ export const ChatQuestion = memo(({ chatId, question }: Props) => {
             <div className="chat-question__header">Q: {question.question}</div>
             <div className="chat-question__options">
                 {(question.options ?? []).map((option, index) => (
-                    <div key={index} className="chat-question__option" onClick={() => handleOptionClick(option.label)}>
+                    <div key={index} className="chat-question__option" onClick={() => { handleOptionClick(option.label); }}>
                         <span className="chat-question__option-label">{option.label}</span>
                         {option.description && (
                             <span className="chat-question__option-desc">{option.description}</span>

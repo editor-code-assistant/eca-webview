@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Job, JobStatus } from '../../protocol';
+import type { Job, JobStatus } from '../../protocol';
 import { selectJobs } from '../../redux/slices/jobs';
 import { useEcaDispatch } from '../../redux/store';
 import { fetchJobsList, killJob } from '../../redux/thunks/jobs';
@@ -71,8 +71,8 @@ function JobCard({ job }: { job: Job }) {
         const timer = setInterval(() => {
             setElapsed(formatElapsed(job));
         }, 1000);
-        return () => clearInterval(timer);
-    }, [job.status, job.startedAt, job.elapsed]);
+        return () => { clearInterval(timer); };
+    }, [job]);
 
     const handleKill = async () => {
         if (killing) return;
@@ -103,7 +103,7 @@ function JobCard({ job }: { job: Job }) {
                 <span className="job-actions">
                     <button
                         className="job-action-btn"
-                        onClick={() => setShowOutput(!showOutput)}
+                        onClick={() => { setShowOutput(!showOutput); }}
                         title={showOutput ? 'Hide output' : 'View output'}
                     >
                         <i className={`codicon ${showOutput ? 'codicon-chevron-up' : 'codicon-terminal'}`}></i>
@@ -111,7 +111,7 @@ function JobCard({ job }: { job: Job }) {
                     {job.status === 'running' && (
                         <button
                             className="job-action-btn kill-btn"
-                            onClick={handleKill}
+                            onClick={() => { void handleKill(); }}
                             disabled={killing}
                             title="Kill job"
                         >
@@ -133,7 +133,7 @@ export function JobsTab() {
     const jobs = useSelector(selectJobs);
 
     useEffect(() => {
-        dispatch(fetchJobsList());
+        void dispatch(fetchJobsList());
     }, [dispatch]);
 
     const grouped = useMemo(() => groupJobsByChat(jobs), [jobs]);

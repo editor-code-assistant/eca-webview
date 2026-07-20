@@ -211,7 +211,7 @@ export interface WebviewNotificationMap {
     'chat/queryContext': {
         chatId?: string;
         query: string;
-        contexts: Array<ChatContext | { type: 'cursor' }>;
+        contexts: (ChatContext | { type: 'cursor' })[];
     };
     'chat/queryCommands': { chatId?: string; query: string };
     'chat/queryFiles': { chatId?: string; query: string };
@@ -270,7 +270,7 @@ export interface WebviewInboundMap {
     'chat/exportCurrent': undefined;
     'chat/stopCurrent': undefined;
     'chat/focusPrompt': undefined;
-    'tool/serversUpdated': ToolServerUpdatedParams;
+    'tool/serversUpdated': ToolServerUpdatedParams[];
     'tool/serverRemoved': ToolServerRemovedParams;
     'config/updated': ConfigUpdatedParams;
     'providers/updated': ProviderStatus;

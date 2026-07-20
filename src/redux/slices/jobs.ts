@@ -1,16 +1,17 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Job } from "../../protocol";
-import { State } from "../store";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { Job } from "../../protocol";
+import type { State } from "../store";
 
 interface JobsState {
     jobs: Job[];
 }
 
+const initialState: JobsState = { jobs: [] };
+
 export const jobsSlice = createSlice({
     name: 'jobs',
-    initialState: {
-        jobs: [],
-    } as JobsState,
+    initialState,
     reducers: {
         setJobs: (state, action: PayloadAction<Job[]>) => {
             state.jobs = action.payload;

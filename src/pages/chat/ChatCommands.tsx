@@ -1,8 +1,9 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { TooltipRefProps } from "react-tooltip";
-import { ChatCommand } from "../../protocol";
-import { State, useEcaDispatch } from "../../redux/store";
+import type { TooltipRefProps } from "react-tooltip";
+import type { ChatCommand } from "../../protocol";
+import type { State} from "../../redux/store";
+import { useEcaDispatch } from "../../redux/store";
 import { queryCommands } from "../../redux/thunks/chat";
 import { ToolTip } from "../components/ToolTip";
 import './ChatCommands.scss';
@@ -16,7 +17,7 @@ interface Props {
 }
 
 function icon(command: ChatCommand): React.ReactNode {
-    let icon = '';
+    let icon: string;
     switch (command.type) {
         case 'mcpPrompt':
             icon = 'debug-line-by-line';
@@ -48,12 +49,12 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
 
     useEffect(() => {
         if (isCommand(input)) {
-            dispatch(queryCommands({
+            void dispatch(queryCommands({
                 chatId,
                 query: query,
             }));
         }
-    }, [promptValue]);
+    }, [chatId, dispatch, input, promptValue, query]);
 
     useEffect(() => {
         if (show) {
@@ -63,13 +64,13 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
             openPopupRef.current?.close();
             onCompleting(false);
         }
-    }, [show]);
+    }, [onCompleting, show]);
 
-    const selectCommand = (command: ChatCommand, event: Pick<Event, 'preventDefault'>) => {
+    const selectCommand = useCallback((command: ChatCommand, event: Pick<Event, 'preventDefault'>) => {
         setShow(false);
         event.preventDefault();
         onCommandSelected(command);
-    }
+    }, [onCommandSelected]);
 
     useEffect(() => {
         setSelectedIndex(0);
@@ -81,7 +82,7 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
         const updateShow = () => {
             setShow(isCommand(input) && !input?.value.includes(' '));
         }
-        const handleBlur = () => setShow(false);
+        const handleBlur = () => { setShow(false); };
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!show || !commands || commands.length === 0) return;
@@ -110,7 +111,7 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
             input.removeEventListener('blur', handleBlur);
             input.removeEventListener('keydown', handleKeyDown);
         };
-    }, [input?.value, commands, selectedIndex]);
+    }, [commands, input, selectCommand, selectedIndex, show]);
 
     return show ? (
         <ToolTip
@@ -123,10 +124,10 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
             className="scrollable commands-container"
             place="top-start">
             <ul className="commands">
-                {commands && commands.map((command, index) => (
-                    <li onClick={(e) => selectCommand(command, e)}
-                        onMouseDown={(e) => selectCommand(command, e)}
-                        onMouseEnter={() => setSelectedIndex(index)}
+                {commands?.map((command, index) => (
+                    <li onClick={(e) => { selectCommand(command, e); }}
+                        onMouseDown={(e) => { selectCommand(command, e); }}
+                        onMouseEnter={() => { setSelectedIndex(index); }}
                         key={index}
                         className={`item ${index === selectedIndex ? 'selected' : ''}`}>
                         {icon(command)}

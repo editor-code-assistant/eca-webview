@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { JobOutputLine } from '../../protocol';
+import { normalizeError } from '../../errorReporting';
+import type { JobOutputLine } from '../../protocol';
 import { fetchJobOutput } from '../../redux/thunks/jobs';
 import { useEcaDispatch } from '../../redux/store';
 import './JobOutput.scss';
@@ -24,8 +25,8 @@ export function JobOutput({ jobId }: Props) {
                 setLines(result.lines ?? []);
                 setLoading(false);
             })
-            .catch((err) => {
-                setError(err?.message || 'Failed to fetch output');
+            .catch((error: unknown) => {
+                setError(normalizeError(error).message);
                 setLoading(false);
             });
     }, [jobId, dispatch]);

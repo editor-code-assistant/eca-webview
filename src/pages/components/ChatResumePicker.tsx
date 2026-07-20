@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChatSummary } from "../../protocol";
+import type { ChatSummary } from "../../protocol";
 import { useEcaDispatch } from "../../redux/store";
 import { openChat } from "../../redux/thunks/chat";
 import { relativeTime } from "../../util";
@@ -182,7 +182,7 @@ export function ChatResumePicker({ chats, originatingChatId, onClose }: ChatResu
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.98 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    onMouseDown={e => e.stopPropagation()}
+                    onMouseDown={e => { e.stopPropagation(); }}
                     onKeyDown={onKeyDown}
                     role="dialog"
                     aria-modal="true"
@@ -223,8 +223,8 @@ export function ChatResumePicker({ chats, originatingChatId, onClose }: ChatResu
                                     className={`resume-picker-row${i === selectedIndex ? ' selected' : ''}`}
                                     role="option"
                                     aria-selected={i === selectedIndex}
-                                    onMouseEnter={() => setSelectedIndex(i)}
-                                    onClick={() => resume(c)}
+                                    onMouseEnter={() => { setSelectedIndex(i); }}
+                                    onClick={() => { resume(c); }}
                                 >
                                     <div className="resume-picker-row-title">{displayTitle(c)}</div>
                                     <div className="resume-picker-row-meta">

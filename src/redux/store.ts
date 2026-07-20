@@ -26,9 +26,9 @@ export const store = setupStore();
 
 export type State = ReturnType<typeof reducers>;
 
-export type ThunkApiType = {
+export interface ThunkApiType {
   state: State;
-};
+}
 
 export type EcaDispatch = typeof store.dispatch;
 

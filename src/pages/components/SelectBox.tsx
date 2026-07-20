@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { TooltipRefProps } from 'react-tooltip';
+import type { TooltipRefProps } from 'react-tooltip';
 import './SelectBox.scss';
 import { ToolTip } from './ToolTip';
 
@@ -28,7 +28,7 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
         } else {
             setHighlightedIndex(-1);
         }
-    }, [selected]);
+    }, [currentOption, options, selected]);
 
     // Scroll highlighted option into view
     useEffect(() => {
@@ -72,7 +72,7 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
     return (
         <div className={`select-box${className ? ` ${className}` : ''}`}>
             <button
-                onClick={() => setSelected(!selected)}
+                onClick={() => { setSelected(!selected); }}
                 onKeyDown={handleKeyDown}
                 data-tooltip-id={id}
                 title={title}
@@ -91,7 +91,7 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
                 clickable
                 place="top-start">
                 {options.map((option, index) => (
-                    <span onClick={() => onSelectedOption(option)}
+                    <span onClick={() => { onSelectedOption(option); }}
                         ref={el => { optionRefs.current[index] = el; }}
                         key={`select-option-${option}`}
                         className={`option${option === currentOption ? ' active' : ''}${index === highlightedIndex ? ' highlighted' : ''}`}>

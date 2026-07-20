@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, ContextBreakdown, PendingQuestion, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, ContextBreakdown, PendingQuestion, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
 import { newChatId } from "../../util";
 
 interface ChatMessageText {
@@ -146,7 +147,7 @@ function makeEmptyChat(localId: number): Chat {
 // requires this; you can't compute initial state inside the slice
 // definition without losing some type inference).
 const _initialChat = makeEmptyChat(1);
-const initialChats: { [key: string]: Chat } = {
+const initialChats: Record<string, Chat> = {
     [_initialChat.id]: _initialChat,
 };
 
@@ -164,14 +165,14 @@ interface SubagentMapping {
 }
 
 interface ChatState {
-    chats: { [key: string]: Chat },
+    chats: Record<string, Chat>,
     chatLocalId: number,
     selectedChat: string,
     contexts?: ChatContext[],
     commands?: ChatCommand[],
     files?: ChatFile[],
     cursorFocus?: CursorFocus,
-    subagentChatIdToToolCallId: { [subagentChatId: string]: SubagentMapping },
+    subagentChatIdToToolCallId: Record<string, SubagentMapping>,
     promptHistory: string[],
     /**
      * Cached result of the most recent `chat/list` RPC. Used by the
@@ -183,6 +184,22 @@ interface ChatState {
     resumableChats?: ChatSummary[],
 }
 
+interface ChatConfigSelection {
+    selectModel?: string;
+    selectAgent?: ChatAgent;
+    selectVariant?: string | null;
+    selectTrust?: boolean;
+}
+
+interface ChatConfigPayload {
+    chatId: string;
+    chat?: ChatConfigSelection;
+}
+
+interface GlobalChatConfigPayload {
+    chat?: ChatConfigSelection;
+}
+
 const getCurrentChat = (state: ChatState): Chat => {
     return state.chats[state.selectedChat];
 };
@@ -190,13 +207,18 @@ const getCurrentChat = (state: ChatState): Chat => {
 /**
  * Check if a content event is a task tool call (server="eca", name="task").
  */
-function isTaskToolCall(content: ChatContent): boolean {
-    if (content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
+type ToolCallContent = Extract<ChatContent, {
+    type: 'toolCallPrepare' | 'toolCallRun' | 'toolCallRunning' | 'toolCalled' | 'toolCallRejected';
+}>;
+
+function isToolCallContent(content: ChatContent): content is ToolCallContent {
+    return content.type === 'toolCallPrepare' || content.type === 'toolCallRun'
         || content.type === 'toolCallRunning' || content.type === 'toolCalled'
-        || content.type === 'toolCallRejected') {
-        return content.server === 'eca' && content.name === 'task';
-    }
-    return false;
+        || content.type === 'toolCallRejected';
+}
+
+function isTaskToolCall(content: ToolCallContent): boolean {
+    return content.server === 'eca' && content.name === 'task';
 }
 
 /**
@@ -263,7 +285,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'toolCallRun': {
             const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let tool = messages[existingIndex] as ChatMessageToolCall;
+                const tool = messages[existingIndex] as ChatMessageToolCall;
                 tool.status = 'run';
                 tool.manualApproval = content.manualApproval;
                 tool.summary = content.summary;
@@ -276,7 +298,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'toolCallRunning': {
             const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let tool = messages[existingIndex] as ChatMessageToolCall;
+                const tool = messages[existingIndex] as ChatMessageToolCall;
                 tool.status = 'running';
                 tool.summary = content.summary;
                 tool.details = content.details;
@@ -288,7 +310,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'toolCallRejected': {
             const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let tool = messages[existingIndex] as ChatMessageToolCall;
+                const tool = messages[existingIndex] as ChatMessageToolCall;
                 tool.status = 'rejected';
                 tool.details = content.details;
                 tool.summary = content.summary;
@@ -299,7 +321,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'toolCalled': {
             const existingIndex = messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let tool = messages[existingIndex] as ChatMessageToolCall;
+                const tool = messages[existingIndex] as ChatMessageToolCall;
                 tool.outputs = content.outputs;
                 tool.status = content.error ? 'failed' : 'succeeded';
                 tool.details = content.details;
@@ -321,7 +343,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'reasonText': {
             const existingIndex = messages.findIndex(msg => msg.type === 'reason' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let reason = messages[existingIndex] as ChatMessageReason;
+                const reason = messages[existingIndex] as ChatMessageReason;
                 const newReason = { ...reason } as ChatMessageReason;
                 newReason.content = (newReason.content || '') + content.text;
                 messages[existingIndex] = newReason;
@@ -331,7 +353,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'reasonFinished': {
             const existingIndex = messages.findIndex(msg => msg.type === 'reason' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let reason = messages[existingIndex] as ChatMessageReason;
+                const reason = messages[existingIndex] as ChatMessageReason;
                 const newReason = { ...reason } as ChatMessageReason;
                 newReason.status = 'done';
                 newReason.totalTimeMs = content.totalTimeMs;
@@ -352,7 +374,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
         case 'hookActionFinished': {
             const existingIndex = messages.findIndex(msg => msg.type === 'hook' && msg.id === content.id);
             if (existingIndex !== -1) {
-                let hook = messages[existingIndex] as ChatMessageHook;
+                const hook = messages[existingIndex] as ChatMessageHook;
                 const newHook = { ...hook } as ChatMessageHook;
                 newHook.status = 'finished';
                 newHook.statusCode = content.status;
@@ -370,6 +392,11 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
             });
             break;
         }
+        case 'progress':
+        case 'usage':
+        case 'metadata':
+        case 'url':
+            break;
         // progress, usage, metadata, url are not message-level — handled separately
     }
 }
@@ -405,10 +432,10 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
         // Update the parent tool call's details with step info from subagent tool calls
         if (content.type === 'toolCallRunning' || content.type === 'toolCallRun') {
             if (content.details?.type === 'subagent') {
-                const details = content.details as SubagentDetails;
+                const details = content.details;
                 if (details.step !== undefined && toolCall.details?.type === 'subagent') {
-                    (toolCall.details as SubagentDetails).step = details.step;
-                    (toolCall.details as SubagentDetails).maxSteps = details.maxSteps;
+                    (toolCall.details).step = details.step;
+                    (toolCall.details).maxSteps = details.maxSteps;
                 }
             }
         }
@@ -468,7 +495,7 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
         || content.type === 'toolCallRunning'
         || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
         if (content.details?.type === 'subagent') {
-            const details = content.details as SubagentDetails;
+            const details = content.details;
             if (details.subagentChatId) {
                 state.subagentChatIdToToolCallId[details.subagentChatId] = {
                     parentChatId: chatId,
@@ -479,7 +506,7 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
     }
 
     // --- Task tool call: intercept and route to task state ---
-    if (isTaskToolCall(content)) {
+    if (isToolCallContent(content) && isTaskToolCall(content)) {
         switch (content.type) {
             case 'toolCallPrepare': {
                 if (!chat.taskState) {
@@ -489,7 +516,7 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
             }
             case 'toolCalled': {
                 if (content.details?.type === 'task') {
-                    const details = content.details as TaskDetails;
+                    const details = content.details;
                     if (details.tasks.length === 0) {
                         chat.taskState = null;
                     } else {
@@ -526,7 +553,7 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
         || content.type === 'toolCallRunning'
         || content.type === 'toolCalled' || content.type === 'toolCallRejected') {
         if (content.details?.type === 'subagent') {
-            const details = content.details as SubagentDetails;
+            const details = content.details;
             const existingIndex = chat.messages.findIndex(msg => msg.type === 'toolCall' && msg.id === content.id);
             if (existingIndex !== -1) {
                 const tool = chat.messages[existingIndex] as ChatMessageToolCall;
@@ -565,13 +592,25 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
             chat.title = content.title;
             break;
         }
+        case 'text':
+        case 'url':
+        case 'flag':
+        case 'toolCallPrepare':
+        case 'toolCallRun':
+        case 'toolCallRunning':
+        case 'toolCallRejected':
+        case 'toolCalled':
+        case 'reasonStarted':
+        case 'reasonText':
+        case 'reasonFinished':
+        case 'hookActionStarted':
+        case 'hookActionFinished':
+            break;
     }
     state.chats[chatId] = chat;
 }
 
-export const chatSlice = createSlice({
-    name: 'chat',
-    initialState: {
+const initialState: ChatState = {
         chats: initialChats,
         // 1 was consumed by `_initialChat`; next slot is 2.
         chatLocalId: 2,
@@ -583,10 +622,14 @@ export const chatSlice = createSlice({
         subagentChatIdToToolCallId: {},
         promptHistory: [],
         resumableChats: undefined,
-    } as ChatState,
+};
+
+export const chatSlice = createSlice({
+    name: 'chat',
+    initialState,
     reducers: {
-        incRequestId: (state, action) => {
-            const chatId = action.payload.chatId;
+        incRequestId: (state, action: PayloadAction<string>) => {
+            const chatId = action.payload;
             if (state.chats[chatId]) {
                 state.chats[chatId] = {
                     ...state.chats[chatId],
@@ -594,14 +637,14 @@ export const chatSlice = createSlice({
                 };
             }
         },
-        clearChat: (state, action) => {
+        clearChat: (state, action: PayloadAction<{ chatId: string }>) => {
             const chatId = action.payload.chatId;
             if (!state.chats[chatId]) return;
             state.chats[chatId].messages = [];
             state.chats[chatId].taskState = null;
             state.chats[chatId].taskLoading = false;
         },
-        cleared: (state, action) => {
+        cleared: (state, action: PayloadAction<{ chatId: string; messages: boolean }>) => {
             const chatId = action.payload.chatId;
             const isMessages = action.payload.messages;
             if (isMessages && state.chats[chatId]) {
@@ -610,10 +653,9 @@ export const chatSlice = createSlice({
                 state.chats[chatId].taskLoading = false;
             }
         },
-        resetChat: (state, action) => {
+        resetChat: (state, action: PayloadAction<string>) => {
             const chatId = action.payload;
-            const { [chatId]: _oldChat, ...newChats } = state.chats;
-            state.chats = newChats;
+            delete state.chats[chatId];
             if (Object.values(state.chats).length === 0) {
                 // Last chat removed — replace it with a freshly minted
                 // empty placeholder so the UI never has zero chats.
@@ -646,7 +688,7 @@ export const chatSlice = createSlice({
             state.chats[fresh.id] = fresh;
             state.selectedChat = fresh.id;
         },
-        chatOpened: (state, action) => {
+        chatOpened: (state, action: PayloadAction<{ chatId: string; title?: string }>) => {
             const { chatId, title } = action.payload;
             // Idempotent: the server may emit `chat/opened` for a chat
             // the client already created via UUID-upfront flow, in
@@ -667,8 +709,8 @@ export const chatSlice = createSlice({
                 state.chats[chatId].title = title;
             }
         },
-        selectChat: (state, action) => {
-            const chatId = action.payload as string;
+        selectChat: (state, action: PayloadAction<string>) => {
+            const chatId = action.payload;
             // External hosts can fire `chat/selectChat` for a chatId
             // that hasn't been materialised in the webview yet — most
             // notably eca-desktop's native sidebar
@@ -690,7 +732,7 @@ export const chatSlice = createSlice({
                     addedContexts: defaultContexts as ChatPreContext[],
                     pendingPrompts: [],
                     isEmpty: true,
-                } as Chat;
+                };
             }
             state.selectedChat = chatId;
         },
@@ -702,16 +744,8 @@ export const chatSlice = createSlice({
          * separately by the server slice's `setConfig` reducer so newly
          * created chats inherit the most recently selected values.
          */
-        applyConfigToChat: (state, action) => {
-            const { chatId, chat: chatConfig } = action.payload as {
-                chatId: string;
-                chat?: {
-                    selectModel?: string;
-                    selectAgent?: ChatAgent;
-                    selectVariant?: string | null;
-                    selectTrust?: boolean;
-                };
-            };
+        applyConfigToChat: (state, action: PayloadAction<ChatConfigPayload>) => {
+            const { chatId, chat: chatConfig } = action.payload;
             const chat = state.chats[chatId];
             if (!chat || !chatConfig) return;
             if (chatConfig.selectModel !== undefined) {
@@ -734,15 +768,8 @@ export const chatSlice = createSlice({
          * every chat). Mirrors the per-field semantics of
          * `applyConfigToChat` but iterates every chat in the slice.
          */
-        applyConfigToAllChats: (state, action) => {
-            const { chat: chatConfig } = action.payload as {
-                chat?: {
-                    selectModel?: string;
-                    selectAgent?: ChatAgent;
-                    selectVariant?: string | null;
-                    selectTrust?: boolean;
-                };
-            };
+        applyConfigToAllChats: (state, action: PayloadAction<GlobalChatConfigPayload>) => {
+            const { chat: chatConfig } = action.payload;
             if (!chatConfig) return;
             for (const chat of Object.values(state.chats)) {
                 if (chatConfig.selectModel !== undefined) {
@@ -759,8 +786,8 @@ export const chatSlice = createSlice({
                 }
             }
         },
-        addContentReceived: (state, action) => {
-            processContentEvent(state, action.payload as ChatContentReceivedParams);
+        addContentReceived: (state, action: PayloadAction<ChatContentReceivedParams>) => {
+            processContentEvent(state, action.payload);
         },
         /**
          * Process multiple content events in a single Immer draft.
@@ -768,21 +795,20 @@ export const chatSlice = createSlice({
          * dispatches (each creating a separate Immer draft + React render).
          * A single batchContentReceived dispatch = one draft, one render.
          */
-        batchContentReceived: (state, action) => {
-            const events = action.payload as ChatContentReceivedParams[];
+        batchContentReceived: (state, action: PayloadAction<ChatContentReceivedParams[]>) => {
+            const events = action.payload;
             for (const event of events) {
                 processContentEvent(state, event);
             }
         },
-        setCursorFocus: (state, action) => {
-            state.cursorFocus = action.payload as CursorFocus;
+        setCursorFocus: (state, action: PayloadAction<CursorFocus | undefined>) => {
+            state.cursorFocus = action.payload;
         },
-        setContexts: (state, action) => {
+        setContexts: (state, action: PayloadAction<{ contexts: ChatContext[] }>) => {
             state.contexts = action.payload.contexts;
         },
-        addContext: (state, action) => {
-            const context = action.payload.context as ChatContext;
-            const prompt = action.payload.prompt as string;
+        addContext: (state, action: PayloadAction<{ context: ChatPreContext; prompt: string }>) => {
+            const { context, prompt } = action.payload;
             const currentChat = getCurrentChat(state);
             if (prompt === 'system') {
                 currentChat.addedContexts = [...currentChat.addedContexts, context];
@@ -790,33 +816,33 @@ export const chatSlice = createSlice({
                 // TODO add to user prompt.
             }
         },
-        removeContext: (state, action) => {
+        removeContext: (state, action: PayloadAction<ChatPreContext>) => {
             const currentChat = getCurrentChat(state);
             const toRemove = JSON.stringify(action.payload);
             const i = currentChat.addedContexts.findIndex(context => JSON.stringify(context) === toRemove);
             currentChat.addedContexts = [...currentChat.addedContexts.slice(0, i), ...currentChat.addedContexts.slice(i + 1)];
         },
-        setCommands: (state, action) => {
+        setCommands: (state, action: PayloadAction<{ commands: ChatCommand[] }>) => {
             state.commands = action.payload.commands;
         },
-        setFiles: (state, action) => {
+        setFiles: (state, action: PayloadAction<{ files: ChatFile[] }>) => {
             state.files = action.payload.files;
         },
-        enqueuePendingPrompt: (state, action) => {
+        enqueuePendingPrompt: (state, action: PayloadAction<{ chatId: string; prompt: string }>) => {
             const { chatId, prompt } = action.payload;
             const chat = state.chats[chatId];
             if (chat) {
                 chat.pendingPrompts.push(prompt);
             }
         },
-        dequeuePendingPrompt: (state, action) => {
+        dequeuePendingPrompt: (state, action: PayloadAction<string>) => {
             const chatId = action.payload;
             const chat = state.chats[chatId];
             if (chat && chat.pendingPrompts.length > 0) {
                 chat.pendingPrompts.shift();
             }
         },
-        setSteerMessage: (state, action) => {
+        setSteerMessage: (state, action: PayloadAction<{ chatId: string; message: string }>) => {
             const { chatId, message } = action.payload;
             const chat = state.chats[chatId];
             if (chat) {
@@ -825,15 +851,15 @@ export const chatSlice = createSlice({
                     : message;
             }
         },
-        clearSteerMessage: (state, action) => {
+        clearSteerMessage: (state, action: PayloadAction<string>) => {
             const chatId = action.payload;
             const chat = state.chats[chatId];
             if (chat) {
                 chat.steerMessage = undefined;
             }
         },
-        pushPromptHistory: (state, action) => {
-            const prompt = action.payload as string;
+        pushPromptHistory: (state, action: PayloadAction<string>) => {
+            const prompt = action.payload;
             // Avoid consecutive duplicates
             if (state.promptHistory[state.promptHistory.length - 1] !== prompt) {
                 state.promptHistory.push(prompt);
@@ -843,14 +869,14 @@ export const chatSlice = createSlice({
                 state.promptHistory = state.promptHistory.slice(-100);
             }
         },
-        renameChat: (state, action) => {
+        renameChat: (state, action: PayloadAction<{ chatId: string; title: string }>) => {
             const { chatId, title } = action.payload;
             const chat = state.chats[chatId];
             if (chat) {
                 chat.title = title;
             }
         },
-        removeFlagMessage: (state, action) => {
+        removeFlagMessage: (state, action: PayloadAction<{ chatId: string; contentId: string }>) => {
             const { chatId, contentId } = action.payload;
             const chat = state.chats[chatId];
             if (chat) {
@@ -859,24 +885,24 @@ export const chatSlice = createSlice({
                 );
             }
         },
-        setPendingQuestion: (state, action) => {
-            const data = action.payload as PendingQuestion;
+        setPendingQuestion: (state, action: PayloadAction<PendingQuestion>) => {
+            const data = action.payload;
             const chat = state.chats[data.chatId];
             if (chat) {
                 chat.pendingQuestion = data;
             }
         },
-        clearPendingQuestion: (state, action) => {
+        clearPendingQuestion: (state, action: PayloadAction<{ chatId: string }>) => {
             const { chatId } = action.payload;
             const chat = state.chats[chatId];
             if (chat) {
                 chat.pendingQuestion = undefined;
             }
         },
-        answerPendingQuestion: (state, action) => {
+        answerPendingQuestion: (state, action: PayloadAction<{ chatId: string; answer: string | null; cancelled: boolean }>) => {
             const { chatId, answer, cancelled } = action.payload;
             const chat = state.chats[chatId];
-            if (chat && chat.pendingQuestion) {
+            if (chat?.pendingQuestion) {
                 chat.pendingQuestion = {
                     ...chat.pendingQuestion,
                     answer: answer ?? undefined,
@@ -890,8 +916,8 @@ export const chatSlice = createSlice({
          * thunk that drives this is also responsible for defensive
          * filtering (drop nil-id entries and subagent-prefixed ids).
          */
-        setResumableChats: (state, action) => {
-            state.resumableChats = action.payload as ChatSummary[];
+        setResumableChats: (state, action: PayloadAction<ChatSummary[]>) => {
+            state.resumableChats = action.payload;
         },
         clearResumableChats: (state) => {
             state.resumableChats = undefined;
@@ -904,10 +930,9 @@ export const chatSlice = createSlice({
          * to be — rather than being stranded on a ghost chat that
          * shows "Resuming…" forever with no content arriving.
          */
-        rollbackResume: (state, action) => {
-            const { chatId } = action.payload as { chatId: string };
-            const { [chatId]: _dropped, ...rest } = state.chats;
-            state.chats = rest;
+        rollbackResume: (state, action: PayloadAction<{ chatId: string }>) => {
+            const { chatId } = action.payload;
+            delete state.chats[chatId];
             if (Object.keys(state.chats).length === 0) {
                 const fresh = makeEmptyChat(state.chatLocalId++);
                 state.chats = { [fresh.id]: fresh };
@@ -933,12 +958,8 @@ export const chatSlice = createSlice({
          * and fills its messages, clearing `resuming` on the first
          * event so the "Resuming…" placeholder gives way to content.
          */
-        beginResume: (state, action) => {
-            const { chatId, title, originatingChatId } = action.payload as {
-                chatId: string;
-                title?: string;
-                originatingChatId?: string;
-            };
+        beginResume: (state, action: PayloadAction<{ chatId: string; title?: string; originatingChatId?: string }>) => {
+            const { chatId, title, originatingChatId } = action.payload;
             if (!state.chats[chatId]) {
                 state.chats[chatId] = {
                     id: chatId,
@@ -950,7 +971,7 @@ export const chatSlice = createSlice({
                     pendingPrompts: [],
                     isEmpty: false,
                     resuming: true,
-                } as Chat;
+                };
             } else {
                 state.chats[chatId].resuming = true;
                 state.chats[chatId].isEmpty = false;
@@ -962,8 +983,7 @@ export const chatSlice = createSlice({
             if (originatingChatId && originatingChatId !== chatId) {
                 const orig = state.chats[originatingChatId];
                 if (orig?.isEmpty && orig.messages.length === 0) {
-                    const { [originatingChatId]: _dropped, ...rest } = state.chats;
-                    state.chats = rest;
+                    delete state.chats[originatingChatId];
                 }
             }
         },

@@ -1,11 +1,14 @@
-import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChatMessage } from '../../redux/slices/chat';
-import { State, useEcaDispatch } from '../../redux/store';
+import type { ChatMessage } from '../../redux/slices/chat';
+import type { State} from '../../redux/store';
+import { useEcaDispatch } from '../../redux/store';
 import { addFlag, forkFromFlag, removeFlag, rollbackChat } from '../../redux/thunks/chat';
-import { MessageErrorFallback, captureComponentStack } from '../components/ErrorFallback';
+import { captureComponentStack } from '../../errorReporting';
+import { MessageErrorFallback } from '../components/ErrorFallback';
 import { ChatHook } from './ChatHook';
 import './ChatMessages.scss';
 import { ChatQuestion } from './ChatQuestion';
@@ -43,19 +46,19 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const { userScrolled, scrollToBottom } = useAutoScroll(scrollRef, messages);
 
     const onRollbackClicked = (contentId: string) => {
-        dispatch(rollbackChat({ chatId, contentId }));
+        void dispatch(rollbackChat({ chatId, contentId }));
     }
 
     const onAddFlagClicked = (contentId: string) => {
-        dispatch(addFlag({ chatId, contentId }));
+        void dispatch(addFlag({ chatId, contentId }));
     }
 
     const onForkFromFlagClicked = (contentId: string) => {
-        dispatch(forkFromFlag({ chatId, contentId }));
+        void dispatch(forkFromFlag({ chatId, contentId }));
     }
 
     const onRemoveFlagClicked = (contentId: string) => {
-        dispatch(removeFlag({ chatId, contentId }));
+        void dispatch(removeFlag({ chatId, contentId }));
     }
 
     return (
@@ -71,8 +74,8 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
-                                    onRollbackClicked={() => onRollbackClicked(message.contentId!)}
-                                    onAddFlagClicked={message.contentId ? () => onAddFlagClicked(message.contentId!) : undefined} />
+                                    onRollbackClicked={() => { onRollbackClicked(message.contentId!); }}
+                                    onAddFlagClicked={message.contentId ? () => { onAddFlagClicked(message.contentId!); } : undefined} />
                             );
                         case 'toolCall':
                             return (
@@ -114,8 +117,8 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                             return (
                                 <ChatFlag
                                     text={message.text}
-                                    onForkClicked={() => onForkFromFlagClicked(message.contentId)}
-                                    onRemoveClicked={() => onRemoveFlagClicked(message.contentId)}
+                                    onForkClicked={() => { onForkFromFlagClicked(message.contentId); }}
+                                    onRemoveClicked={() => { onRemoveFlagClicked(message.contentId); }}
                                 />
                             );
                         default:
@@ -179,7 +182,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                         type="button"
                         key="scroll-to-bottom"
                         className="scroll-to-bottom-btn"
-                        onClick={() => scrollToBottom(true)}
+                        onClick={() => { scrollToBottom(true); }}
                         aria-label="Scroll to latest messages"
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -203,7 +206,7 @@ const AT_BOTTOM_THRESHOLD_PX = 24;
 
 const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMessage[]) => {
     const [userScrolled, setUserScrolled] = useState(false);
-    const userMsgsCount = useMemo(() => messages.filter((msg) => 'role' in msg && msg.role === 'user').length, [messages.length]);
+    const userMsgsCount = useMemo(() => messages.filter((msg) => 'role' in msg && msg.role === 'user').length, [messages]);
 
     // Active "header toggle" anchor. While set, the ResizeObserver below
     // freezes scrollTop to the value captured at click time instead of
@@ -219,7 +222,8 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
     }, [userMsgsCount]);
 
     useEffect(() => {
-        if (!ref.current || messages.length === 0) return;
+        const element = ref.current;
+        if (!element || messages.length === 0) return;
 
         const handleScroll = () => {
             const elem = ref.current;
@@ -294,19 +298,19 @@ const useAutoScroll = (ref: RefObject<HTMLDivElement | null>, messages: ChatMess
             elem.scrollTop = elem.scrollHeight;
         });
 
-        ref.current.addEventListener("scroll", handleScroll);
-        ref.current.addEventListener("click", handleHeaderClick, true);
+        element.addEventListener("scroll", handleScroll);
+        element.addEventListener("click", handleHeaderClick, true);
 
-        resizeObserver.observe(ref.current);
+        resizeObserver.observe(element);
 
-        Array.from(ref.current.children).forEach((child) => {
+        Array.from(element.children).forEach((child) => {
             resizeObserver.observe(child);
         });
 
         return () => {
             resizeObserver.disconnect();
-            ref.current?.removeEventListener("scroll", handleScroll);
-            ref.current?.removeEventListener("click", handleHeaderClick, true);
+            element.removeEventListener("scroll", handleScroll);
+            element.removeEventListener("click", handleHeaderClick, true);
         };
     }, [ref, messages.length, userScrolled]);
 

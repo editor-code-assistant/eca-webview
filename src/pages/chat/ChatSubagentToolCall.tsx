@@ -1,7 +1,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SubagentDetails, ToolCallOutput } from '../../protocol';
-import { ChatMessage } from '../../redux/slices/chat';
+import type { SubagentDetails, ToolCallOutput } from '../../protocol';
+import type { ChatMessage } from '../../redux/slices/chat';
 import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
@@ -103,7 +103,7 @@ function SubagentMessages({ messages, subagentChatId, depth }: { messages: ChatM
                                 />
                             </div>
                         );
-                    default:
+                    case 'flag':
                         return null;
                 }
             })}
@@ -117,7 +117,7 @@ function ChatSubagentToolCallContent(props: Props) {
     const { agent, task, activity } = useMemo(() => parseAgentArgs(props.argumentsText), [props.argumentsText]);
     const [expanded, setExpanded] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
-    const collapse = () => setExpanded(false);
+    const collapse = () => { setExpanded(false); };
     const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     const waitingApproval = props.manualApproval && props.status === 'run';
@@ -138,15 +138,15 @@ function ChatSubagentToolCallContent(props: Props) {
     }, [hasChildPendingApproval]);
 
     const rejectToolCall = () => {
-        dispatch(toolCallReject({ chatId: effectiveChatId, toolCallId: props.toolCallId }));
+        void dispatch(toolCallReject({ chatId: effectiveChatId, toolCallId: props.toolCallId }));
     };
 
     const approveToolCall = () => {
-        dispatch(toolCallApprove({ chatId: effectiveChatId, toolCallId: props.toolCallId }));
+        void dispatch(toolCallApprove({ chatId: effectiveChatId, toolCallId: props.toolCallId }));
     };
 
     const approveToolCallAndRemember = () => {
-        dispatch(toolCallApprove({ chatId: effectiveChatId, toolCallId: props.toolCallId, save: 'session' }));
+        void dispatch(toolCallApprove({ chatId: effectiveChatId, toolCallId: props.toolCallId, save: 'session' }));
     };
 
     useKeyPressedListener((e) => {
@@ -202,7 +202,7 @@ function ChatSubagentToolCallContent(props: Props) {
 
     const hasMessages = (props.subagentMessages ?? []).length > 0;
 
-    const toggleExpanded = () => setExpanded(!expanded);
+    const toggleExpanded = () => { setExpanded(!expanded); };
 
     return (
         <div

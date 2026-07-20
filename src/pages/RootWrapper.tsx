@@ -3,14 +3,17 @@ import { useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
-import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerRemovedParams, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
+import type { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerRemovedParams, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
 import { addContentReceived, applyConfigToAllChats, applyConfigToChat, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
-import { LogEntry, appendLogEntry, setLogEntries } from "../redux/slices/logs";
+import type { LogEntry} from "../redux/slices/logs";
+import { appendLogEntry, setLogEntries } from "../redux/slices/logs";
 import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
-import { InitProgressTask, ServerStatus, setConfig, setTrust, setWorkspaceFolders, upsertProgress } from "../redux/slices/server";
-import { State, useEcaDispatch } from "../redux/store";
+import type { InitProgressTask, ServerStatus} from "../redux/slices/server";
+import { setConfig, setTrust, setWorkspaceFolders, upsertProgress } from "../redux/slices/server";
+import type { State} from "../redux/store";
+import { useEcaDispatch } from "../redux/store";
 import { deleteChat, sendPromptToCurrentChat, stopPrompt } from "../redux/thunks/chat";
 import { focusChanged } from "../redux/thunks/editor";
 import { statusChanged } from "../redux/thunks/server";
@@ -30,7 +33,7 @@ const RootWrapper = () => {
 
     useWebviewListener(
         "navigateTo",
-        async (data: NavigateTo) => {
+        (data: NavigateTo) => {
             if (data.toggle && location.pathname === data.path) {
                 navigate("/");
             } else {
@@ -53,7 +56,7 @@ const RootWrapper = () => {
     });
 
     useWebviewListener('server/statusChanged', (status: ServerStatus) => {
-        dispatch(statusChanged({ status: status }));
+        void dispatch(statusChanged({ status: status }));
     });
 
     // ECA server init-progress notifications. Forwarded by the desktop
@@ -143,7 +146,7 @@ const RootWrapper = () => {
         dispatch(setPendingQuestion(data));
     });
 
-    useWebviewListener('tool/serversUpdated', (mcps: ToolServerUpdatedParams) => {
+    useWebviewListener('tool/serversUpdated', (mcps: ToolServerUpdatedParams[]) => {
         dispatch(setMcpServers(mcps));
     });
 
@@ -215,7 +218,7 @@ const RootWrapper = () => {
     });
 
     useWebviewListener('editor/focusChanged', (focus) => {
-        dispatch(focusChanged(focus))
+        void dispatch(focusChanged(focus));
     });
 
     useWebviewListener('editor/readInput', (data: { requestId: string, value: string | null }) => {
@@ -259,7 +262,7 @@ const RootWrapper = () => {
     });
 
     useWebviewListener('chat/sendPromptToCurrentChat', (data: { prompt: string }) => {
-        dispatch(sendPromptToCurrentChat({ prompt: data.prompt }));
+        void dispatch(sendPromptToCurrentChat({ prompt: data.prompt }));
     });
 
     // ── Desktop keyboard shortcuts routed through the webview ──
@@ -276,13 +279,13 @@ const RootWrapper = () => {
     );
     const selectedChatActionable = !!selectedChat && !selectedChatIsEmpty;
 
-    useWebviewListener('chat/closeCurrent', async () => {
+    useWebviewListener('chat/closeCurrent', () => {
         if (selectedChatActionable) {
-            dispatch(deleteChat({ chatId: selectedChat }));
+            void dispatch(deleteChat({ chatId: selectedChat }));
         }
     });
 
-    useWebviewListener('chat/renameCurrent', async () => {
+    useWebviewListener('chat/renameCurrent', () => {
         if (selectedChatActionable) {
             // ChatHeader listens for this DOM event and enters rename mode
             // on the currently-selected tab. Using a DOM event avoids
@@ -291,14 +294,14 @@ const RootWrapper = () => {
         }
     });
 
-    useWebviewListener('chat/clearCurrent', async () => {
+    useWebviewListener('chat/clearCurrent', () => {
         if (selectedChatActionable) {
             dispatch(clearChat({ chatId: selectedChat }));
             webviewSend('chat/clearChat', { chatId: selectedChat });
         }
     });
 
-    useWebviewListener('chat/exportCurrent', async () => {
+    useWebviewListener('chat/exportCurrent', () => {
         if (selectedChatActionable) {
             // ChatSubHeader owns the markdown serialization; surface the
             // request as a DOM event so the component runs its existing
@@ -307,9 +310,9 @@ const RootWrapper = () => {
         }
     });
 
-    useWebviewListener('chat/stopCurrent', async () => {
+    useWebviewListener('chat/stopCurrent', () => {
         if (selectedChatActionable) {
-            dispatch(stopPrompt({ chatId: selectedChat }));
+            void dispatch(stopPrompt({ chatId: selectedChat }));
         }
     });
 
@@ -321,7 +324,7 @@ const RootWrapper = () => {
         // stale state, causing duplicates.
         dispatch(resetChats());
         webviewSend('webview/ready', {});
-    }, []);
+    }, [dispatch]);
 
     // Initialize base UI font size from local storage on mount (em units)
     useEffect(() => {

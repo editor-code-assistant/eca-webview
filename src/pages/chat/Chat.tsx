@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { SyncLoader } from "react-spinners";
 import { selectInitProgressString, ServerStatus } from "../../redux/slices/server";
-import { State } from "../../redux/store";
+import type { State } from "../../redux/store";
 import { useStickyString } from "../../hooks";
 import './Chat.scss';
 import { ChatHeader } from "./ChatHeader";
@@ -37,7 +37,7 @@ export function Chat() {
     // chat (race during reset / restore) we fall back to the selection
     // itself so downstream components still receive a defined string.
     const found = chatsList.find(c => c.id === selectedChat);
-    let currentChatId = found ? found.id : selectedChat;
+    const currentChatId = found ? found.id : selectedChat;
 
     const welcomeMessage = useSelector((state: State) => state.server.config.chat.welcomeMessage);
 

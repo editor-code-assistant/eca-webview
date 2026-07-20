@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { State } from '../../redux/store';
+import type { State } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatTimeline.scss';
 
@@ -47,7 +47,7 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
             <i
                 className="codicon codicon-list-flat"
                 data-tooltip-id="chat-timeline-tip"
-                onClick={() => setOpen(!open)}
+                onClick={() => { setOpen(!open); }}
             ></i>
             <ToolTip id="chat-timeline-tip" place="bottom">Chat timeline</ToolTip>
             <AnimatePresence>
@@ -67,7 +67,7 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
                                         <li
                                             key={i}
                                             className="timeline-item timeline-flag"
-                                            onClick={() => scrollToMessage(index)}
+                                            onClick={() => { scrollToMessage(index); }}
                                         >
                                             <span className="timeline-time">🚩</span>
                                             <span className="timeline-text">
@@ -81,7 +81,7 @@ export const ChatTimeline = memo(({ chatId }: Props) => {
                                     <li
                                         key={i}
                                         className="timeline-item"
-                                        onClick={() => scrollToMessage(index)}
+                                        onClick={() => { scrollToMessage(index); }}
                                     >
                                         <span className="timeline-time">
                                             {textMsg.timestamp ? formatTimestamp(textMsg.timestamp) : '—'}

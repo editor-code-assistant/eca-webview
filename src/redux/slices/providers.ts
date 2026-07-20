@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ProviderStatus } from "../../protocol";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { ProviderStatus } from "../../protocol";
 
 export const providersSlice = createSlice({
     name: 'providers',

@@ -1,27 +1,18 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSendAndGet } from "../../hooks";
-import { JobsReadOutputResult, JobsKillResult, Job } from "../../protocol";
+import type { JobsReadOutputResult, JobsKillResult, Job } from "../../protocol";
 
-export const fetchJobsList = createAsyncThunk<Job[], void>(
+export const fetchJobsList = createAsyncThunk<Job[]>(
     "jobs/fetchList",
-    async () => {
-        const result = await webviewSendAndGet('jobs/list', {});
-        return result.jobs ?? [];
-    }
+    async () => (await webviewSendAndGet('jobs/list', {})).jobs ?? [],
 );
 
 export const fetchJobOutput = createAsyncThunk<JobsReadOutputResult, { jobId: string }>(
     "jobs/fetchOutput",
-    async ({ jobId }) => {
-        const result = await webviewSendAndGet('jobs/readOutput', { jobId });
-        return result as JobsReadOutputResult;
-    }
+    ({ jobId }) => webviewSendAndGet('jobs/readOutput', { jobId }),
 );
 
 export const killJob = createAsyncThunk<JobsKillResult, { jobId: string }>(
     "jobs/kill",
-    async ({ jobId }) => {
-        const result = await webviewSendAndGet('jobs/kill', { jobId });
-        return result as JobsKillResult;
-    }
+    ({ jobId }) => webviewSendAndGet('jobs/kill', { jobId }),
 );

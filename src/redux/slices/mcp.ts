@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ToolServerRemovedParams, ToolServerUpdatedParams } from "../../protocol";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { ToolServerRemovedParams, ToolServerUpdatedParams } from "../../protocol";
 
 export const mcpSlice = createSlice({
     name: 'mcp',
@@ -7,7 +8,7 @@ export const mcpSlice = createSlice({
         servers: [] as ToolServerUpdatedParams[],
     },
     reducers: {
-        setMcpServers: (state, action) => {
+        setMcpServers: (state, action: PayloadAction<ToolServerUpdatedParams[]>) => {
             state.servers = action.payload;
         },
         /**

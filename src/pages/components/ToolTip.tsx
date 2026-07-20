@@ -1,6 +1,7 @@
-import { ITooltip, Tooltip, TooltipRefProps } from "react-tooltip";
+import type { ITooltip, TooltipRefProps } from "react-tooltip";
+import { Tooltip } from "react-tooltip";
 import './ToolTip.scss';
-import { RefAttributes } from "react";
+import type { RefAttributes } from "react";
 
 export function ToolTip(props: (ITooltip & RefAttributes<TooltipRefProps>)) {
     const className = `${props.className ?? ''} eca-tooltip`.trim();

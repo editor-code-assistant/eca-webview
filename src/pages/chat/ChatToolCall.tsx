@@ -4,10 +4,11 @@ import 'react-diff-view/style/index.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
 import { useSelector } from 'react-redux';
-import { FileChangeDetails, JsonOutputsDetails, ShellCommandBreakdown, ShellCommandDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
-import { ChatMessage } from '../../redux/slices/chat';
+import type { FileChangeDetails, JsonOutputsDetails, ShellCommandBreakdown, ShellCommandDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
+import type { ChatMessage } from '../../redux/slices/chat';
 import { selectJobByToolCallId } from '../../redux/slices/jobs';
-import { EcaDispatch, State, useEcaDispatch } from '../../redux/store';
+import type { EcaDispatch, State} from '../../redux/store';
+import { useEcaDispatch } from '../../redux/store';
 import { toolCallApprove, toolCallReject } from '../../redux/thunks/chat';
 import { editorOpenFile } from '../../redux/thunks/editor';
 import { ApprovalActions } from './ApprovalActions';
@@ -44,11 +45,11 @@ function ToolCallCard({ props, iconClass, extraClassName, defaultOpen, headerCon
 }) {
     const [expanded, setExpanded] = useState(defaultOpen ?? false);
     const cardRef = useRef<HTMLDivElement>(null);
-    const collapse = () => setExpanded(false);
+    const collapse = () => { setExpanded(false); };
     const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
     const isActive = props.status === 'preparing' || props.status === 'run' || props.status === 'running';
 
-    const toggleExpanded = () => setExpanded(!expanded);
+    const toggleExpanded = () => { setExpanded(!expanded); };
 
     return (
         <div className={`tool-call-card ${isActive ? 'active' : ''} ${props.status} ${extraClassName || ''}`} ref={cardRef} data-collapsible onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
@@ -237,9 +238,9 @@ function FileChangeHeader({ props, dispatch }: { props: Props, dispatch: EcaDisp
     const { path, linesAdded, linesRemoved } = props.details as FileChangeDetails;
     const fileName = path.split('/').pop();
 
-    const openFile = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
+    const openFile = (e: React.MouseEvent<HTMLSpanElement>) => {
         e.stopPropagation();
-        dispatch(editorOpenFile({ path }));
+        void dispatch(editorOpenFile({ path }));
     };
 
     return (
@@ -289,15 +290,15 @@ function ChatToolCallContent(props: Props) {
     const waitingApproval = props.manualApproval && props.status === 'run';
 
     const rejectToolCall = () => {
-        dispatch(toolCallReject({ chatId: props.chatId, toolCallId: props.toolCallId }));
+        void dispatch(toolCallReject({ chatId: props.chatId, toolCallId: props.toolCallId }));
     };
 
     const approveToolCall = () => {
-        dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId }));
+        void dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId }));
     };
 
     const approveToolCallAndRemember = () => {
-        dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId, save: 'session' }));
+        void dispatch(toolCallApprove({ chatId: props.chatId, toolCallId: props.toolCallId, save: 'session' }));
     };
 
     useKeyPressedListener((e) => {
@@ -349,9 +350,10 @@ function ChatToolCallContent(props: Props) {
             case 'killed':
                 iconClass = 'codicon-circle-filled background-killed';
                 break;
-            default:
+            case undefined:
                 // Job evicted or not found — show success
                 iconClass = 'codicon-check succeeded';
+                break;
         }
     } else {
         switch (props.status) {
@@ -399,7 +401,7 @@ function ChatToolCallContent(props: Props) {
                 manualApproval={props.manualApproval}
                 totalTimeMs={props.totalTimeMs}
                 outputs={props.outputs}
-                details={props.details as SubagentDetails}
+                details={props.details}
                 summary={props.summary}
                 subagentMessages={props.subagentMessages}
                 subagentChatId={props.subagentChatId}

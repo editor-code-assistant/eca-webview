@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { LoginAction, LoginMethod, ProviderAuthStatus, ProviderStatus } from '../../protocol';
-import { State, useEcaDispatch } from '../../redux/store';
+import type { LoginAction, LoginMethod, ProviderAuthStatus, ProviderStatus } from '../../protocol';
+import type { State} from '../../redux/store';
+import { useEcaDispatch } from '../../redux/store';
 import { editorOpenUrl } from '../../redux/thunks/editor';
 import { listProviders, loginProvider, loginProviderInput, logoutProvider } from '../../redux/thunks/providers';
-import { ActiveLoginAction, ProviderLoginDialog } from './ProviderLoginDialog';
+import type { ActiveLoginAction} from './ProviderLoginDialog';
+import { ProviderLoginDialog } from './ProviderLoginDialog';
 import './ProvidersTab.scss';
 
 const authStatusLabel: Record<ProviderAuthStatus, string> = {
@@ -159,7 +161,7 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
                 </div>
                 <div className="provider-actions">
                     {canLogout &&
-                        <button className="action-btn logout-btn" onClick={onLogout} disabled={loginBusy}>
+                        <button className="action-btn logout-btn" onClick={() => { void onLogout(); }} disabled={loginBusy}>
                             <i className="codicon codicon-sign-out"></i>
                             Logout
                         </button>}
@@ -177,7 +179,7 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
 
                 {provider.models.length > 0 &&
                     <div className="models-section">
-                        <button className="models-toggle" onClick={() => setModelsExpanded(!modelsExpanded)}>
+                        <button className="models-toggle" onClick={() => { setModelsExpanded(!modelsExpanded); }}>
                             <i className={`codicon ${modelsExpanded ? 'codicon-chevron-down' : 'codicon-chevron-right'}`}></i>
                             <span>{provider.models.length} model{provider.models.length !== 1 ? 's' : ''}</span>
                         </button>
@@ -223,7 +225,7 @@ export function ProvidersTab() {
 
     useEffect(() => {
         setLoading(true);
-        dispatch(listProviders()).finally(() => setLoading(false));
+        void dispatch(listProviders()).finally(() => { setLoading(false); });
     }, [dispatch]);
 
     const sorted = [...providers].sort((a, b) => {

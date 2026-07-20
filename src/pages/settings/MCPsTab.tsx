@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { McpAddServerRequest, MCPServerUpdatedParams, ToolServerStatus } from '../../protocol';
-import { State, useEcaDispatch } from '../../redux/store';
+import type { McpAddServerRequest, MCPServerUpdatedParams, ToolServerStatus } from '../../protocol';
+import type { State} from '../../redux/store';
+import { useEcaDispatch } from '../../redux/store';
 import {
     addServer,
     connectServer,
@@ -105,27 +106,27 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
 
     const onSubmit = async () => {
         setError(null);
-        if (!trimmedName) return setError('Name is required.');
-        if (nameCollision) return setError(`Server '${trimmedName}' already exists.`);
+        if (!trimmedName) { setError('Name is required.'); return; }
+        if (nameCollision) { setError(`Server '${trimmedName}' already exists.`); return; }
 
         const payload: McpAddServerRequest = { name: trimmedName };
 
         if (transport === 'stdio') {
-            if (!command.trim()) return setError('Command is required for stdio transport.');
+            if (!command.trim()) { setError('Command is required for stdio transport.'); return; }
             payload.command = command.trim();
             const parsedArgs = args.trim() ? args.trim().split(/\s+/) : [];
             if (parsedArgs.length) payload.args = parsedArgs;
             if (env.trim()) {
                 const parsed = parseEnvLines(env);
-                if ('error' in parsed) return setError(parsed.error);
+                if ('error' in parsed) { setError(parsed.error); return; }
                 if (Object.keys(parsed).length) payload.env = parsed;
             }
         } else {
-            if (!url.trim()) return setError('URL is required for remote transport.');
+            if (!url.trim()) { setError('URL is required for remote transport.'); return; }
             payload.url = url.trim();
             if (headers.trim()) {
                 const parsed = parseHeaderLines(headers);
-                if ('error' in parsed) return setError(parsed.error);
+                if ('error' in parsed) { setError(parsed.error); return; }
                 if (Object.keys(parsed).length) payload.headers = parsed;
             }
         }
@@ -165,7 +166,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                     className={`editable-field${nameCollision ? ' has-error' : ''}`}
                     type="text"
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={e => { setName(e.target.value); }}
                     placeholder="my-mcp-server"
                     spellCheck={false}
                     autoFocus
@@ -180,7 +181,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                     <button
                         type="button"
                         className={`toggle-btn ${transport === 'stdio' ? 'active' : ''}`}
-                        onClick={() => setTransport('stdio')}
+                        onClick={() => { setTransport('stdio'); }}
                     >
                         <i className="codicon codicon-terminal"></i>
                         stdio
@@ -188,7 +189,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                     <button
                         type="button"
                         className={`toggle-btn ${transport === 'remote' ? 'active' : ''}`}
-                        onClick={() => setTransport('remote')}
+                        onClick={() => { setTransport('remote'); }}
                     >
                         <i className="codicon codicon-globe"></i>
                         remote
@@ -204,7 +205,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                             className="editable-field"
                             type="text"
                             value={command}
-                            onChange={e => setCommand(e.target.value)}
+                            onChange={e => { setCommand(e.target.value); }}
                             placeholder="npx"
                             spellCheck={false}
                         />
@@ -215,7 +216,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                             className="editable-field"
                             type="text"
                             value={args}
-                            onChange={e => setArgs(e.target.value)}
+                            onChange={e => { setArgs(e.target.value); }}
                             placeholder="-y my-mcp-package"
                             spellCheck={false}
                         />
@@ -226,7 +227,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                         <textarea
                             className="editable-field multiline"
                             value={env}
-                            onChange={e => setEnv(e.target.value)}
+                            onChange={e => { setEnv(e.target.value); }}
                             placeholder="KEY=value&#10;OTHER=another"
                             spellCheck={false}
                             rows={3}
@@ -242,7 +243,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                             className="editable-field url-field"
                             type="text"
                             value={url}
-                            onChange={e => setUrl(e.target.value)}
+                            onChange={e => { setUrl(e.target.value); }}
                             placeholder="https://example.com/mcp"
                             spellCheck={false}
                         />
@@ -252,7 +253,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                         <textarea
                             className="editable-field multiline"
                             value={headers}
-                            onChange={e => setHeaders(e.target.value)}
+                            onChange={e => { setHeaders(e.target.value); }}
                             placeholder="Authorization: Bearer xxx&#10;X-Custom: value"
                             spellCheck={false}
                             rows={3}
@@ -279,7 +280,7 @@ function AddServerForm({ existingNames, onClose }: AddServerFormProps) {
                 </button>
                 <button
                     className="action-btn primary-btn"
-                    onClick={onSubmit}
+                    onClick={() => { void onSubmit(); }}
                     disabled={!canSubmit}
                     type="button"
                 >
@@ -331,7 +332,7 @@ function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }
 
     const onKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && hasChanges && !saving) {
-            onSave();
+            void onSave();
         } else if (e.key === 'Escape') {
             setUrl(originalUrl);
             setCommand(originalCommand);
@@ -351,12 +352,12 @@ function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }
                         className="editable-field url-field"
                         type="text"
                         value={url}
-                        onChange={e => setUrl(e.target.value)}
+                        onChange={e => { setUrl(e.target.value); }}
                         onKeyDown={onKeyDown}
                         spellCheck={false}
                     />
                     {hasChanges &&
-                        <button className="save-btn" onClick={onSave} disabled={saving}>
+                        <button className="save-btn" onClick={() => { void onSave(); }} disabled={saving}>
                             {saving ? '…' : 'Save'}
                         </button>}
                 </div>
@@ -377,7 +378,7 @@ function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }
                     className="editable-field"
                     type="text"
                     value={command}
-                    onChange={e => setCommand(e.target.value)}
+                    onChange={e => { setCommand(e.target.value); }}
                     onKeyDown={onKeyDown}
                     placeholder="command"
                     spellCheck={false}
@@ -387,14 +388,14 @@ function EditableConnectionFields({ server }: { server: MCPServerUpdatedParams }
                     className="editable-field"
                     type="text"
                     value={args}
-                    onChange={e => setArgs(e.target.value)}
+                    onChange={e => { setArgs(e.target.value); }}
                     onKeyDown={onKeyDown}
                     placeholder="args"
                     spellCheck={false}
                     style={{ width: `${Math.max(4, args.length + 2)}ch` }}
                 />
                 {hasChanges &&
-                    <button className="save-btn" onClick={onSave} disabled={saving}>
+                    <button className="save-btn" onClick={() => { void onSave(); }} disabled={saving}>
                         {saving ? '…' : 'Save'}
                     </button>}
             </div>
@@ -422,7 +423,7 @@ export function MCPsTab() {
     const anyFailed = mcpServers.some(s => s.status === 'failed');
 
     const onOpenServerLogs = () => {
-        dispatch(openServerLogs({}));
+        void dispatch(openServerLogs());
     };
 
     const onRemove = async (name: string) => {
@@ -452,11 +453,11 @@ export function MCPsTab() {
                 {isAdding
                     ? <AddServerForm
                         existingNames={existingNames}
-                        onClose={() => setIsAdding(false)}
+                        onClose={() => { setIsAdding(false); }}
                     />
                     : <button
                         className="action-btn add-btn"
-                        onClick={() => setIsAdding(true)}
+                        onClick={() => { setIsAdding(true); }}
                     >
                         <i className="codicon codicon-add"></i>
                         Add MCP server
@@ -510,7 +511,7 @@ export function MCPsTab() {
                                             <span className="confirm-prompt">Remove?</span>
                                             <button
                                                 className="action-btn stop-btn"
-                                                onClick={() => onRemove(server.name)}
+                                                onClick={() => { void onRemove(server.name); }}
                                                 disabled={isRemovingThis}
                                             >
                                                 <i className="codicon codicon-trash"></i>
@@ -518,7 +519,7 @@ export function MCPsTab() {
                                             </button>
                                             <button
                                                 className="action-btn"
-                                                onClick={() => setConfirmingRemove(null)}
+                                                onClick={() => { setConfirmingRemove(null); }}
                                                 disabled={isRemovingThis}
                                             >
                                                 Cancel
@@ -528,43 +529,43 @@ export function MCPsTab() {
                                         <>
                                             {stoppable && hasAuth &&
                                                 <button className="action-btn logout-btn"
-                                                    onClick={() => dispatch(logoutServer({ name: server.name }))}>
+                                                    onClick={() => { void dispatch(logoutServer({ name: server.name })); }}>
                                                     <i className="codicon codicon-sign-out"></i>
                                                     Logout
                                                 </button>}
                                             {stoppable &&
                                                 <button className="action-btn disable-btn"
-                                                    onClick={() => dispatch(disableServer({ name: server.name }))}>
+                                                    onClick={() => { void dispatch(disableServer({ name: server.name })); }}>
                                                     <i className="codicon codicon-circle-slash"></i>
                                                     Disable
                                                 </button>}
                                             {requiresAuth
                                                 ? <button className="action-btn connect-btn"
-                                                    onClick={() => dispatch(connectServer({ name: server.name }))}>
+                                                    onClick={() => { void dispatch(connectServer({ name: server.name })); }}>
                                                     <i className="codicon codicon-plug"></i>
                                                     Connect
                                                   </button>
                                                 : disabled
                                                     ? <button className="action-btn enable-btn"
-                                                        onClick={() => dispatch(enableServer({ name: server.name }))}>
+                                                        onClick={() => { void dispatch(enableServer({ name: server.name })); }}>
                                                         <i className="codicon codicon-check"></i>
                                                         Enable
                                                       </button>
                                                     : stoppable
                                                         ? <button className="action-btn stop-btn"
-                                                            onClick={() => dispatch(stopServer({ name: server.name }))}>
+                                                            onClick={() => { void dispatch(stopServer({ name: server.name })); }}>
                                                             <i className="codicon codicon-stop-circle"></i>
                                                             Stop
                                                           </button>
                                                         : <button className="action-btn start-btn"
-                                                            onClick={() => dispatch(startServer({ name: server.name }))}>
+                                                            onClick={() => { void dispatch(startServer({ name: server.name })); }}>
                                                             <i className="codicon codicon-play"></i>
                                                             Start
                                                           </button>}
                                             {isRemovable &&
                                                 <button
                                                     className="action-btn icon-only remove-btn"
-                                                    onClick={() => setConfirmingRemove(server.name)}
+                                                    onClick={() => { setConfirmingRemove(server.name); }}
                                                     title="Remove server"
                                                     aria-label={`Remove ${server.name}`}
                                                 >

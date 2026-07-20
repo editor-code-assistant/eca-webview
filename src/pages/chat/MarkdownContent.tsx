@@ -1,14 +1,24 @@
 import { ErrorBoundary } from 'react-error-boundary';
+import type { ReactNode } from 'react';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import { webviewSend } from '../../hooks';
-import { MarkdownErrorFallback, captureComponentStack } from '../components/ErrorFallback';
+import { captureComponentStack } from '../../errorReporting';
+import { MarkdownErrorFallback } from '../components/ErrorFallback';
 
 interface Props {
     content?: string,
     codeClassName?: string,
+}
+
+function textContent(node: ReactNode): string | null {
+    if (typeof node === 'string' || typeof node === 'number') return String(node);
+    if (!Array.isArray(node)) return null;
+
+    const parts = node.map(textContent);
+    return parts.every((part): part is string => part !== null) ? parts.join('') : null;
 }
 
 export function MarkdownContent({ content, codeClassName }: Props) {
@@ -28,30 +38,31 @@ export function MarkdownContent({ content, codeClassName }: Props) {
                 code(props) {
                     const { children, className, node, ...rest } = props
                     const match = /language-(\w+)/.exec(className || '')
-                    const isBlock = node?.position && String(children).includes('\n');
+                    const source = textContent(children);
+                    const isBlock = Boolean(node?.position && source?.includes('\n'));
 
-                    if (match) {
+                    if (match && source !== null) {
                         return (
                             <SyntaxHighlighter
                                 customStyle={{ scrollbarWidth: 'thin' }}
                                 wrapLines={true}
                                 wrapLongLines={true}
                                 PreTag="div"
-                                children={String(children).replace(/\n$/, '')}
+                                children={source.replace(/\n$/, '')}
                                 language={match[1]}
                                 style={dracula}
                             />
                         );
                     }
 
-                    if (isBlock) {
+                    if (isBlock && source !== null) {
                         return (
                             <SyntaxHighlighter
                                 customStyle={{ scrollbarWidth: 'thin' }}
                                 wrapLines={true}
                                 wrapLongLines={true}
                                 PreTag="div"
-                                children={String(children).replace(/\n$/, '')}
+                                children={source.replace(/\n$/, '')}
                                 language={'text'}
                                 style={dracula}
                             />
@@ -70,7 +81,7 @@ export function MarkdownContent({ content, codeClassName }: Props) {
                         <a
                             {...rest}
                             href={href}
-                            onClick={(e) => handleLinkClick(e, href)}
+                            onClick={(e) => { handleLinkClick(e, href); }}
                         >
                             {children}
                         </a>

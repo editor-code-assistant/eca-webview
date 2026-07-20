@@ -1,8 +1,9 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { TooltipRefProps } from "react-tooltip";
-import { ChatFile } from "../../protocol";
-import { State, useEcaDispatch } from "../../redux/store";
+import type { TooltipRefProps } from "react-tooltip";
+import type { ChatFile } from "../../protocol";
+import type { State} from "../../redux/store";
+import { useEcaDispatch } from "../../redux/store";
 import { queryFiles } from "../../redux/thunks/chat";
 import { uriToPath } from "../../util";
 import { ToolTip } from "../components/ToolTip";
@@ -72,9 +73,9 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
         setHashQuery(hq);
 
         if (hq) {
-            dispatch(queryFiles({ chatId, query: hq.query }));
+            void dispatch(queryFiles({ chatId, query: hq.query }));
         }
-    }, [promptValue]);
+    }, [chatId, dispatch, input, promptValue]);
 
     useEffect(() => {
         const shouldShow = hashQuery !== null && files !== undefined && files.length > 0;
@@ -89,19 +90,19 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
             openPopupRef.current?.close();
             onCompleting(false);
         }
-    }, [show]);
+    }, [onCompleting, show]);
 
     useEffect(() => {
         setSelectedIndex(0);
     }, [files?.length]);
 
-    const selectFile = (file: ChatFile, event: Pick<Event, 'preventDefault'>) => {
+    const selectFile = useCallback((file: ChatFile, event: Pick<Event, 'preventDefault'>) => {
         event.preventDefault();
         setShow(false);
         if (hashQuery) {
             onFileSelected(file.path, hashQuery.start, hashQuery.end);
         }
-    };
+    }, [hashQuery, onFileSelected]);
 
     useEffect(() => {
         if (!input) return;
@@ -110,11 +111,11 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
             const hq = findHashQuery(input);
             setHashQuery(hq);
             if (hq) {
-                dispatch(queryFiles({ chatId, query: hq.query }));
+                void dispatch(queryFiles({ chatId, query: hq.query }));
             }
         };
 
-        const handleBlur = () => setShow(false);
+        const handleBlur = () => { setShow(false); };
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!show || !files || files.length === 0) return;
@@ -143,7 +144,7 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
             input.removeEventListener('blur', handleBlur);
             input.removeEventListener('keydown', handleKeyDown);
         };
-    }, [input, show, files, selectedIndex, hashQuery]);
+    }, [chatId, dispatch, files, input, selectFile, selectedIndex, show]);
 
     return show ? (
         <ToolTip
@@ -156,10 +157,10 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
             className="scrollable file-mentions-container"
             place="top-start">
             <ul className="file-mentions">
-                {files && files.map((file, index) => (
-                    <li onClick={(e) => selectFile(file, e)}
-                        onMouseDown={(e) => selectFile(file, e)}
-                        onMouseEnter={() => setSelectedIndex(index)}
+                {files?.map((file, index) => (
+                    <li onClick={(e) => { selectFile(file, e); }}
+                        onMouseDown={(e) => { selectFile(file, e); }}
+                        onMouseEnter={() => { setSelectedIndex(index); }}
                         key={index}
                         className={`item ${index === selectedIndex ? 'selected' : ''}`}>
                         <i className="icon codicon codicon-file"></i>

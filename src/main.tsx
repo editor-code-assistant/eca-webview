@@ -7,10 +7,13 @@ import { editorName } from "./util";
 const editor = editorName() || 'vscode';
 document.documentElement.dataset.editor = editor;
 
-(async () => {
-    ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-        <React.StrictMode>
-            <App />
-        </React.StrictMode>,
-    );
-})();
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+    throw new Error('Missing application root element');
+}
+
+ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>,
+);

@@ -1,5 +1,5 @@
 import { getLocalStorage } from "./localStorage";
-import { WorkspaceFolder } from "./protocol";
+import type { WorkspaceFolder } from "./protocol";
 
 /**
  * Generate a fresh chat id on the client. The webview now mints a UUID

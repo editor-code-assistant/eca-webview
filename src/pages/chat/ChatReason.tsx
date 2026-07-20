@@ -22,7 +22,7 @@ function ChatReasonContent({ status, content, totalTimeMs }: Props) {
     };
 
     const cardRef = useRef<HTMLDivElement>(null);
-    const collapse = () => setExpanded(false);
+    const collapse = () => { setExpanded(false); };
     const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
 
     return (

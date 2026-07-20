@@ -1,5 +1,6 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
-import { InputField, LoginAction, LoginMethod } from '../../protocol';
+import type { FormEvent} from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { InputField, LoginAction, LoginMethod } from '../../protocol';
 import './ProviderLoginDialog.scss';
 
 export type ActiveLoginAction = Exclude<LoginAction, { action: 'done' }>;
@@ -100,7 +101,7 @@ export function ProviderLoginDialog({
                             <button
                                 type="button"
                                 key={method.key}
-                                onClick={() => onChooseMethod(method)}
+                                onClick={() => { onChooseMethod(method); }}
                                 disabled={busy}
                             >
                                 {method.label}
@@ -126,10 +127,10 @@ export function ProviderLoginDialog({
                                     type={field.type === 'secret' ? 'password' : 'text'}
                                     name={field.key}
                                     value={values[field.key] ?? ''}
-                                    onChange={event => setValues(current => ({
+                                    onChange={event => { setValues(current => ({
                                         ...current,
                                         [field.key]: event.target.value,
-                                    }))}
+                                    })); }}
                                     autoComplete={field.type === 'secret' ? 'new-password' : 'off'}
                                     disabled={busy}
                                 />

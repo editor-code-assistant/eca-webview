@@ -1,6 +1,7 @@
-import { ErrorInfo, useState } from 'react';
-import { FallbackProps } from 'react-error-boundary';
+import { useState } from 'react';
+import type { FallbackProps } from 'react-error-boundary';
 import { useNavigate, useRouteError } from 'react-router-dom';
+import { buildErrorReport, getComponentStack, normalizeError } from '../../errorReporting';
 import './ErrorFallback.scss';
 
 // ---------------------------------------------------------------------------
@@ -9,39 +10,6 @@ import './ErrorFallback.scss';
 // React's componentDidCatch provides a component stack, but react-error-boundary
 // only exposes it through the `onError` callback — not in FallbackProps.
 // We store it in a WeakMap keyed by the Error object so fallbacks can retrieve it.
-
-const componentStacks = new WeakMap<Error, string>();
-
-/**
- * Pass this as the `onError` prop on every `<ErrorBoundary>`.
- * It captures the React component stack for later use by fallback UIs.
- */
-export function captureComponentStack(error: Error, info: ErrorInfo) {
-    if (info.componentStack) {
-        componentStacks.set(error, info.componentStack);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Clipboard helper
-// ---------------------------------------------------------------------------
-
-function buildErrorReport(error: Error | undefined): string {
-    if (!error) return 'Unknown error';
-
-    const parts: string[] = [`Error: ${error.message}`];
-
-    if (error.stack) {
-        parts.push(`\nStack Trace:\n${error.stack}`);
-    }
-
-    const componentStack = componentStacks.get(error);
-    if (componentStack) {
-        parts.push(`\nComponent Stack:${componentStack}`);
-    }
-
-    return parts.join('\n');
-}
 
 // ---------------------------------------------------------------------------
 // Shared: collapsible error details + copy button
@@ -55,16 +23,16 @@ function useErrorDetails(error: Error | undefined) {
         try {
             await navigator.clipboard.writeText(buildErrorReport(error));
             setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            setTimeout(() => { setCopied(false); }, 2000);
         } catch {
             setExpanded(true);
         }
     };
 
-    const toggleExpanded = () => setExpanded(v => !v);
+    const toggleExpanded = () => { setExpanded(v => !v); };
 
     const stack = error?.stack ?? '';
-    const componentStack = error ? componentStacks.get(error) : undefined;
+    const componentStack = error ? getComponentStack(error) : undefined;
     const stackContent = stack + (componentStack ? `\n\nComponent Stack:${componentStack}` : '');
 
     return { expanded, copied, handleCopy, toggleExpanded, stackContent };
@@ -79,7 +47,7 @@ function ErrorDetailsBlock({ error }: { error: Error | undefined }) {
             <div className="error-details__actions">
                 <button
                     className="error-fallback__action error-fallback__action--secondary"
-                    onClick={handleCopy}
+                    onClick={() => { void handleCopy(); }}
                     title="Copy full error report to clipboard"
                 >
                     <i className={`codicon ${copied ? 'codicon-check' : 'codicon-copy'}`} />
@@ -115,7 +83,7 @@ function ErrorDetailsInline({ error }: { error: Error | undefined }) {
             <span className="error-details__inline-actions">
                 <button
                     className="error-fallback__inline-action"
-                    onClick={handleCopy}
+                    onClick={() => { void handleCopy(); }}
                     title="Copy full error report to clipboard"
                 >
                     <i className={`codicon ${copied ? 'codicon-check' : 'codicon-copy'}`} />
@@ -143,7 +111,8 @@ function ErrorDetailsInline({ error }: { error: Error | undefined }) {
  * App-level fallback — last-resort catch-all wrapping the entire router.
  * Shows a full-panel crash screen with a "Reload" button.
  */
-export function AppErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export function AppErrorFallback({ error: fallbackError, resetErrorBoundary }: FallbackProps) {
+    const error = normalizeError(fallbackError as unknown);
     return (
         <div className="error-fallback error-fallback--app">
             <div className="error-fallback__icon">
@@ -173,7 +142,7 @@ export function AppErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
  * Shows an error summary with a "Back to Chat" navigation link.
  */
 export function RouteErrorFallback() {
-    const error = useRouteError() as Error | undefined;
+    const error = normalizeError(useRouteError());
     const navigate = useNavigate();
 
     return (
@@ -184,7 +153,7 @@ export function RouteErrorFallback() {
             <h3 className="error-fallback__title">This page crashed</h3>
             <pre className="error-fallback__details">{error?.message ?? 'Unknown error'}</pre>
             <div className="error-fallback__button-row">
-                <button className="error-fallback__action" onClick={() => navigate('/')}>
+                <button className="error-fallback__action" onClick={() => { navigate('/'); }}>
                     <i className="codicon codicon-arrow-left" /> Back to Chat
                 </button>
             </div>
@@ -201,7 +170,8 @@ export function RouteErrorFallback() {
  * Per-message fallback — wraps each chat message in `ChatMessages`.
  * Shows a subtle inline card when a single message fails to render.
  */
-export function MessageErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export function MessageErrorFallback({ error: fallbackError, resetErrorBoundary }: FallbackProps) {
+    const error = normalizeError(fallbackError as unknown);
     return (
         <div className="error-fallback error-fallback--message">
             <span className="error-fallback__inline-icon">
@@ -230,7 +200,8 @@ export function MessageErrorFallback({ error, resetErrorBoundary }: FallbackProp
  * Markdown fallback — wraps `<MarkdownContent />` rendering.
  * Falls back to showing the raw text content instead of a blank area.
  */
-export function MarkdownErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export function MarkdownErrorFallback({ error: fallbackError, resetErrorBoundary }: FallbackProps) {
+    const error = normalizeError(fallbackError as unknown);
     return (
         <div className="error-fallback error-fallback--markdown">
             <div className="error-fallback--markdown__header">

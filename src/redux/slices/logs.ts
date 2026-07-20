@@ -1,6 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { State } from "../store";
-import { LogEntry } from '../../webviewProtocol';
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import type { State } from "../store";
+import type { LogEntry } from '../../webviewProtocol';
 
 export type { LogEntry } from '../../webviewProtocol';
 
@@ -14,12 +15,14 @@ interface LogsState {
 
 const DEFAULT_MAX_ENTRIES = 5000;
 
+const initialState: LogsState = {
+    entries: [],
+    maxEntries: DEFAULT_MAX_ENTRIES,
+};
+
 export const logsSlice = createSlice({
     name: 'logs',
-    initialState: {
-        entries: [],
-        maxEntries: DEFAULT_MAX_ENTRIES,
-    } as LogsState,
+    initialState,
     reducers: {
         /** Replace the whole buffer — used by the `logs/snapshot` response
          * when LogsTab mounts, so the user sees everything captured before

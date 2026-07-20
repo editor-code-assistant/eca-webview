@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveSettingsTab } from './Settings';
+import { resolveSettingsTab } from './settingsNavigation';
 
 describe('resolveSettingsTab', () => {
   it.each(['mcps', 'providers', 'config', 'jobs', 'logs'] as const)(

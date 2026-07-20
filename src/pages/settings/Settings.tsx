@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../App';
+import { ROUTES } from '../../routes';
 import { MCPsTab } from './MCPsTab';
 import { ProvidersTab } from './ProvidersTab';
 import { GlobalConfigTab } from './GlobalConfigTab';
 import { JobsTab } from './JobsTab';
 import { LogsTab } from './LogsTab';
+import { resolveSettingsTab } from './settingsNavigation';
+import type { SettingsTabKey } from './settingsNavigation';
 import './Settings.scss';
-
-export type SettingsTabKey = 'mcps' | 'providers' | 'config' | 'jobs' | 'logs';
 
 const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'mcps', label: '🧩 MCPs', icon: '' },
@@ -17,18 +17,6 @@ const tabs: { key: SettingsTabKey; label: string; icon: string }[] = [
     { key: 'logs', label: '📋 Logs', icon: '' },
     { key: 'config', label: '⚙️ Global Config', icon: '' },
 ];
-
-function isSettingsTabKey(value: unknown): value is SettingsTabKey {
-    return typeof value === 'string' && tabs.some(({ key }) => key === value);
-}
-
-export function resolveSettingsTab(state: unknown): SettingsTabKey {
-    if (typeof state !== 'object' || state === null || !('tab' in state)) {
-        return 'mcps';
-    }
-
-    return isSettingsTabKey(state.tab) ? state.tab : 'mcps';
-}
 
 export function Settings() {
     const location = useLocation();
@@ -47,7 +35,7 @@ export function Settings() {
     return (
         <div className="settings-container scrollable">
             <div className="page-header">
-                <button onClick={() => navigate(ROUTES.CHAT)} className="back-button">
+                <button onClick={() => { navigate(ROUTES.CHAT); }} className="back-button">
                     <i className="codicon codicon-arrow-left"></i>
                 </button>
                 <h2 className="page-title">Settings</h2>
@@ -58,7 +46,7 @@ export function Settings() {
                     <button
                         key={tab.key}
                         className={`settings-tab ${activeTab === tab.key ? 'active' : ''}`}
-                        onClick={() => setActiveTab(tab.key)}>
+                        onClick={() => { setActiveTab(tab.key); }}>
                         {tab.icon && <i className={`codicon ${tab.icon}`}></i>}
                         {tab.label}
                     </button>

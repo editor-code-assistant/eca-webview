@@ -1,11 +1,13 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../App';
-import { ChatMessage, clearChat } from '../../redux/slices/chat';
+import { ROUTES } from '../../routes';
+import type { ChatMessage} from '../../redux/slices/chat';
+import { clearChat } from '../../redux/slices/chat';
 import { selectRunningJobCount } from '../../redux/slices/jobs';
 import { setTrust } from '../../redux/slices/server';
-import { State, useEcaDispatch } from '../../redux/store';
+import type { State} from '../../redux/store';
+import { useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
 import './ChatSubHeader.scss';
 import { webviewSend } from '../../hooks';
@@ -112,27 +114,27 @@ export function ChatSubHeader({ chatId }: Props) {
     }
 
     const showContext = () => {
-        dispatch(sendPromptToCurrentChat({ prompt: '/context' }));
+        void dispatch(sendPromptToCurrentChat({ prompt: '/context' }));
     };
 
     const chat = useSelector((state: State) => state.chat.chats[chatId]);
 
-    const exportChat = () => {
+    const exportChat = useCallback(() => {
         if (!chat || chat.messages.length === 0) return;
         const title = chat.title || 'Chat Export';
         const markdown = `# ${title}\n\n${messagesToMarkdown(chat.messages)}`;
         const defaultName = `${title.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').toLowerCase()}.md`;
         webviewSend('editor/saveFile', { content: markdown, defaultName });
-    }
+    }, [chat]);
 
     // Bridge for the desktop "Export Chat" menu (CmdOrCtrl+Shift+E).
     // RootWrapper emits this DOM event when the accelerator fires; the
     // handler closes over the current `chat` so deps must include it.
     useEffect(() => {
-        const handler = () => exportChat();
+        const handler = () => { exportChat(); };
         document.addEventListener('eca:requestExportCurrent', handler);
-        return () => document.removeEventListener('eca:requestExportCurrent', handler);
-    }, [chat]);
+        return () => { document.removeEventListener('eca:requestExportCurrent', handler); };
+    }, [exportChat]);
 
     const allServers = useSelector((state: State) => state.mcp.servers);
     const mcpServers = useMemo(() => allServers.filter((server) => server.type === 'mcp'), [allServers]);
@@ -170,13 +172,16 @@ export function ChatSubHeader({ chatId }: Props) {
             case 'running':
                 running++;
                 break;
+            case 'disabled':
+            case 'stopped':
+                break;
         }
     });
 
     return (
         <div className="chat-subheader">
             <div className="details">
-                <div data-tooltip-id="details-mcps" onClick={() => navigate(ROUTES.SETTINGS)} className="mcps">
+                <div data-tooltip-id="details-mcps" onClick={() => { navigate(ROUTES.SETTINGS); }} className="mcps">
                     <span>MCPs </span>
                     {failed > 0 &&
                         <span className="failed">{failed}</span>}
@@ -201,7 +206,7 @@ export function ChatSubHeader({ chatId }: Props) {
                     <p>Click for more details.</p>
                 </ToolTip>
                 {runningJobCount > 0 && (
-                    <div className="bg-jobs" onClick={() => navigate(ROUTES.SETTINGS, { state: { tab: 'jobs' } })}>
+                    <div className="bg-jobs" onClick={() => { navigate(ROUTES.SETTINGS, { state: { tab: 'jobs' } }); }}>
                         <span>{runningJobCount} {runningJobCount === 1 ? 'job' : 'jobs'}</span>
                     </div>
                 )}

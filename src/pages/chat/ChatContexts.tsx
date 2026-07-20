@@ -1,8 +1,10 @@
 import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { WorkspaceFolder } from "../../protocol";
-import { addContext, ChatPreContext, CursorFocus, removeContext } from "../../redux/slices/chat";
-import { State, useEcaDispatch } from "../../redux/store";
+import type { WorkspaceFolder } from "../../protocol";
+import type { ChatPreContext, CursorFocus} from "../../redux/slices/chat";
+import { addContext, removeContext } from "../../redux/slices/chat";
+import type { State} from "../../redux/store";
+import { useEcaDispatch } from "../../redux/store";
 import { queryContext } from "../../redux/thunks/chat";
 import { relativizeFromRoot } from "../../util";
 import { ToolTip } from "../components/ToolTip";
@@ -19,24 +21,26 @@ function absPathToFilename(path: string) {
 
 function contextLabel(context: ChatPreContext, cursorFocus: CursorFocus | undefined): string {
     switch (context.type) {
-        case 'file':
+        case 'file': {
             const path = absPathToFilename(context.path);
             if (context.linesRange) {
                 return `${path} (${context.linesRange.start}-${context.linesRange.end})`;
             }
             return path;
+        }
         case 'directory':
             return context.path.split('/').pop() || context.path;
         case 'web':
             return context.url;
         case 'repoMap':
             return 'repoMap';
-        case 'cursor':
+        case 'cursor': {
             const filename = cursorFocus ? absPathToFilename(cursorFocus?.path) : '';
             const startLine = cursorFocus?.position.start.line;
             const startCharacter = cursorFocus?.position.start.character;
 
             return `cursor (${filename}:${startLine}:${startCharacter})`;
+        }
         case 'mcpResource':
             return context.server + ':' + context.name;
         default:
@@ -55,13 +59,13 @@ function contextDescription(context: ChatPreContext, workspaceFolders: Workspace
             return 'Cursor path + position/selection';
         case 'mcpResource':
             return context.description;
-        default:
+        case 'web':
             return '';
     }
 }
 
 function contextIcon(context: ChatPreContext): React.ReactNode {
-    let icon = '';
+    let icon: string;
     switch (context.type) {
         case 'file':
             icon = 'file';
@@ -106,12 +110,12 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
     const cursorFocus = useSelector((state: State) => state.chat.cursorFocus);
 
     useEffect(() => {
-        dispatch(queryContext({
+        void dispatch(queryContext({
             chatId,
             query: query,
             contexts: addedContexts
         }));
-    }, [query, addedContexts]);
+    }, [addedContexts, chatId, dispatch, query]);
 
     const onInputQueryChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(e.target.value);
@@ -129,7 +133,7 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
         <div className="contexts">
             <button disabled={!enabled} data-tooltip-id="add-context" className="add">@{addedContexts.length === 0 ? " Add context" : ""}</button>
             {enabled && addedContexts.map((context, index) => (
-                <span onClick={() => onContextRemoved(context)} key={index} className="added-context">
+                <span onClick={() => { onContextRemoved(context); }} key={index} className="added-context">
                     {contextIcon(context)}
                     {contextLabel(context, cursorFocus)}
                 </span>
@@ -153,7 +157,7 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
                     {contexts && contexts.length > 0 && (
                         <ul className="context-list">
                             {contexts.map((context, index) => (
-                                <li onClick={() => onContextAdded(context)} key={index} className="context-item">
+                                <li onClick={() => { onContextAdded(context); }} key={index} className="context-item">
                                     {contextIcon(context)}
                                     <span className="label">{contextLabel(context, cursorFocus)}</span>
                                     <span className="description">{contextDescription(context, workspaceFolders)}</span>
