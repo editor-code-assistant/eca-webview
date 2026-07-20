@@ -14,6 +14,7 @@
     "build": "tsc && vite build && npm run bundle:check",
     "bundle:check": "node scripts/check-bundle-size.mjs",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest"
