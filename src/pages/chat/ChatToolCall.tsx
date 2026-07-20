@@ -1,6 +1,4 @@
-import { memo, useRef, useState } from 'react';
-import { Diff, Hunk, parseDiff } from 'react-diff-view';
-import 'react-diff-view/style/index.css';
+import { lazy, memo, Suspense, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
 import { useSelector } from 'react-redux';
@@ -16,6 +14,8 @@ import { ChatSubagentToolCall } from './ChatSubagentToolCall';
 import { ChatTime } from './ChatTime';
 import './ChatToolCall.scss';
 import { MarkdownContent } from './MarkdownContent';
+
+const FileChangeDiff = lazy(() => import('./FileChangeDiff'));
 
 interface Props {
     chatId: string,
@@ -254,24 +254,13 @@ function FileChangeHeader({ props, dispatch }: { props: Props, dispatch: EcaDisp
 }
 
 function FileChangeBody({ props }: { props: Props }) {
-    const { path, diff } = props.details as FileChangeDetails;
-    let fileDiffs;
-    if (diff.startsWith('---')) {
-        fileDiffs = parseDiff(diff);
-    } else {
-        fileDiffs = parseDiff('--- a/' + path + '\n+++ b/' + path + '\n' + diff);
-    }
-
     return (
-        <div>
-            <span>Tool: </span>
-            <span>{props.name}</span>
-            {fileDiffs.map(({ oldRevision, newRevision, type, hunks }) => (
-                <Diff key={oldRevision + '-' + newRevision} viewType="unified" gutterType='none' diffType={type} hunks={hunks}>
-                    {hunks => hunks.map(hunk => <Hunk key={hunk.content} hunk={hunk} />)}
-                </Diff>
-            ))}
-        </div>
+        <Suspense fallback={<div className="file-change-loading">Loading diffâ€¦</div>}>
+            <FileChangeDiff
+                details={props.details as FileChangeDetails}
+                toolName={props.name}
+            />
+        </Suspense>
     );
 }
 
