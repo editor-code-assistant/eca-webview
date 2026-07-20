@@ -6,6 +6,13 @@ export default defineConfig({
   base: './',
   root: __dirname,
   plugins: [react()],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: {
