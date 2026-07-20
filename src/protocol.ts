@@ -679,7 +679,7 @@ export interface ProviderModel {
         webSearch: boolean;
     };
     cost?: { input: number; output: number };
-    settings?: Record<string, any>;
+    settings?: Record<string, unknown>;
 }
 
 export interface ProviderStatus {
@@ -689,7 +689,7 @@ export interface ProviderStatus {
     auth: ProviderAuth;
     login?: { methods: LoginMethod[] };
     models: ProviderModel[];
-    settings?: Record<string, any>;
+    settings?: Record<string, unknown>;
 }
 
 export interface ProvidersListResult {

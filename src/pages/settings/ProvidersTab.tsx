@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { webviewSend } from '../../hooks';
-import { LoginAction, ProviderAuthStatus, ProviderStatus } from '../../protocol';
+import { LoginAction, LoginMethod, ProviderAuthStatus, ProviderStatus } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
+import { editorOpenUrl } from '../../redux/thunks/editor';
 import { listProviders, loginProvider, loginProviderInput, logoutProvider } from '../../redux/thunks/providers';
+import { ActiveLoginAction, ProviderLoginDialog } from './ProviderLoginDialog';
 import './ProvidersTab.scss';
 
 const authStatusLabel: Record<ProviderAuthStatus, string> = {
@@ -57,17 +58,28 @@ function authInfoText(provider: ProviderStatus): string | null {
 
 function getLoginLabel(provider: ProviderStatus): string | null {
     if (!provider.login?.methods?.length) return null;
-    const hasApiKey = provider.login.methods.some(m => m.key === 'api-key');
-    const hasOther = provider.login.methods.some(m => m.key !== 'api-key');
+    const hasApiKey = provider.login.methods.some(method => method.key === 'api-key');
+    const hasOther = provider.login.methods.some(method => method.key !== 'api-key');
     if (hasOther) return 'Login';
     if (hasApiKey) return 'Add Key';
     return 'Login';
 }
 
+function loginErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        const message = Reflect.get(error, 'message');
+        if (typeof message === 'string') return message;
+    }
+    return String(error);
+}
+
 function ProviderCard({ provider }: { provider: ProviderStatus }) {
     const dispatch = useEcaDispatch();
     const [modelsExpanded, setModelsExpanded] = useState(false);
-    const [loginLoading, setLoginLoading] = useState(false);
+    const [loginBusy, setLoginBusy] = useState(false);
+    const [loginAction, setLoginAction] = useState<ActiveLoginAction | null>(null);
+    const [loginError, setLoginError] = useState<string | null>(null);
 
     const auth = provider.auth;
     const isAuthed = auth.status === 'authenticated' || auth.status === 'expiring';
@@ -75,91 +87,64 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
     const loginLabel = !isAuthed ? getLoginLabel(provider) : null;
     const info = authInfoText(provider);
 
-    const handleLoginAction = async (action: LoginAction) => {
-        if (action.action === 'choose-method') {
-            const result: string | null = await new Promise(resolve => {
-                webviewSend('editor/readInput', {
-                    title: 'Choose login method',
-                    placeholder: 'Select a method...',
-                    options: action.methods.map(m => m.label),
-                });
-                const handler = (event: MessageEvent) => {
-                    if (event.data.type === 'editor/readInputResponse') {
-                        window.removeEventListener('message', handler);
-                        resolve(event.data.data?.value ?? null);
-                    }
-                };
-                window.addEventListener('message', handler);
-            });
-            if (result) {
-                const method = action.methods.find(m => m.label === result);
-                if (method) {
-                    const nextAction = await dispatch(loginProvider({ provider: provider.id, method: method.key })).unwrap();
-                    await handleLoginAction(nextAction);
-                }
-            }
-        } else if (action.action === 'input') {
-            const data: Record<string, string> = {};
-            for (const field of action.fields) {
-                const value: string | null = await new Promise(resolve => {
-                    webviewSend('editor/readInput', {
-                        title: field.label,
-                        placeholder: `Enter ${field.label.toLowerCase()}...`,
-                        password: field.type === 'secret',
-                    });
-                    const handler = (event: MessageEvent) => {
-                        if (event.data.type === 'editor/readInputResponse') {
-                            window.removeEventListener('message', handler);
-                            resolve(event.data.data?.value ?? null);
-                        }
-                    };
-                    window.addEventListener('message', handler);
-                });
-                if (value === null) return;
-                data[field.key] = value;
-            }
-            await dispatch(loginProviderInput({ provider: provider.id, data })).unwrap();
-        } else if (action.action === 'authorize') {
-            webviewSend('editor/openUrl', { url: action.url });
-            if (action.fields?.length) {
-                const data: Record<string, string> = {};
-                for (const field of action.fields) {
-                    const value: string | null = await new Promise(resolve => {
-                        webviewSend('editor/readInput', {
-                            title: field.label,
-                            placeholder: `Enter ${field.label.toLowerCase()}...`,
-                            password: field.type === 'secret',
-                        });
-                        const handler = (event: MessageEvent) => {
-                            if (event.data.type === 'editor/readInputResponse') {
-                                window.removeEventListener('message', handler);
-                                resolve(event.data.data?.value ?? null);
-                            }
-                        };
-                        window.addEventListener('message', handler);
-                    });
-                    if (value === null) return;
-                    data[field.key] = value;
-                }
-                await dispatch(loginProviderInput({ provider: provider.id, data })).unwrap();
-            }
-        } else if (action.action === 'device-code') {
-            webviewSend('editor/openUrl', { url: action.url });
+    useEffect(() => {
+        if (isAuthed) {
+            setLoginAction(null);
+            setLoginError(null);
+        }
+    }, [isAuthed]);
+
+    const applyLoginAction = (action: LoginAction) => {
+        if (action.action === 'done') {
+            setLoginAction(null);
+            setLoginError(null);
+            void dispatch(listProviders());
+            return;
+        }
+
+        setLoginAction(action);
+        if (action.action === 'authorize' || action.action === 'device-code') {
+            void dispatch(editorOpenUrl({ url: action.url }));
         }
     };
 
-    const onLogin = async () => {
-        setLoginLoading(true);
+    const runLoginOperation = async (operation: () => Promise<LoginAction>) => {
+        setLoginBusy(true);
+        setLoginError(null);
         try {
-            const action = await dispatch(loginProvider({ provider: provider.id })).unwrap();
-            await handleLoginAction(action);
+            applyLoginAction(await operation());
+        } catch (error) {
+            setLoginError(loginErrorMessage(error));
         } finally {
-            setLoginLoading(false);
+            setLoginBusy(false);
         }
     };
 
-    const onLogout = () => {
-        dispatch(logoutProvider({ provider: provider.id }));
+    const onLogin = () => {
+        void runLoginOperation(() => dispatch(loginProvider({ provider: provider.id })).unwrap());
+    };
+
+    const onChooseMethod = (method: LoginMethod) => {
+        void runLoginOperation(() => dispatch(loginProvider({
+            provider: provider.id,
+            method: method.key,
+        })).unwrap());
+    };
+
+    const onSubmitFields = (data: Record<string, string>) => {
+        void runLoginOperation(() => dispatch(loginProviderInput({ provider: provider.id, data })).unwrap());
+    };
+
+    const onLogout = async () => {
+        setLoginBusy(true);
+        setLoginError(null);
+        try {
+            await dispatch(logoutProvider({ provider: provider.id })).unwrap();
+        } catch (error) {
+            setLoginError(loginErrorMessage(error));
+        } finally {
+            setLoginBusy(false);
+        }
     };
 
     return (
@@ -174,20 +159,21 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
                 </div>
                 <div className="provider-actions">
                     {canLogout &&
-                        <button className="action-btn logout-btn" onClick={onLogout}>
+                        <button className="action-btn logout-btn" onClick={onLogout} disabled={loginBusy}>
                             <i className="codicon codicon-sign-out"></i>
                             Logout
                         </button>}
                     {loginLabel &&
-                        <button className="action-btn login-btn" onClick={onLogin} disabled={loginLoading}>
+                        <button className="action-btn login-btn" onClick={onLogin} disabled={loginBusy}>
                             <i className={`codicon ${loginLabel === 'Add Key' ? 'codicon-key' : 'codicon-sign-in'}`}></i>
-                            {loginLoading ? '…' : loginLabel}
+                            {loginBusy ? '…' : loginLabel}
                         </button>}
                 </div>
             </div>
 
             <div className="provider-body">
                 {info && <span className="auth-info">{info}</span>}
+                {loginError && !loginAction && <span className="provider-error" role="alert">{loginError}</span>}
 
                 {provider.models.length > 0 &&
                     <div className="models-section">
@@ -197,8 +183,8 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
                         </button>
                         {modelsExpanded &&
                             <div className="models-list">
-                                {provider.models.map((model, i) => (
-                                    <div key={i} className="model-item">
+                                {provider.models.map(model => (
+                                    <div key={model.id} className="model-item">
                                         <span className="model-name">{model.id}</span>
                                         <div className="model-caps">
                                             {model.capabilities.reason && <span className="cap-badge">reason</span>}
@@ -211,6 +197,21 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
                             </div>}
                     </div>}
             </div>
+
+            {loginAction && (
+                <ProviderLoginDialog
+                    providerName={provider.label || provider.id}
+                    action={loginAction}
+                    busy={loginBusy}
+                    error={loginError}
+                    onChooseMethod={onChooseMethod}
+                    onSubmitFields={onSubmitFields}
+                    onClose={() => {
+                        setLoginAction(null);
+                        setLoginError(null);
+                    }}
+                />
+            )}
         </div>
     );
 }
@@ -226,17 +227,17 @@ export function ProvidersTab() {
     }, [dispatch]);
 
     const sorted = [...providers].sort((a, b) => {
-        const priority = (p: ProviderStatus) => {
-            if (p.auth.status === 'authenticated' || p.auth.status === 'expiring') return 0;
-            if (p.auth.status === 'local') return 1;
-            if (p.configured) return 2;
+        const priority = (provider: ProviderStatus) => {
+            if (provider.auth.status === 'authenticated' || provider.auth.status === 'expiring') return 0;
+            if (provider.auth.status === 'local') return 1;
+            if (provider.configured) return 2;
             return 3;
         };
         return priority(a) - priority(b);
     });
 
-    const configured = sorted.filter(p => p.configured);
-    const unconfigured = sorted.filter(p => !p.configured);
+    const configured = sorted.filter(provider => provider.configured);
+    const unconfigured = sorted.filter(provider => !provider.configured);
 
     return (
         <div className="providers-tab">
