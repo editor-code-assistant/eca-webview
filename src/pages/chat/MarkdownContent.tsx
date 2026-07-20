@@ -1,8 +1,7 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import type { ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
 import Markdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import { webviewSend } from '../../hooks';
 import { captureComponentStack } from '../../errorReporting';
@@ -11,6 +10,12 @@ import { MarkdownErrorFallback } from '../components/ErrorFallback';
 interface Props {
     content?: string,
     codeClassName?: string,
+}
+
+const SyntaxHighlightedCode = lazy(() => import('./SyntaxHighlightedCode'));
+
+function LoadingCodeBlock({ source }: { source: string }) {
+    return <div className="syntax-highlighter-loading"><code>{source}</code></div>;
 }
 
 function textContent(node: ReactNode): string | null {
@@ -43,29 +48,23 @@ export function MarkdownContent({ content, codeClassName }: Props) {
 
                     if (match && source !== null) {
                         return (
-                            <SyntaxHighlighter
-                                customStyle={{ scrollbarWidth: 'thin' }}
-                                wrapLines={true}
-                                wrapLongLines={true}
-                                PreTag="div"
-                                children={source.replace(/\n$/, '')}
-                                language={match[1]}
-                                style={dracula}
-                            />
+                            <Suspense fallback={<LoadingCodeBlock source={source} />}>
+                                <SyntaxHighlightedCode
+                                    source={source.replace(/\n$/, '')}
+                                    language={match[1]}
+                                />
+                            </Suspense>
                         );
                     }
 
                     if (isBlock && source !== null) {
                         return (
-                            <SyntaxHighlighter
-                                customStyle={{ scrollbarWidth: 'thin' }}
-                                wrapLines={true}
-                                wrapLongLines={true}
-                                PreTag="div"
-                                children={source.replace(/\n$/, '')}
-                                language={'text'}
-                                style={dracula}
-                            />
+                            <Suspense fallback={<LoadingCodeBlock source={source} />}>
+                                <SyntaxHighlightedCode
+                                    source={source.replace(/\n$/, '')}
+                                    language="text"
+                                />
+                            </Suspense>
                         );
                     }
 
