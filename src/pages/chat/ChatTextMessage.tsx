@@ -5,8 +5,14 @@ import './ChatTextMessage.scss';
 interface Props {
     role: string,
     text: string,
-    onRollbackClicked?: () => void;
-    onAddFlagClicked?: () => void;
+    // Data + stable-handler props (instead of per-message closures) so the
+    // memo below actually prevents re-renders while other messages stream —
+    // an inline `() => ...` prop would defeat it on every render of the
+    // parent list (issue #18).
+    contentId?: string,
+    canAddFlag?: boolean,
+    onRollback?: (contentId: string) => void;
+    onAddFlag?: (contentId: string) => void;
     showActions?: boolean;
 }
 
@@ -43,7 +49,7 @@ function preprocessUserMessage(text: string): string {
     }).join('');
 }
 
-export const ChatTextMessage = memo(({ role, text, onRollbackClicked, onAddFlagClicked, showActions = true }: Props) => {
+export const ChatTextMessage = memo(({ role, text, contentId, canAddFlag, onRollback, onAddFlag, showActions = true }: Props) => {
     const processedText = useMemo(() => role === 'user' ? preprocessUserMessage(text) : text, [role, text]);
     const [copied, setCopied] = useState(false);
 
@@ -77,14 +83,16 @@ export const ChatTextMessage = memo(({ role, text, onRollbackClicked, onAddFlagC
                         <button onClick={onCopyClicked} className="action-btn" title="Copy message">
                             <i className={`codicon ${copied ? 'codicon-check' : 'codicon-copy'}`} />
                         </button>
-                        {onAddFlagClicked && (
-                            <button onClick={onAddFlagClicked} className="action-btn" title="Add flag after this message">
+                        {onAddFlag && contentId && canAddFlag && (
+                            <button onClick={() => onAddFlag(contentId)} className="action-btn" title="Add flag after this message">
                                 <i className="codicon codicon-bookmark" />
                             </button>
                         )}
-                        <button onClick={onRollbackClicked} className="action-btn" title="Rollback to this message">
-                            <i className="codicon codicon-discard" />
-                        </button>
+                        {onRollback && contentId && (
+                            <button onClick={() => onRollback(contentId)} className="action-btn" title="Rollback to this message">
+                                <i className="codicon codicon-discard" />
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

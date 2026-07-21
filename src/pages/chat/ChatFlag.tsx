@@ -3,19 +3,22 @@ import './ChatFlag.scss';
 
 interface Props {
     text: string;
-    onForkClicked: () => void;
-    onRemoveClicked: () => void;
+    // contentId + stable handlers keep the memo effective — see the same
+    // pattern in ChatTextMessage (issue #18).
+    contentId: string;
+    onFork: (contentId: string) => void;
+    onRemove: (contentId: string) => void;
 }
 
-export const ChatFlag = memo(({ text, onForkClicked, onRemoveClicked }: Props) => {
+export const ChatFlag = memo(({ text, contentId, onFork, onRemove }: Props) => {
     return (
         <div className="flag-banner">
             <span className="flag-label">🚩 {text}</span>
             <div className="flag-actions">
-                <button onClick={onForkClicked} className="flag-btn" title="Fork from here">
+                <button onClick={() => onFork(contentId)} className="flag-btn" title="Fork from here">
                     <i className="codicon codicon-repo-forked" />
                 </button>
-                <button onClick={onRemoveClicked} className="flag-btn flag-btn-remove" title="Remove flag">
+                <button onClick={() => onRemove(contentId)} className="flag-btn flag-btn-remove" title="Remove flag">
                     <i className="codicon codicon-close" />
                 </button>
             </div>

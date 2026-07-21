@@ -46,21 +46,27 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const { userScrolled, scrollToBottom } = useAutoScroll(scrollRef, messages);
 
-    const onRollbackClicked = (contentId: string) => {
+    // Stable identities (useCallback + contentId passed by the child) so the
+    // memo on ChatTextMessage/ChatFlag holds while other messages stream.
+    // Inline `() => ...` props recreated per render used to defeat those
+    // memos, forcing every markdown message to re-parse (and Prism to
+    // re-highlight) ~30x/s during streaming — saturating the main thread
+    // and swallowing clicks like the Stop button (issue #18).
+    const onRollbackClicked = useCallback((contentId: string) => {
         dispatch(rollbackChat({ chatId, contentId }));
-    }
+    }, [dispatch, chatId]);
 
-    const onAddFlagClicked = (contentId: string) => {
+    const onAddFlagClicked = useCallback((contentId: string) => {
         dispatch(addFlag({ chatId, contentId }));
-    }
+    }, [dispatch, chatId]);
 
-    const onForkFromFlagClicked = (contentId: string) => {
+    const onForkFromFlagClicked = useCallback((contentId: string) => {
         dispatch(forkFromFlag({ chatId, contentId }));
-    }
+    }, [dispatch, chatId]);
 
-    const onRemoveFlagClicked = (contentId: string) => {
+    const onRemoveFlagClicked = useCallback((contentId: string) => {
         dispatch(removeFlag({ chatId, contentId }));
-    }
+    }, [dispatch, chatId]);
 
     return (
         <div className="messages-wrapper">
@@ -79,8 +85,10 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
-                                    onRollbackClicked={() => onRollbackClicked(message.contentId!)}
-                                    onAddFlagClicked={message.contentId && !alreadyFlagged ? () => onAddFlagClicked(message.contentId!) : undefined} />
+                                    contentId={message.contentId}
+                                    canAddFlag={!alreadyFlagged}
+                                    onRollback={onRollbackClicked}
+                                    onAddFlag={onAddFlagClicked} />
                             );
                         }
                         case 'toolCall':
@@ -124,8 +132,9 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                             return (
                                 <ChatFlag
                                     text={message.text}
-                                    onForkClicked={() => onForkFromFlagClicked(message.contentId)}
-                                    onRemoveClicked={() => onRemoveFlagClicked(message.contentId)}
+                                    contentId={message.contentId}
+                                    onFork={onForkFromFlagClicked}
+                                    onRemove={onRemoveFlagClicked}
                                 />
                             );
                         default:

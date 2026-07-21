@@ -1,3 +1,4 @@
+import { memo, useDeferredValue } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import Markdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -11,7 +12,15 @@ interface Props {
     codeClassName?: string,
 }
 
-export function MarkdownContent({ content, codeClassName }: Props) {
+/**
+ * Inner renderer, memoized. react-markdown re-parses the WHOLE string and
+ * Prism re-highlights every code block on each render — for a message
+ * holding a ~2000-line code block that costs ~800ms. During streaming the
+ * chat re-renders ~30x/s, so without the memo every markdown surface in
+ * the conversation would redo that work per batch, saturating the main
+ * thread and starving user input (the Stop button, eca-webview issue #18).
+ */
+const MarkdownRenderer = memo(function MarkdownRenderer({ content, codeClassName }: Props) {
     const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string | undefined) => {
         e.preventDefault();
         // Only http(s) goes to the OS browser; anything else (file://,
@@ -91,4 +100,21 @@ export function MarkdownContent({ content, codeClassName }: Props) {
         />
         </ErrorBoundary>
     );
-}
+});
+
+/**
+ * Public markdown surface.
+ *
+ * `useDeferredValue` decouples the expensive parse from urgent updates:
+ * when actively-streaming content changes, the urgent pass re-renders with
+ * the PREVIOUS string (hitting MarkdownRenderer's memo, ~free) and the
+ * parse of the new string runs in a deferred, interruptible render. Clicks
+ * and other input are processed in between, so a fast reasoning/token
+ * stream can no longer freeze the webview (issue #18). Successive deltas
+ * arriving faster than the parse simply supersede the deferred render —
+ * natural throttling to whatever the machine can afford.
+ */
+export const MarkdownContent = memo(function MarkdownContent({ content, codeClassName }: Props) {
+    const deferredContent = useDeferredValue(content);
+    return <MarkdownRenderer content={deferredContent} codeClassName={codeClassName} />;
+});
