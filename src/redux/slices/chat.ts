@@ -547,6 +547,13 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
                 }
                 case 'finished': {
                     chat.progress = undefined;
+                    // A stopped prompt never emits reasonFinished — finalize
+                    // any reason still 'thinking' so it doesn't spin forever.
+                    chat.messages = chat.messages.map(msg =>
+                        msg.type === 'reason' && msg.status !== 'done'
+                            ? { ...msg, status: 'done' as const }
+                            : msg
+                    );
                     // Merge unconsumed steer into pending prompts queue
                     if (chat.steerMessage) {
                         chat.pendingPrompts.unshift(chat.steerMessage);
