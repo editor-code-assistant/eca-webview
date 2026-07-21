@@ -72,6 +72,13 @@ export interface Chat {
     usage?: ChatUsage,
     pendingPrompts: string[],
     steerMessage?: string,
+    /**
+     * One-shot text to load into the prompt input. Set by the
+     * `rollbackChat` thunk with the rolled-back message text (the
+     * server drops that message from the chat) so the user can tweak
+     * and resend it. Consumed and cleared by ChatPrompt.
+     */
+    prefillPrompt?: string,
     taskState?: TaskDetails | null,
     taskLoading?: boolean,
     pendingQuestion?: PendingQuestion,
@@ -866,6 +873,20 @@ export const chatSlice = createSlice({
                 chat.title = title;
             }
         },
+        setPrefillPrompt: (state, action) => {
+            const { chatId, text } = action.payload as { chatId: string, text: string };
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.prefillPrompt = text;
+            }
+        },
+        clearPrefillPrompt: (state, action) => {
+            const chatId = action.payload as string;
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.prefillPrompt = undefined;
+            }
+        },
         beginReplay: (state, action) => {
             const { chatId } = action.payload as { chatId: string };
             const chat = state.chats[chatId];
@@ -1025,6 +1046,8 @@ export const {
     clearSteerMessage,
     pushPromptHistory,
     renameChat,
+    setPrefillPrompt,
+    clearPrefillPrompt,
     beginReplay,
     endReplay,
     removeFlagMessage,

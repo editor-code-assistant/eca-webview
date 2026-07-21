@@ -5,7 +5,7 @@ import { SyncLoader } from "react-spinners";
 import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
-import { addContext, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
+import { addContext, clearPrefillPrompt, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { selectInitProgressString, setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
@@ -299,6 +299,16 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     useEffect(() => {
         inputRef.current?.focus();
     }, [enabled, chatId]);
+
+    // One-shot prompt prefill (e.g. the text of a rolled-back message).
+    const prefillPrompt = useSelector((state: State) => state.chat.chats[chatId]?.prefillPrompt);
+    useEffect(() => {
+        if (prefillPrompt !== undefined) {
+            setPromptValue(prefillPrompt);
+            dispatch(clearPrefillPrompt(chatId));
+            inputRef.current?.focus();
+        }
+    }, [prefillPrompt, chatId]);
 
     useWebviewListener('chat/focusPrompt', () => {
         inputRef.current?.focus();

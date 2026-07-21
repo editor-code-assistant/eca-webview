@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
 import { ChatContext, ChatSummary } from "../../protocol";
-import { beginReplay, beginResume, clearPendingQuestion, ChatPreContext, CursorFocus, endReplay, incRequestId, removeFlagMessage, resetChat, rollbackResume, setResumableChats } from "../slices/chat";
+import { beginReplay, beginResume, clearPendingQuestion, ChatPreContext, CursorFocus, endReplay, incRequestId, removeFlagMessage, resetChat, rollbackResume, setPrefillPrompt, setResumableChats } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
@@ -98,7 +98,15 @@ const REPLAY_WINDOW_MS = 1000;
 
 export const rollbackChat = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/rollback",
-    async ({ chatId, contentId }, { dispatch }) => {
+    async ({ chatId, contentId }, { dispatch, getState }) => {
+        // The rolled-back message is removed from the chat by the
+        // server — load its text back into the prompt input so the
+        // user can tweak and resend it instead of retyping.
+        const messages = getState().chat.chats[chatId]?.messages ?? [];
+        const rolledBack = messages.find(msg => msg.type === 'text' && msg.contentId === contentId);
+        if (rolledBack && rolledBack.type === 'text') {
+            dispatch(setPrefillPrompt({ chatId, text: rolledBack.value }));
+        }
         dispatch(beginReplay({ chatId }));
         webviewSend('chat/rollback', { chatId, contentId });
         setTimeout(() => dispatch(endReplay({ chatId })), REPLAY_WINDOW_MS);
