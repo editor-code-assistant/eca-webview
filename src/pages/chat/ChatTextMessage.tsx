@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { MarkdownContent } from "./MarkdownContent";
 import './ChatTextMessage.scss';
 
@@ -7,7 +7,7 @@ interface Props {
     text: string,
     onRollbackClicked?: () => void;
     onAddFlagClicked?: () => void;
-    showRollback?: boolean;
+    showActions?: boolean;
 }
 
 /**
@@ -43,8 +43,18 @@ function preprocessUserMessage(text: string): string {
     }).join('');
 }
 
-export const ChatTextMessage = memo(({ role, text, onRollbackClicked, onAddFlagClicked, showRollback = true }: Props) => {
+export const ChatTextMessage = memo(({ role, text, onRollbackClicked, onAddFlagClicked, showActions = true }: Props) => {
     const processedText = useMemo(() => role === 'user' ? preprocessUserMessage(text) : text, [role, text]);
+    const [copied, setCopied] = useState(false);
+
+    const onCopyClicked = () => {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1500);
+            })
+            .catch(err => console.error('Failed to copy message:', err));
+    };
 
     if (role === 'system') {
         return (
@@ -56,19 +66,26 @@ export const ChatTextMessage = memo(({ role, text, onRollbackClicked, onAddFlagC
 
     if (role === 'user') {
         return (
-            <div className="user-message-card">
-                <div className="user-message-content">
-                    <MarkdownContent content={processedText} />
+            <div className="user-message">
+                <div className="user-message-card">
+                    <div className="user-message-content">
+                        <MarkdownContent content={processedText} />
+                    </div>
                 </div>
-                {showRollback && onAddFlagClicked && (
-                    <button onClick={onAddFlagClicked} className="rollback-btn" title="Add flag after this message">
-                        <i className="codicon codicon-bookmark" />
-                    </button>
-                )}
-                {showRollback && (
-                    <button onClick={onRollbackClicked} className="rollback-btn" title="Rollback to this message">
-                        <i className="codicon codicon-discard" />
-                    </button>
+                {showActions && (
+                    <div className="user-message-actions">
+                        <button onClick={onCopyClicked} className="action-btn" title="Copy message">
+                            <i className={`codicon ${copied ? 'codicon-check' : 'codicon-copy'}`} />
+                        </button>
+                        {onAddFlagClicked && (
+                            <button onClick={onAddFlagClicked} className="action-btn" title="Add flag after this message">
+                                <i className="codicon codicon-bookmark" />
+                            </button>
+                        )}
+                        <button onClick={onRollbackClicked} className="action-btn" title="Rollback to this message">
+                            <i className="codicon codicon-discard" />
+                        </button>
+                    </div>
                 )}
             </div>
         );

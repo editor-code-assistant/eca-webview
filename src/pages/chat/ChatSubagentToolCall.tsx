@@ -54,7 +54,7 @@ function SubagentMessages({ messages, subagentChatId, depth }: { messages: ChatM
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
-                                    showRollback={false} />
+                                    showActions={false} />
                             </div>
                         );
                     case 'toolCall':
