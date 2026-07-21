@@ -43,6 +43,13 @@ body {
   outline: none;
 }
 
+/* Collapsible card headers (Thought, tool calls, tasks…) act as buttons:
+ * their labels and durations shouldn't be text-selectable/copyable. */
+[data-collapsible-header] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .scrollable {
   scrollbar-width: thin;
   scrollbar-color: var(--eca-input-bg) var(--eca-editor-bg);
