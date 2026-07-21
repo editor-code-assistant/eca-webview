@@ -5,15 +5,15 @@ import { SyncLoader } from "react-spinners";
 import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, steerPromptRemove, stopPrompt } from "../../redux/thunks/chat";
-import { addContext, clearPrefillPrompt, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
-import { selectInitProgressString, setSelectedVariant } from "../../redux/slices/server";
+import { addContext, clearPrefillPrompt, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setChatSelection, setSteerMessage } from "../../redux/slices/chat";
+import { selectInitProgressString } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
 import { ChatContexts } from "./ChatContexts";
 import { ChatFileMentions } from "./ChatFileMentions";
 import { ChatResumePicker } from "../components/ChatResumePicker";
 import './ChatPrompt.scss';
-import { ChatCommand } from "../../protocol";
+import { ChatAgent, ChatCommand } from "../../protocol";
 import { editorReadInput } from "../../redux/thunks/editor";
 
 interface ChatPromptProps {
@@ -39,11 +39,15 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [draftPrompt, setDraftPrompt] = useState('');
 
-    // Per-chat selection (set by scoped `config/updated` payloads — see
-    // applyConfigToChat in src/redux/slices/chat.ts). When unset on a
-    // freshly minted chat we fall back to the global last-known mirrors
-    // on `state.server.config.chat` so every new chat starts with the
-    // session defaults.
+    // Per-chat selection: set optimistically the moment the user picks
+    // a model/agent/variant (`setChatSelection`) and confirmed by scoped
+    // `config/updated` payloads (`applyConfigToChat` in
+    // src/redux/slices/chat.ts). When unset we fall back to the global
+    // last-known mirrors on `state.server.config.chat` so every new
+    // chat starts with the session defaults. These derived values are
+    // used directly — no component-local copy — so switching chats or
+    // remounting can never desync the SelectBoxes from the state the
+    // prompts are actually sent with (issue #19).
     const perChatSelectedModel = useSelector((state: State) => state.chat.chats[chatId]?.selectedModel);
     const perChatSelectedAgent = useSelector((state: State) => state.chat.chats[chatId]?.selectedAgent);
     const perChatSelectedVariant = useSelector((state: State) => state.chat.chats[chatId]?.selectedVariant);
@@ -55,12 +59,9 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const variants = useSelector((state: State) => state.server.config.chat.variants || []);
     const globalSelectedVariant = useSelector((state: State) => state.server.config.chat.selectedVariant);
 
-    const selectModel = perChatSelectedModel ?? globalSelectModel;
-    const selectAgent = perChatSelectedAgent ?? globalSelectAgent;
+    const selectedModel = perChatSelectedModel ?? globalSelectModel;
+    const selectedAgent = perChatSelectedAgent ?? globalSelectAgent;
     const selectedVariant = perChatSelectedVariant !== undefined ? perChatSelectedVariant : globalSelectedVariant;
-
-    const [selectedModel, setSelectedModel] = useState<string>();
-    const [selectedAgent, setSelectedAgent] = useState<string>();
 
     const currentProgress = useSelector((state: State) => state.chat.chats[chatId]?.progress);
     const loading = currentProgress !== undefined;
@@ -122,18 +123,6 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
         }
     }, [enabled, isResumableSlot, chatId]);
 
-    useEffect(() => {
-        if (selectModel !== undefined) {
-            setSelectedModel(selectModel);
-        }
-    }, [selectModel]);
-
-    useEffect(() => {
-        if (selectAgent !== undefined) {
-            setSelectedAgent(selectAgent);
-        }
-    }, [selectAgent]);
-
     // Auto-send queued prompts when loading finishes
     useEffect(() => {
         if (!loading && pendingPrompts.length > 0 && selectedAgent) {
@@ -180,7 +169,11 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     }
 
     const handleModelChanged = (newModel: string) => {
-        setSelectedModel(newModel);
+        // Optimistic per-chat update so the pick sticks to this chat
+        // immediately (and survives chat switches / host config
+        // replays). The server's scoped `config/updated` echo — when
+        // the chat is already known server-side — confirms it.
+        dispatch(setChatSelection({ chatId, model: newModel }));
         // Include the currently-selected chat id so the server can
         // persist the model on `[:chats chat-id]` and emit a scoped
         // `config/updated` back. The chatId field is optional on the
@@ -194,7 +187,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     }
 
     const handleAgentChanged = (newAgent: string) => {
-        setSelectedAgent(newAgent);
+        dispatch(setChatSelection({ chatId, agent: newAgent as ChatAgent }));
         webviewSend('chat/selectedAgentChanged', {
             ...(chatId ? { chatId } : {}),
             agent: newAgent,
@@ -202,7 +195,7 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     }
 
     const handleVariantChanged = (newVariant: string) => {
-        dispatch(setSelectedVariant(newVariant === 'No variant' ? null : newVariant));
+        dispatch(setChatSelection({ chatId, variant: newVariant === 'No variant' ? null : newVariant }));
     }
 
     const variantOptions = ['No variant', ...[...variants].sort()];

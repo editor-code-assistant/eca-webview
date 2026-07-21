@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { respondRequest as respondWebviewRequest, useKeyPressedListener, useWebviewListener, webviewSend } from "../hooks";
 import { getLocalStorage, setLocalStorage } from "../localStorage";
 import { AskQuestionData, ChatClearedParams, ChatContentReceivedParams, ChatContext, ChatQueryCommandsResponse, ChatQueryContextResponse, ChatQueryFilesResponse, JobsUpdatedParams, ProviderStatus, ToolServerRemovedParams, ToolServerUpdatedParams, WorkspaceFolder } from "../protocol";
-import { addContentReceived, applyConfigToAllChats, applyConfigToChat, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
+import { addContentReceived, applyConfigToChat, batchContentReceived, addContext, chatOpened, cleared, clearChat, newChat, resetChat, resetChats, selectChat, setCommands, setContexts, setFiles, setPendingQuestion, } from "../redux/slices/chat";
 import { setJobs } from "../redux/slices/jobs";
 import { LogEntry, appendLogEntry, setLogEntries } from "../redux/slices/logs";
 import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
@@ -173,13 +173,16 @@ const RootWrapper = () => {
 
         // Per-chat scoping: when the server tags the payload with a
         // top-level `chatId`, apply the per-chat fields ONLY to that
-        // chat. Otherwise (legacy / initial post-`initialize` push)
-        // fan the values out to every chat so existing tabs all pick
-        // up the session defaults.
+        // chat. Unscoped payloads (legacy / initial post-`initialize`
+        // push / host cache replays) only update the global mirrors via
+        // `setConfig` above — chats without an explicit per-chat pick
+        // inherit them through the `?? global` fallback, and chats WITH
+        // an explicit pick keep it. Fanning the values out onto every
+        // chat here used to convert stale session defaults into
+        // explicit per-chat picks, silently resetting the user's model
+        // selection (issue #19).
         if (config.chatId) {
             dispatch(applyConfigToChat({ chatId: config.chatId, chat: config.chat }));
-        } else if (config.chat) {
-            dispatch(applyConfigToAllChats({ chat: config.chat }));
         }
     });
 

@@ -91,13 +91,17 @@ export interface Chat {
      */
     isEmpty?: boolean,
     /**
-     * Per-chat selection state. Populated from `config/updated` payloads
-     * that carry a top-level `chatId`. The server-side fields are
-     * `selectModel` / `selectAgent` / `selectVariant` / `selectTrust`;
-     * we mirror them here under more idiomatic webview names. When
-     * unset, the UI falls back to the global last-known values on
-     * `state.server.config.chat` so newly-created chats inherit the
-     * most recently selected session defaults.
+     * Per-chat selection state. Populated optimistically by the UI the
+     * moment the user picks a model/agent/variant (`setChatSelection`)
+     * and confirmed/updated by `config/updated` payloads that carry a
+     * top-level `chatId` (`applyConfigToChat`). The server-side fields
+     * are `selectModel` / `selectAgent` / `selectVariant` /
+     * `selectTrust`; we mirror them here under more idiomatic webview
+     * names. When unset the UI falls back to the global session
+     * defaults on `state.server.config.chat` — unscoped `config/updated`
+     * payloads only ever update those global mirrors, so an explicit
+     * per-chat pick is never clobbered by session-wide config replays
+     * (see issue #19).
      */
     selectedModel?: string,
     selectedAgent?: ChatAgent,
@@ -751,35 +755,41 @@ export const chatSlice = createSlice({
             }
         },
         /**
-         * Legacy "apply to all chats" path used when `config/updated`
-         * arrives without a `chatId` (e.g. the initial post-`initialize`
-         * push that fans the session-default model/agent out across
-         * every chat). Mirrors the per-field semantics of
-         * `applyConfigToChat` but iterates every chat in the slice.
+         * Optimistic per-chat selection update driven by the UI (the
+         * SelectBox picks in ChatPrompt). Stores the pick on the chat
+         * slot immediately so it survives chat switches, host config
+         * replays, and component remounts — the server's scoped
+         * `config/updated` echo (when the chat is known server-side)
+         * simply confirms the same value. Without this, picks made on
+         * a chat the server doesn't know yet (any fresh chat before its
+         * first prompt) lived only in component-local state and were
+         * silently reset to the session default (issue #19).
+         *
+         * A model change also resets the per-chat variant: variants are
+         * model-dependent and recomputed server-side, so until the
+         * scoped echo (known chats) or the global mirror update
+         * (unknown chats) lands, the chat falls back to the
+         * session-level variant instead of keeping one that may not
+         * exist for the new model.
          */
-        applyConfigToAllChats: (state, action) => {
-            const { chat: chatConfig } = action.payload as {
-                chat?: {
-                    selectModel?: string;
-                    selectAgent?: ChatAgent;
-                    selectVariant?: string | null;
-                    selectTrust?: boolean;
-                };
+        setChatSelection: (state, action) => {
+            const { chatId, model, agent, variant } = action.payload as {
+                chatId: string;
+                model?: string;
+                agent?: ChatAgent;
+                variant?: string | null;
             };
-            if (!chatConfig) return;
-            for (const chat of Object.values(state.chats)) {
-                if (chatConfig.selectModel !== undefined) {
-                    chat.selectedModel = chatConfig.selectModel;
-                }
-                if (chatConfig.selectAgent !== undefined) {
-                    chat.selectedAgent = chatConfig.selectAgent;
-                }
-                if (chatConfig.selectVariant !== undefined) {
-                    chat.selectedVariant = chatConfig.selectVariant;
-                }
-                if (chatConfig.selectTrust !== undefined) {
-                    chat.trust = chatConfig.selectTrust;
-                }
+            const chat = state.chats[chatId];
+            if (!chat) return;
+            if (model !== undefined) {
+                chat.selectedModel = model;
+                chat.selectedVariant = undefined;
+            }
+            if (agent !== undefined) {
+                chat.selectedAgent = agent;
+            }
+            if (variant !== undefined) {
+                chat.selectedVariant = variant;
             }
         },
         addContentReceived: (state, action) => {
@@ -1034,7 +1044,7 @@ export const {
     setCursorFocus,
     selectChat,
     applyConfigToChat,
-    applyConfigToAllChats,
+    setChatSelection,
     setContexts,
     addContext,
     removeContext,

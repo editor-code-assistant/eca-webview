@@ -80,9 +80,12 @@ export interface ChatSelectedAgentChangedParams {
  * ONLY to the chat with that id; other config fields (models, agents,
  * welcomeMessage, …) still apply globally.
  *
- * When `chatId` is absent, the payload is the legacy session-wide
- * config push and per-chat fields should be applied to every existing
- * chat (so the initial post-`initialize` push still fans out).
+ * When `chatId` is absent, the payload is a session-wide config push
+ * (initial post-`initialize` push, legacy servers, host cache replays)
+ * and only updates the global session mirrors on
+ * `state.server.config.chat`. Chats without an explicit per-chat pick
+ * inherit those mirrors via fallback; chats with an explicit pick keep
+ * it (unscoped pushes must never clobber per-chat selections).
  */
 export interface ConfigUpdatedParams {
     chatId?: string;
