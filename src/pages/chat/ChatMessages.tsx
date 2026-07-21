@@ -66,14 +66,19 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
 
                 const renderMessage = () => {
                     switch (message.type) {
-                        case 'text':
+                        case 'text': {
+                            // A flag is always inserted right after its target
+                            // message — if one is already there, don't offer
+                            // adding another (prevents stacking duplicate flags).
+                            const alreadyFlagged = messages[index + 1]?.type === 'flag';
                             return (
                                 <ChatTextMessage
                                     text={message.value}
                                     role={message.role}
                                     onRollbackClicked={() => onRollbackClicked(message.contentId!)}
-                                    onAddFlagClicked={message.contentId ? () => onAddFlagClicked(message.contentId!) : undefined} />
+                                    onAddFlagClicked={message.contentId && !alreadyFlagged ? () => onAddFlagClicked(message.contentId!) : undefined} />
                             );
+                        }
                         case 'toolCall':
                             return (
                                 <ChatToolCall
