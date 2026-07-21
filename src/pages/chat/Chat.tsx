@@ -43,13 +43,18 @@ export function Chat() {
 
     const isWeb = editorName() === 'web' || editorName() === 'desktop';
     const hasNoMessages = !allChats[currentChatId]?.messages?.length;
-    const heroMode = isWeb && (!running || hasNoMessages);
     // `resuming` is set by `beginResume` (resume-picker click) and
     // cleared by the first content event for the chat. While truthy
     // we swap the welcome view for a small "Resuming…" placeholder so
     // the user doesn't briefly see the fresh-empty-chat look while
     // the server's replayed content is still in flight.
     const resuming = !!allChats[currentChatId]?.resuming;
+    // `replaying` is set by the rollback/addFlag thunks: the server
+    // answers those with a cleared + full replay, so the messages list
+    // is briefly empty. Keep the welcome view and hero prompt mode
+    // suppressed during that window to avoid flashing them.
+    const replaying = !!allChats[currentChatId]?.replaying;
+    const heroMode = isWeb && (!running || hasNoMessages) && !resuming && !replaying;
 
     // Live ECA-server init-progress line (mirrors eca-emacs). Null until
     // the server emits its first $/progress notification, or once every
@@ -189,7 +194,7 @@ export function Chat() {
                         <p>Resuming…</p>
                     </motion.div>
                 )}
-                {(running || isWeb) && !resuming && (
+                {(running || isWeb) && !resuming && !replaying && (
                     <motion.div
                         key="welcome-message"
                         className="welcome-message"

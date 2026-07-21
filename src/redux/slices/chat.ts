@@ -104,6 +104,15 @@ export interface Chat {
      * tab switch and the server's replayed content arriving.
      */
     resuming?: boolean,
+    /**
+     * Set by the `rollbackChat` / `addFlag` thunks right before the
+     * request is sent: the server answers those with a `chat/cleared`
+     * followed by a full replay of the kept messages. While `true` the
+     * UI suppresses the welcome view, hero prompt mode and message
+     * enter animations so the replay doesn't flicker the whole chat.
+     * Cleared by a timeout in the same thunks (`endReplay`).
+     */
+    replaying?: boolean,
 }
 
 interface ChatUsage {
@@ -857,6 +866,20 @@ export const chatSlice = createSlice({
                 chat.title = title;
             }
         },
+        beginReplay: (state, action) => {
+            const { chatId } = action.payload as { chatId: string };
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.replaying = true;
+            }
+        },
+        endReplay: (state, action) => {
+            const { chatId } = action.payload as { chatId: string };
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.replaying = false;
+            }
+        },
         removeFlagMessage: (state, action) => {
             const { chatId, contentId } = action.payload;
             const chat = state.chats[chatId];
@@ -1002,6 +1025,8 @@ export const {
     clearSteerMessage,
     pushPromptHistory,
     renameChat,
+    beginReplay,
+    endReplay,
     removeFlagMessage,
     setPendingQuestion,
     clearPendingQuestion,

@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
 import { ChatContext, ChatSummary } from "../../protocol";
-import { beginResume, clearPendingQuestion, ChatPreContext, CursorFocus, incRequestId, removeFlagMessage, resetChat, rollbackResume, setResumableChats } from "../slices/chat";
+import { beginReplay, beginResume, clearPendingQuestion, ChatPreContext, CursorFocus, endReplay, incRequestId, removeFlagMessage, resetChat, rollbackResume, setResumableChats } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
@@ -87,17 +87,30 @@ export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiTyp
     }
 );
 
+/**
+ * Rollback and addFlag are answered by the server with a `chat/cleared`
+ * followed by a full replay of the kept messages. Mark the chat as
+ * `replaying` around that window so the UI doesn't flash the welcome
+ * view, hero prompt and message enter animations. The replay is a
+ * local synchronous burst, so a short timeout comfortably covers it.
+ */
+const REPLAY_WINDOW_MS = 1000;
+
 export const rollbackChat = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/rollback",
-    async ({ chatId, contentId }, _) => {
+    async ({ chatId, contentId }, { dispatch }) => {
+        dispatch(beginReplay({ chatId }));
         webviewSend('chat/rollback', { chatId, contentId });
+        setTimeout(() => dispatch(endReplay({ chatId })), REPLAY_WINDOW_MS);
     }
 );
 
 export const addFlag = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/addFlag",
-    async ({ chatId, contentId }, _) => {
+    async ({ chatId, contentId }, { dispatch }) => {
+        dispatch(beginReplay({ chatId }));
         webviewSend('chat/addFlag', { chatId, contentId });
+        setTimeout(() => dispatch(endReplay({ chatId })), REPLAY_WINDOW_MS);
     }
 );
 

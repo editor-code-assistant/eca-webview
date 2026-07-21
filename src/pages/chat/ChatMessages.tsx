@@ -35,6 +35,10 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
     const dispatch = useEcaDispatch();
     const messages = useSelector((state: State) => state.chat.chats[chatId]?.messages ?? []);
     const pendingQuestion = useSelector((state: State) => state.chat.chats[chatId]?.pendingQuestion);
+    // While the server replays the chat (rollback/addFlag) the messages
+    // remount in a quick burst — entering them with the usual animation
+    // makes the whole chat visibly flicker.
+    const replaying = useSelector((state: State) => !!state.chat.chats[chatId]?.replaying);
 
     // Track how many messages existed on first render so we only animate new ones
     const initialCountRef = useRef(messages.length);
@@ -62,7 +66,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
         <div className="messages-wrapper">
             <div className="messages-container scrollable" ref={scrollRef} >
             {messages.map((message, index) => {
-                const shouldAnimate = index >= initialCountRef.current;
+                const shouldAnimate = !replaying && index >= initialCountRef.current;
 
                 const renderMessage = () => {
                     switch (message.type) {
