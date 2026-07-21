@@ -269,6 +269,43 @@
 
     .steer-indicator {
         color: var(--vscode-editorInfo-foreground, #3794ff);
+        display: flex;
+        align-items: center;
+        gap: 0.4em;
+        min-width: 0;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .steer-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        .steer-remove {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            padding: 0 0.15em;
+            border-radius: 0.2em;
+            font-size: 0.9em;
+            line-height: 1;
+            flex-shrink: 0;
+
+            &:hover {
+                opacity: 1;
+                color: var(--eca-error-fg, #f14c4c);
+            }
+        }
     }
 
     .queue-indicator {

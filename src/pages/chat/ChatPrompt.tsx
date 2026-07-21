@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SyncLoader } from "react-spinners";
 import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
-import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, stopPrompt } from "../../redux/thunks/chat";
+import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, steerPromptRemove, stopPrompt } from "../../redux/thunks/chat";
 import { addContext, clearPrefillPrompt, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setSteerMessage } from "../../redux/slices/chat";
 import { selectInitProgressString, setSelectedVariant } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
@@ -559,7 +559,27 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                 </div>
             )}
             {steerMessage && (
-                <div className="steer-indicator">Steering: {steerMessage.length > 40 ? steerMessage.substring(0, 40) + '...' : steerMessage}</div>
+                <div className="steer-indicator" title={steerMessage}>
+                    <span
+                        className="steer-text"
+                        onClick={() => {
+                            // Edit: pull the pending steer back into the input.
+                            dispatch(steerPromptRemove({ chatId }));
+                            setPromptValue(steerMessage);
+                            inputRef.current?.focus();
+                        }}
+                    >
+                        Steering: {steerMessage.length > 40 ? steerMessage.substring(0, 40) + '...' : steerMessage}
+                    </span>
+                    <button
+                        className="steer-remove"
+                        onClick={() => dispatch(steerPromptRemove({ chatId }))}
+                        title="Remove steering message"
+                        aria-label="Remove steering message"
+                    >
+                        <i className="codicon codicon-close" />
+                    </button>
+                </div>
             )}
             {pendingPrompts.length > 0 && (
                 <div className="queue-indicator">Queued: {pendingPrompts.length} message{pendingPrompts.length > 1 ? 's' : ''}</div>
