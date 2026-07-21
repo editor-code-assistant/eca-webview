@@ -64,7 +64,7 @@ export function ChatTask({ chatId }: Props) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30, opacity: { duration: 0.15 } }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
                         style={{ overflow: "hidden" }}
                     >
                         {tasks.map((task: Task) => (
