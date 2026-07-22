@@ -79,6 +79,13 @@ export interface Chat {
      * and resend it. Consumed and cleared by ChatPrompt.
      */
     prefillPrompt?: string,
+    /**
+     * The prompt input's current (unsent) text. Lives in redux — not
+     * component state — so drafts survive ChatPrompt unmounts, e.g.
+     * navigating to Settings/MCPs and back. Written on every input
+     * change by ChatPrompt (`setPromptDraft`) and cleared on send.
+     */
+    promptDraft?: string,
     taskState?: TaskDetails | null,
     taskLoading?: boolean,
     pendingQuestion?: PendingQuestion,
@@ -890,6 +897,13 @@ export const chatSlice = createSlice({
                 chat.prefillPrompt = text;
             }
         },
+        setPromptDraft: (state, action) => {
+            const { chatId, text } = action.payload as { chatId: string, text: string };
+            const chat = state.chats[chatId];
+            if (chat) {
+                chat.promptDraft = text;
+            }
+        },
         clearPrefillPrompt: (state, action) => {
             const chatId = action.payload as string;
             const chat = state.chats[chatId];
@@ -1057,6 +1071,7 @@ export const {
     pushPromptHistory,
     renameChat,
     setPrefillPrompt,
+    setPromptDraft,
     clearPrefillPrompt,
     beginReplay,
     endReplay,

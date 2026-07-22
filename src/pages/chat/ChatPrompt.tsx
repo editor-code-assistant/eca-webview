@@ -5,7 +5,7 @@ import { SyncLoader } from "react-spinners";
 import { useStickyString, useWebviewListener, webviewSend, webviewSendAndGet } from "../../hooks";
 import { State, useEcaDispatch } from "../../redux/store";
 import { answerQuestion, cancelQuestion, listChats, sendPrompt, steerPrompt, steerPromptRemove, stopPrompt } from "../../redux/thunks/chat";
-import { addContext, clearPrefillPrompt, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setChatSelection, setSteerMessage } from "../../redux/slices/chat";
+import { addContext, clearPrefillPrompt, enqueuePendingPrompt, dequeuePendingPrompt, pushPromptHistory, setChatSelection, setPromptDraft, setSteerMessage } from "../../redux/slices/chat";
 import { selectInitProgressString } from "../../redux/slices/server";
 import { SelectBox } from "../components/SelectBox";
 import { ChatCommands } from "./ChatCommands";
@@ -23,7 +23,6 @@ interface ChatPromptProps {
 }
 
 export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) => {
-    const [promptValue, setPromptValue] = useState('');
     const [commandCompleting, setCommandCompleting] = useState(false);
     const [fileCompleting, setFileCompleting] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -33,6 +32,15 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
     const [shake, setShake] = useState(false);
     const inputCompleting = commandCompleting || fileCompleting;
     const dispatch = useEcaDispatch();
+
+    // The prompt draft lives in redux (per chat) rather than local state
+    // so unsent text survives ChatPrompt unmounts — e.g. navigating to
+    // the Settings/MCPs page and back. The setter keeps the
+    // setState-like signature so call sites read as before.
+    const promptValue = useSelector((state: State) => state.chat.chats[chatId]?.promptDraft ?? '');
+    const setPromptValue = useCallback((text: string) => {
+        dispatch(setPromptDraft({ chatId, text }));
+    }, [chatId, dispatch]);
 
     // Prompt history navigation
     const promptHistory = useSelector((state: State) => state.chat.promptHistory);

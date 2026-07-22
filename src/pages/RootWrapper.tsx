@@ -347,6 +347,18 @@ const RootWrapper = () => {
         setLocalStorage("fontScale", rounded);
     };
 
+    // Host-driven font size changes — editors can expose their own
+    // commands/keybindings (e.g. VS Code's `eca.chat.increaseFontSize`)
+    // and route them here instead of relying on the in-webview
+    // shortcuts below, which only work while the webview has focus.
+    useWebviewListener('editor/changeFontSize', (data: { action: 'increase' | 'decrease' | 'reset' }) => {
+        switch (data.action) {
+            case 'increase': setScale(getCurrent() + 0.1); break;
+            case 'decrease': setScale(getCurrent() - 0.1); break;
+            case 'reset': setScale(1); break;
+        }
+    });
+
     // Global shortcut: Alt+Shift+(+/-) to zoom font size by 0.1em, Alt+Shift+0 to reset
     useKeyPressedListener((e) => {
         const isMac = navigator.platform.toLowerCase().includes('mac');
