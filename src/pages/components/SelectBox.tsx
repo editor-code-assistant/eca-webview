@@ -15,6 +15,9 @@ interface ISelectBox {
 export const SelectBox = memo(({ id, options, defaultOption, onSelected, className, title }: ISelectBox) => {
     const ref = useRef<TooltipRefProps>(null);
     const optionRefs = useRef<(HTMLSpanElement | null)[]>([]);
+    // Typeahead state: chars typed while the dropdown is open accumulate in
+    // `buffer` and match options by prefix; `timer` clears it after a pause.
+    const typeahead = useRef<{ buffer: string; timer?: ReturnType<typeof setTimeout> }>({ buffer: '' });
     const [selected, setSelected] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
@@ -22,6 +25,7 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
 
     // When dropdown opens, highlight the current active option
     useEffect(() => {
+        typeahead.current.buffer = '';
         if (selected) {
             const activeIndex = options.indexOf(currentOption);
             setHighlightedIndex(activeIndex >= 0 ? activeIndex : 0);
@@ -29,6 +33,16 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
             setHighlightedIndex(-1);
         }
     }, [selected]);
+
+    // Clear any pending typeahead reset timer on unmount
+    useEffect(() => {
+        const state = typeahead.current;
+        return () => {
+            if (state.timer) {
+                clearTimeout(state.timer);
+            }
+        };
+    }, []);
 
     // Scroll highlighted option into view
     useEffect(() => {
@@ -65,6 +79,33 @@ export const SelectBox = memo(({ id, options, defaultOption, onSelected, classNa
                 e.preventDefault();
                 ref.current?.close();
                 setSelected(false);
+                break;
+            default:
+                // Typeahead: like a native <select>, typing jumps to the next
+                // option starting with the typed prefix.
+                if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    e.preventDefault();
+                    const state = typeahead.current;
+                    if (state.timer) {
+                        clearTimeout(state.timer);
+                    }
+                    state.buffer += e.key.toLowerCase();
+                    state.timer = setTimeout(() => { state.buffer = ''; }, 700);
+
+                    // Repeating the same char ("ooo") cycles through options
+                    // starting with it; a growing prefix ("gpt") keeps
+                    // narrowing from the currently highlighted option.
+                    const repeated = state.buffer.length > 1 && [...state.buffer].every(c => c === state.buffer[0]);
+                    const prefix = repeated ? state.buffer[0] : state.buffer;
+                    const from = prefix.length === 1 ? highlightedIndex + 1 : highlightedIndex;
+                    for (let offset = 0; offset < options.length; offset++) {
+                        const index = (from + offset + options.length) % options.length;
+                        if (options[index].toLowerCase().startsWith(prefix)) {
+                            setHighlightedIndex(index);
+                            break;
+                        }
+                    }
+                }
                 break;
         }
     }, [selected, highlightedIndex, options, onSelectedOption]);
