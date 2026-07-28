@@ -5,8 +5,16 @@ import { addContext, ChatPreContext, CursorFocus, removeContext } from "../../re
 import { State, useEcaDispatch } from "../../redux/store";
 import { queryContext } from "../../redux/thunks/chat";
 import { pathBasename, relativizeFromRoot } from "../../util";
+import { getImagePreview, removeImagePreview } from "../../imagePreviews";
 import { ToolTip } from "../components/ToolTip";
 import './ChatContexts.scss';
+
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'];
+
+function isImagePath(path: string): boolean {
+    const ext = path.split('.').pop()?.toLowerCase();
+    return !!ext && IMAGE_EXTENSIONS.includes(ext);
+}
 
 interface Props {
     chatId: string,
@@ -64,7 +72,7 @@ function contextIcon(context: ChatPreContext): React.ReactNode {
     let icon = '';
     switch (context.type) {
         case 'file':
-            icon = 'file';
+            icon = isImagePath(context.path) ? 'file-media' : 'file';
             break;
         case 'directory':
             icon = 'folder';
@@ -122,18 +130,51 @@ export const ChatContexts = memo(({ chatId, enabled }: Props) => {
     }
 
     const onContextRemoved = (context: ChatPreContext) => {
+        if (context.type === 'file') {
+            removeImagePreview(context.path);
+        }
         dispatch(removeContext(context));
     }
 
+    // A `cursor` context is meaningless without a live cursor focus
+    // (hosts without an editor — e.g. eca-desktop / web — never send
+    // one). It is already dropped at prompt-send time by
+    // `refineContext`, so hide the chip too instead of rendering a
+    // confusing "cursor (:undefined:undefined)".
+    const visibleContexts = addedContexts.filter(
+        (context) => context.type !== 'cursor' || !!cursorFocus,
+    );
+
     return (
         <div className="contexts">
-            <button disabled={!enabled} data-tooltip-id="add-context" className="add">@{addedContexts.length === 0 ? " Add context" : ""}</button>
-            {enabled && addedContexts.map((context, index) => (
-                <span onClick={() => onContextRemoved(context)} key={index} className="added-context">
-                    {contextIcon(context)}
-                    {contextLabel(context, cursorFocus)}
-                </span>
-            ))}
+            <button disabled={!enabled} data-tooltip-id="add-context" className="add">@{visibleContexts.length === 0 ? " Add context" : ""}</button>
+            {enabled && visibleContexts.map((context, index) => {
+                // Pasted images render as a thumbnail chip (preview bytes
+                // captured at paste time); other contexts keep the
+                // icon+label chip.
+                const preview = context.type === 'file' ? getImagePreview(context.path) : undefined;
+                if (preview) {
+                    return (
+                        <span
+                            onClick={() => onContextRemoved(context)}
+                            key={index}
+                            className="added-context image-context"
+                            title={contextLabel(context, cursorFocus)}
+                            role="button"
+                            aria-label={`Remove image ${contextLabel(context, cursorFocus)}`}
+                        >
+                            <img src={preview} alt={contextLabel(context, cursorFocus)} />
+                            <i className="remove-overlay codicon codicon-close" />
+                        </span>
+                    );
+                }
+                return (
+                    <span onClick={() => onContextRemoved(context)} key={index} className="added-context">
+                        {contextIcon(context)}
+                        {contextLabel(context, cursorFocus)}
+                    </span>
+                );
+            })}
             <ToolTip id="add-context"
                 delayHide={5}
                 delayShow={5}

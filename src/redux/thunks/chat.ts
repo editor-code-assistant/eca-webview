@@ -1,7 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
+import { getImagePreview, removeImagePreview } from "../../imagePreviews";
 import { ChatContext, ChatSummary } from "../../protocol";
-import { beginReplay, beginResume, clearPendingQuestion, clearSteerMessage, ChatPreContext, CursorFocus, endReplay, incRequestId, removeFlagMessage, resetChat, rollbackResume, setPrefillPrompt, setResumableChats } from "../slices/chat";
+import { beginReplay, beginResume, clearPendingQuestion, clearSteerMessage, ChatPreContext, CursorFocus, endReplay, incRequestId, removeContexts, removeFlagMessage, resetChat, rollbackResume, setPrefillPrompt, setResumableChats } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
@@ -48,6 +49,20 @@ export const sendPrompt = createAsyncThunk<void, { chatId: string, prompt: strin
                 ...(trust ? { trust } : {}),
             },
         );
+
+        // Pasted images are one-shot: they were just sent with this
+        // prompt (and live on in the conversation server-side), so
+        // detach them from the chat's contexts instead of re-sending
+        // the image on every follow-up. @-added contexts stay sticky.
+        const pastedImages = contexts.filter(
+            (c) => c.type === 'file' && getImagePreview(c.path) !== undefined,
+        );
+        if (pastedImages.length > 0) {
+            dispatch(removeContexts({ chatId, contexts: pastedImages }));
+            pastedImages.forEach((c) => {
+                if (c.type === 'file') removeImagePreview(c.path);
+            });
+        }
     }
 );
 

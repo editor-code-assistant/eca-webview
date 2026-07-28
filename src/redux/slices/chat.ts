@@ -836,6 +836,18 @@ export const chatSlice = createSlice({
             const i = currentChat.addedContexts.findIndex(context => JSON.stringify(context) === toRemove);
             currentChat.addedContexts = [...currentChat.addedContexts.slice(0, i), ...currentChat.addedContexts.slice(i + 1)];
         },
+        // Chat-scoped batch removal. Unlike `removeContext` (selected-chat
+        // based), this targets an explicit chatId so async callers — e.g.
+        // sendPrompt detaching one-shot pasted images after a queued
+        // prompt fires — can't hit the wrong chat if the user switched
+        // chats in the meantime.
+        removeContexts: (state, action) => {
+            const { chatId, contexts } = action.payload as { chatId: string, contexts: ChatPreContext[] };
+            const chat = state.chats[chatId];
+            if (!chat) return;
+            const toRemove = new Set(contexts.map((c) => JSON.stringify(c)));
+            chat.addedContexts = chat.addedContexts.filter((c) => !toRemove.has(JSON.stringify(c)));
+        },
         setCommands: (state, action) => {
             state.commands = action.payload.commands;
         },
@@ -1062,6 +1074,7 @@ export const {
     setContexts,
     addContext,
     removeContext,
+    removeContexts,
     setCommands,
     setFiles,
     enqueuePendingPrompt,

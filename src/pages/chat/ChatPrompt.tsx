@@ -15,6 +15,7 @@ import { ChatResumePicker } from "../components/ChatResumePicker";
 import './ChatPrompt.scss';
 import { ChatAgent, ChatCommand } from "../../protocol";
 import { editorReadInput } from "../../redux/thunks/editor";
+import { setImagePreview } from "../../imagePreviews";
 
 interface ChatPromptProps {
     enabled: boolean,
@@ -347,6 +348,10 @@ export const ChatPrompt = memo(({ chatId, enabled, heroMode }: ChatPromptProps) 
                             mimeType,
                         });
                         if (result?.path) {
+                            // Keep the bytes we already have so the context
+                            // chip can render an instant thumbnail preview
+                            // (see imagePreviews.ts for why not redux).
+                            setImagePreview(result.path, dataUri);
                             dispatch(addContext({
                                 context: { type: 'file', path: result.path },
                                 prompt: 'system',
