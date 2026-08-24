@@ -11,7 +11,7 @@ import { removeMcpServer, setMcpServers } from "../redux/slices/mcp";
 import { updateProvider } from "../redux/slices/providers";
 import { InitProgressTask, ServerStatus, setConfig, setTrust, setWorkspaceFolders, upsertProgress } from "../redux/slices/server";
 import { State, useEcaDispatch } from "../redux/store";
-import { deleteChat, sendPromptToCurrentChat, stopPrompt } from "../redux/thunks/chat";
+import { sendPromptToCurrentChat, stopPrompt } from "../redux/thunks/chat";
 import { focusChanged } from "../redux/thunks/editor";
 import { statusChanged } from "../redux/thunks/server";
 
@@ -282,7 +282,10 @@ const RootWrapper = () => {
 
     useWebviewListener('chat/closeCurrent', async () => {
         if (selectedChatActionable) {
-            dispatch(deleteChat({ chatId: selectedChat }));
+            // Close is local-only: the chat stays on the server (resumable
+            // via the resume picker) until retention cleanup or an explicit
+            // /delete-chat removes it.
+            dispatch(resetChat(selectedChat));
         }
     }, [selectedChat, selectedChatActionable]);
 

@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { webviewSend, webviewSendAndGet } from "../../hooks";
 import { getImagePreview, removeImagePreview } from "../../imagePreviews";
 import { ChatContext, ChatSummary } from "../../protocol";
-import { beginReplay, beginResume, clearPendingQuestion, clearSteerMessage, ChatPreContext, CursorFocus, endReplay, incRequestId, removeContexts, removeFlagMessage, resetChat, rollbackResume, setPrefillPrompt, setResumableChats } from "../slices/chat";
+import { beginReplay, beginResume, clearPendingQuestion, clearSteerMessage, ChatPreContext, CursorFocus, endReplay, incRequestId, removeContexts, removeFlagMessage, rollbackResume, setPrefillPrompt, setResumableChats } from "../slices/chat";
 import { ThunkApiType } from "../store";
 
 function refineContext(context: ChatPreContext, cursorFocus?: CursorFocus): ChatContext | null {
@@ -99,14 +99,6 @@ export const steerPromptRemove = createAsyncThunk<void, { chatId: string }, Thun
     async ({ chatId }, { dispatch }) => {
         webviewSend('chat/promptSteerRemove', { chatId });
         dispatch(clearSteerMessage(chatId));
-    }
-);
-
-export const deleteChat = createAsyncThunk<void, { chatId: string }, ThunkApiType>(
-    "chat/delete",
-    async ({ chatId }, { dispatch }) => {
-        webviewSend('chat/delete', { chatId });
-        dispatch(resetChat(chatId));
     }
 );
 

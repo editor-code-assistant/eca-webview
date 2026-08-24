@@ -2,9 +2,8 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { webviewSend } from '../../hooks';
-import { Chat, newChat, renameChat, selectChat } from '../../redux/slices/chat';
+import { Chat, newChat, renameChat, resetChat, selectChat } from '../../redux/slices/chat';
 import { State, useEcaDispatch } from '../../redux/store';
-import { deleteChat } from '../../redux/thunks/chat';
 import { editorName } from '../../util';
 import './ChatHeader.scss';
 
@@ -33,8 +32,10 @@ export const ChatHeader = memo(({ chats }: Props) => {
         }
     }, [renamingChatId]);
 
-    const chatDelete = (chat: Chat) => {
-        dispatch(deleteChat({ chatId: chat.id }));
+    // Close is local-only: the chat stays on the server (resumable via
+    // the resume picker) until retention cleanup or /delete-chat removes it.
+    const chatClose = (chat: Chat) => {
+        dispatch(resetChat(chat.id));
     };
 
     const chatNew = (_: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
@@ -156,7 +157,7 @@ export const ChatHeader = memo(({ chats }: Props) => {
                             )}
                             <i onClick={(e) => {
                                 e.stopPropagation();
-                                chatDelete(chat);
+                                chatClose(chat);
                             }} className="close codicon codicon-close"></i>
                             {isSelected && (
                                 <motion.div
