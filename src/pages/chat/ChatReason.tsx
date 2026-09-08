@@ -12,7 +12,12 @@ interface Props {
     totalTimeMs?: number,
 }
 
-function chatReason({ id, status, content, totalTimeMs }: Props) {
+// One memoized component for the whole lifecycle: props change on every
+// streamed chunk (re-render) and settle once `status` is 'done' (memo
+// hit). Swapping to a different element on 'done' — as an earlier version
+// did to only "enable" memo after streaming — remounted the card and reset
+// `expanded`, collapsing a thought the user was still reading.
+export const ChatReason = memo(function ChatReason({ status, content, totalTimeMs }: Props) {
     const [expanded, setExpanded] = useState(false);
     const isDone = status === 'done';
     const label = isDone ? 'Thought' : 'Thinking';
@@ -57,16 +62,4 @@ function chatReason({ id, status, content, totalTimeMs }: Props) {
             </AnimatePresence>
         </div>
     );
-}
-
-const ChatReasonMemo = memo((props: Props) => {
-    return chatReason(props);
 });
-
-export function ChatReason(props: Props) {
-    if (props.status !== 'done') {
-        return chatReason(props);
-    }
-
-    return (<div> <ChatReasonMemo {...props} /> </div>);
-}

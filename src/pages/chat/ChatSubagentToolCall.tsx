@@ -262,14 +262,6 @@ function chatSubagentToolCall(props: Props) {
     );
 }
 
-const ChatSubagentToolCallMemo = memo((props: Props) => {
-    return chatSubagentToolCall(props);
-});
-
-export function ChatSubagentToolCall(props: Props) {
-    // Don't memoize while status is still changing
-    if (props.status === 'preparing' || props.status === 'running' || props.status === 'run') {
-        return chatSubagentToolCall(props);
-    }
-    return <ChatSubagentToolCallMemo {...props} />;
-}
+// Memoized for the whole lifecycle so the card instance (and its expanded
+// state) survives status transitions; see the note on ChatReason.
+export const ChatSubagentToolCall = memo(chatSubagentToolCall);

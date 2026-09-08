@@ -60,13 +60,14 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
     const files = useSelector((state: State) => state.chat.files);
     const workspaceFolders = useSelector((state: State) => state.server.workspaceFolders);
 
-    // Check for # trigger on every input/cursor change
+    // Programmatic value changes (prompt history navigation, prefill,
+    // file/command insertion, clearing after send) never *open* the popup;
+    // typing and caret moves do, via the native `input`/`click` listeners
+    // below. This effect only drops a trigger that no longer matches the
+    // text, so a late `files` response can't reopen the list on stale state.
     useEffect(() => {
-        const hq = findHashQuery(input);
-        setHashQuery(hq);
-
-        if (hq) {
-            dispatch(queryFiles({ chatId, query: hq.query }));
+        if (!findHashQuery(input)) {
+            setHashQuery(null);
         }
     }, [promptValue]);
 
@@ -92,6 +93,7 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
     const selectFile = (file: ChatFile, event: any) => {
         event.preventDefault();
         setShow(false);
+        setHashQuery(null);
         if (hashQuery) {
             onFileSelected(file.path, hashQuery.start, hashQuery.end);
         }
@@ -100,7 +102,7 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
     useEffect(() => {
         if (!input) return;
 
-        const handleCursorMove = () => {
+        const updateHashQuery = () => {
             const hq = findHashQuery(input);
             setHashQuery(hq);
             if (hq) {
@@ -126,18 +128,20 @@ export const ChatFileMentions = memo(({ chatId, input, promptValue, onFileSelect
             }
         };
 
-        // Only listen for click (cursor position changes); text changes
-        // are handled by the useEffect on [promptValue] above.
-        input.addEventListener('click', handleCursorMove);
+        // `input` fires for user edits only (typing, paste), never for
+        // programmatic value changes; `click` covers caret moves.
+        input.addEventListener('input', updateHashQuery);
+        input.addEventListener('click', updateHashQuery);
         input.addEventListener('blur', handleBlur);
         input.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            input.removeEventListener('click', handleCursorMove);
+            input.removeEventListener('input', updateHashQuery);
+            input.removeEventListener('click', updateHashQuery);
             input.removeEventListener('blur', handleBlur);
             input.removeEventListener('keydown', handleKeyDown);
         };
-    }, [input, show, files, selectedIndex, hashQuery]);
+    }, [input, show, files, selectedIndex, hashQuery, onFileSelected]);
 
     return show ? (
         <ToolTip
