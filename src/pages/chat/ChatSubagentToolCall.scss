@@ -98,6 +98,31 @@ $depth-colors: (
         padding: 0 0.6em 0.4em 1.6em;
         cursor: pointer;
 
+        // Model / variant the subagent is running with
+        .subagent-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            padding: 0.1em 0 0.3em;
+            font-size: 0.8em;
+            opacity: 0.6;
+            min-width: 0;
+
+            .subagent-model {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .subagent-variant {
+                flex-shrink: 0;
+                padding: 0 0.45em;
+                border-radius: 0.6em;
+                background: color-mix(in srgb, currentColor 15%, transparent);
+                white-space: nowrap;
+            }
+        }
+
         .subagent-info {
             padding: 0.2em 0;
 

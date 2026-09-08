@@ -340,6 +340,10 @@ export interface SubagentDetails {
     type: 'subagent';
     subagentChatId: string;
     agentName?: string;
+    /** The model this subagent is using. */
+    model?: string;
+    /** The variant this subagent is using, when one is explicitly selected. */
+    variant?: string;
     step?: number;
     maxSteps?: number;
 }
