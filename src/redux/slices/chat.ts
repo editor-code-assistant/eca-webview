@@ -542,6 +542,11 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
 
     applyContentToMessages(chat.messages, role, content);
 
+    // Another connected client may have answered this question.
+    if (content.type === 'toolCalled' && chat.pendingQuestion?.toolCallId === content.id) {
+        chat.pendingQuestion = undefined;
+    }
+
     // Clear steer message when server echoes back a user message (steer consumed)
     if (content.type === 'text' && role === 'user' && chat.steerMessage) {
         chat.steerMessage = undefined;
