@@ -581,11 +581,17 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
                     chat.progress = undefined;
                     // A stopped prompt never emits reasonFinished — finalize
                     // any reason still 'thinking' so it doesn't spin forever.
-                    chat.messages = chat.messages.map(msg =>
-                        msg.type === 'reason' && msg.status !== 'done'
-                            ? { ...msg, status: 'done' as const }
-                            : msg
-                    );
+                    // Same for tool calls whose arguments were still streaming
+                    // when the response failed: older servers never reject them.
+                    chat.messages = chat.messages.map(msg => {
+                        if (msg.type === 'reason' && msg.status !== 'done') {
+                            return { ...msg, status: 'done' as const };
+                        }
+                        if (msg.type === 'toolCall' && msg.status === 'preparing') {
+                            return { ...msg, status: 'rejected' as const };
+                        }
+                        return msg;
+                    });
                     // Merge unconsumed steer into pending prompts queue
                     if (chat.steerMessage) {
                         chat.pendingPrompts.unshift(chat.steerMessage);

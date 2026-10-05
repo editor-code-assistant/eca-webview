@@ -113,6 +113,22 @@
             white-space: pre-wrap;
         }
 
+        // Plain text shown while arguments stream, styled like the
+        // highlighted (dracula) block that replaces it once complete.
+        .args-streaming {
+            margin: 0.5em 0;
+            padding: 1em;
+            border-radius: 0.3em;
+            background: #282a36;
+            color: #f8f8f2;
+            font-family: var(--eca-monospace-font, Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace);
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow: auto;
+            scrollbar-width: thin;
+        }
+
         p {
             margin: 0.3em 0;
             font-size: 0.85em;
