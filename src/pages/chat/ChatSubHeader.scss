@@ -63,6 +63,14 @@
             flex-direction: column;
             gap: 3px;
             min-width: 110px;
+
+            &.quota-warning > span {
+                color: var(--eca-warning-fg);
+            }
+
+            &.quota-critical > span {
+                color: var(--eca-error-fg);
+            }
         }
     }
     .actions {

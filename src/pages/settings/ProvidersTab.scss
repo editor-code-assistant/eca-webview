@@ -130,6 +130,11 @@
       display: flex;
       flex-direction: column;
       gap: 0.4em;
+
+      .quota-windows {
+        margin-top: 0;
+        font-size: 0.8em;
+      }
     }
 
     .auth-info {

@@ -7,11 +7,14 @@ import { selectRunningJobCount } from '../../redux/slices/jobs';
 import { setTrust } from '../../redux/slices/server';
 import { State, useEcaDispatch } from '../../redux/store';
 import { ToolTip } from '../components/ToolTip';
+import { QuotaWindows, formatQuotaShort, quotaLevel } from '../components/QuotaWindows';
 import './ChatSubHeader.scss';
 import { webviewSend } from '../../hooks';
 import { ChatTimeline } from './ChatTimeline';
 import { ContextBar, ContextLegend } from './ContextBar';
 import { sendPromptToCurrentChat } from '../../redux/thunks/chat';
+
+const DEFAULT_USAGE_STRING_FORMAT = '{sessionTokens} / {contextLimit} ({sessionCost}{quota})';
 
 function formatNumber(n: number): string {
     if (n >= 1_000_000) {
@@ -141,15 +144,24 @@ export function ChatSubHeader({ chatId }: Props) {
     const usage = useSelector((state: State) => state.chat.chats[chatId]?.usage);
     const usageStringFormat = useSelector((state: State) => state.server.config.usageStringFormat);
 
-    let usageString;
-    if (usage && usageStringFormat) {
-        usageString = usageStringFormat
-            .replace('{sessionTokens}', formatNumber(usage.sessionTokens))
-            .replace('{contextLimit}', usage.limit?.context != null ? formatNumber(usage.limit.context) : '')
-            .replace('{outputLimit}', usage.limit?.output != null ? formatNumber(usage.limit.output) : '')
-            .replace('{lastMessageCost}', usage.lastMessageCost ? `$${usage.lastMessageCost}` : '')
-            .replace('{sessionCost}', usage.sessionCost ? `$${usage.sessionCost}` : '');
+    const format = usageStringFormat ?? DEFAULT_USAGE_STRING_FORMAT;
+    let usageString = '';
+    if (usage && format) {
+        const values: Record<string, string> = {
+            sessionTokens: formatNumber(usage.sessionTokens),
+            contextLimit: usage.limit?.context != null ? formatNumber(usage.limit.context) : '',
+            outputLimit: usage.limit?.output != null ? formatNumber(usage.limit.output) : '',
+            lastMessageCost: usage.lastMessageCost ? `$${usage.lastMessageCost}` : '',
+            sessionCost: usage.sessionCost ? `$${usage.sessionCost}` : '',
+            quota: usage.quota ? formatQuotaShort(usage.quota) : '',
+        };
+        usageString = format
+            .replace(/\{(\w+)\}/g, (match, key: string) => key in values ? values[key] : match)
+            // Drop parens left empty by absent values, e.g. no cost and no quota.
+            .replace(/\s*\(\s*\)/g, '')
+            .trim();
     }
+    const level = quotaLevel(usage?.quota);
 
     let failed = 0;
     let starting = 0;
@@ -209,7 +221,7 @@ export function ChatSubHeader({ chatId }: Props) {
                     <div>
                         <div
                             data-tooltip-id="details-usage"
-                            className={`usage${usage?.contextBreakdown ? ' has-bar' : ''}`}
+                            className={`usage${usage?.contextBreakdown ? ' has-bar' : ''}${level ? ` quota-${level}` : ''}`}
                             onClick={showContext}
                         >
                             <span>{usageString}</span>
@@ -220,10 +232,13 @@ export function ChatSubHeader({ chatId }: Props) {
                         {usage && (
                             <ToolTip id="details-usage" className="details-tooltip context-usage-tooltip">
                                 <p>Session tokens: {formatNumber(usage.sessionTokens)}</p>
-                                <p>Last message cost: ${usage.lastMessageCost}</p>
-                                <p>Session cost: ${usage.sessionCost}</p>
+                                {usage.lastMessageCost && <p>Last message cost: ${usage.lastMessageCost}</p>}
+                                {usage.sessionCost && <p>Session cost: ${usage.sessionCost}</p>}
                                 <p>Context limit: {usage.limit?.context != null ? formatNumber(usage.limit.context) : ''}</p>
                                 <p>Output limit: {usage.limit?.output != null ? formatNumber(usage.limit.output) : ''}</p>
+                                {usage.quota && usage.quota.windows.length > 0 && (
+                                    <QuotaWindows quota={usage.quota} title="Subscription quota" />
+                                )}
                                 {usage.contextBreakdown && (
                                     <ContextLegend breakdown={usage.contextBreakdown} />
                                 )}

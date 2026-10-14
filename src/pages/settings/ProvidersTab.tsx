@@ -4,6 +4,7 @@ import { webviewSend } from '../../hooks';
 import { LoginAction, ProviderAuthStatus, ProviderStatus } from '../../protocol';
 import { State, useEcaDispatch } from '../../redux/store';
 import { listProviders, loginProvider, loginProviderInput, logoutProvider } from '../../redux/thunks/providers';
+import { QuotaWindows } from '../components/QuotaWindows';
 import './ProvidersTab.scss';
 
 const authStatusLabel: Record<ProviderAuthStatus, string> = {
@@ -188,6 +189,7 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
 
             <div className="provider-body">
                 {info && <span className="auth-info">{info}</span>}
+                {provider.quota && provider.quota.windows.length > 0 && <QuotaWindows quota={provider.quota} />}
 
                 {provider.models.length > 0 &&
                     <div className="models-section">

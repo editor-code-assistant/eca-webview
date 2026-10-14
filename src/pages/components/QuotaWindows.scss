@@ -1,0 +1,65 @@
+.quota-windows {
+    margin-top: 0.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+    // Override the very tight .details-tooltip line-height so bars and
+    // labels line up comfortably.
+    line-height: 1.4;
+
+    .quota-windows-title {
+        font-weight: 600;
+        opacity: 0.9;
+        margin-bottom: 0.1em;
+    }
+
+    .quota-window-row {
+        display: flex;
+        align-items: center;
+        gap: 0.45em;
+        white-space: nowrap;
+    }
+
+    .quota-window-label {
+        min-width: 3em;
+    }
+
+    .quota-window-bar {
+        flex: 0 0 auto;
+        width: 70px;
+        height: 6px;
+        border-radius: 999px;
+        overflow: hidden;
+        background-color: var(--eca-panel-bg);
+        box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.18);
+    }
+
+    .quota-window-fill {
+        height: 100%;
+        background-color: var(--eca-success-fg);
+        transition: width 0.3s ease;
+
+        &.warning {
+            background-color: var(--eca-warning-fg);
+        }
+
+        &.critical {
+            background-color: var(--eca-error-fg);
+        }
+    }
+
+    .quota-window-used {
+        opacity: 0.85;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .quota-window-reset {
+        opacity: 0.7;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .quota-windows-updated {
+        font-size: 0.9em;
+        opacity: 0.6;
+    }
+}

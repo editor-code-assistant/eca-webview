@@ -252,6 +252,28 @@ interface ChatUsageContent {
         output: number;
     }
     contextBreakdown?: ContextBreakdown;
+    /** Subscription quota, sent instead of costs for subscription logins. */
+    quota?: ProviderQuota;
+}
+
+/** Subscription usage snapshot reported by a provider. */
+export interface ProviderQuota {
+    /** When this snapshot was captured, epoch seconds. */
+    updatedAt: number;
+    /** Windows as reported by the provider, shortest first. Clients must not assume fixed windows. */
+    windows: ProviderQuotaWindow[];
+}
+
+export interface ProviderQuotaWindow {
+    /** Stable provider-derived id, e.g. "5h", "7d", "primary", "premium_interactions". */
+    id: string;
+    /** Short display label, e.g. "5h", "7d", "Premium". */
+    label: string;
+    /** 0-100, may exceed 100 when the provider allows overage. */
+    usedPercent: number;
+    /** Epoch seconds. */
+    resetsAt?: number;
+    windowMinutes?: number;
 }
 
 interface ChatToolCallPrepareContent {
@@ -693,6 +715,7 @@ export interface ProviderStatus {
     login?: { methods: LoginMethod[] };
     models: ProviderModel[];
     settings?: Record<string, any>;
+    quota?: ProviderQuota;
 }
 
 export interface ProvidersListResult {
