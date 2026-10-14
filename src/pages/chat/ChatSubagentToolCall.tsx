@@ -198,6 +198,9 @@ function chatSubagentToolCall(props: Props) {
 
     const description = props.summary || (activity ? activity : agent || props.name);
 
+    const model = props.details?.model;
+    const variant = props.details?.variant;
+
     const hasMessages = (props.subagentMessages ?? []).length > 0;
 
     const toggleExpanded = () => setExpanded(!expanded);
@@ -235,6 +238,12 @@ function chatSubagentToolCall(props: Props) {
                         transition={{ duration: 0.2, ease: "easeOut" }}
                         style={{ overflow: "hidden" }}
                     >
+                        {model && (
+                            <div className="subagent-meta" title={variant ? `${model} (${variant})` : model}>
+                                <span className="subagent-model">{model}</span>
+                                {variant && <span className="subagent-variant">{variant}</span>}
+                            </div>
+                        )}
                         {!hasMessages && (
                             <div className="subagent-info">
                                 {task && <div className="subagent-task">{task}</div>}
@@ -262,14 +271,6 @@ function chatSubagentToolCall(props: Props) {
     );
 }
 
-const ChatSubagentToolCallMemo = memo((props: Props) => {
-    return chatSubagentToolCall(props);
-});
-
-export function ChatSubagentToolCall(props: Props) {
-    // Don't memoize while status is still changing
-    if (props.status === 'preparing' || props.status === 'running' || props.status === 'run') {
-        return chatSubagentToolCall(props);
-    }
-    return <ChatSubagentToolCallMemo {...props} />;
-}
+// Memoized for the whole lifecycle so the card instance (and its expanded
+// state) survives status transitions; see the note on ChatReason.
+export const ChatSubagentToolCall = memo(chatSubagentToolCall);

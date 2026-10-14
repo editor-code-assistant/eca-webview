@@ -78,8 +78,14 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
     useEffect(() => {
         if (!input) return;
 
+        // Only user-driven events may open the popup: typing (native
+        // `input`) and focusing the field. Programmatic value changes —
+        // prompt history navigation, prefill, command insertion — never
+        // do; otherwise restoring a `/command` from history popped the
+        // list open and its ArrowUp/ArrowDown handlers below swallowed
+        // the next history keystrokes.
         const updateShow = () => {
-            setShow(isCommand(input) && !input?.value.includes(' '));
+            setShow(isCommand(input) && !input.value.includes(' '));
         }
         const handleBlur = () => setShow(false);
 
@@ -103,14 +109,16 @@ export const ChatCommands = memo(({ chatId, input, onCommandSelected, onCompleti
         input.addEventListener('focus', updateShow);
         input.addEventListener('blur', handleBlur);
         input.addEventListener('keydown', handleKeyDown);
-        updateShow();
         return () => {
             input.removeEventListener('input', updateShow);
             input.removeEventListener('focus', updateShow);
             input.removeEventListener('blur', handleBlur);
             input.removeEventListener('keydown', handleKeyDown);
         };
-    }, [input?.value, commands, selectedIndex]);
+        // `show` must be a dep: handleKeyDown closes over it, and without it
+        // Escape (show=false, same value) left a stale handler that still
+        // treated the next Enter as a command selection.
+    }, [input, show, commands, selectedIndex, onCommandSelected]);
 
     return show ? (
         <ToolTip

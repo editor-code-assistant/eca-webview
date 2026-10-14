@@ -543,6 +543,11 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
 
     applyContentToMessages(chat.messages, role, content);
 
+    // Another connected client may have answered this question.
+    if (content.type === 'toolCalled' && chat.pendingQuestion?.toolCallId === content.id) {
+        chat.pendingQuestion = undefined;
+    }
+
     // Clear steer message when server echoes back a user message (steer consumed)
     if (content.type === 'text' && role === 'user' && chat.steerMessage) {
         chat.steerMessage = undefined;
@@ -577,11 +582,17 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
                     chat.progress = undefined;
                     // A stopped prompt never emits reasonFinished — finalize
                     // any reason still 'thinking' so it doesn't spin forever.
-                    chat.messages = chat.messages.map(msg =>
-                        msg.type === 'reason' && msg.status !== 'done'
-                            ? { ...msg, status: 'done' as const }
-                            : msg
-                    );
+                    // Same for tool calls whose arguments were still streaming
+                    // when the response failed: older servers never reject them.
+                    chat.messages = chat.messages.map(msg => {
+                        if (msg.type === 'reason' && msg.status !== 'done') {
+                            return { ...msg, status: 'done' as const };
+                        }
+                        if (msg.type === 'toolCall' && msg.status === 'preparing') {
+                            return { ...msg, status: 'rejected' as const };
+                        }
+                        return msg;
+                    });
                     // Merge unconsumed steer into pending prompts queue
                     if (chat.steerMessage) {
                         chat.pendingPrompts.unshift(chat.steerMessage);

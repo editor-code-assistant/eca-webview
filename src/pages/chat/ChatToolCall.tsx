@@ -119,13 +119,18 @@ function GenericToolCallHeader({ props }: { props: Props }) {
 }
 
 function GenericToolCallBody({ props }: { props: Props }) {
-    const argsTxt = '```javascript\n' + props.argumentsText + '\n```';
     const showOutput = props.status === 'succeeded' || props.status === 'failed';
 
     return (
         <div>
             <p>Parameters:</p>
-            <MarkdownContent codeClassName='args' content={argsTxt} />
+            {props.status === 'preparing'
+                // Arguments are still streaming: re-highlighting the whole
+                // growing text on every chunk is quadratic and pegs the CPU on
+                // long tool calls (e.g. writing a big file), so show it raw
+                // until it is complete.
+                ? <pre className="args-streaming">{props.argumentsText}</pre>
+                : <MarkdownContent codeClassName='args' content={'```javascript\n' + props.argumentsText + '\n```'} />}
             {showOutput && (
                 <div>
                     <p>Result:</p>
@@ -455,14 +460,6 @@ function chatToolCall(props: Props) {
     );
 }
 
-const ChatToolCallMemo = memo((props: Props) => {
-    return chatToolCall(props);
-});
-
-export function ChatToolCall(props: Props) {
-    if (props.status === 'preparing') {
-        return chatToolCall(props);
-    }
-
-    return (<div> <ChatToolCallMemo {...props} /> </div>);
-}
+// Memoized for the whole lifecycle so the card instance (and its expanded
+// state) survives status transitions; see the note on ChatReason.
+export const ChatToolCall = memo(chatToolCall);
