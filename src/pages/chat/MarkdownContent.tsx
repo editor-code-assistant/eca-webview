@@ -13,6 +13,15 @@ interface Props {
 }
 
 /**
+ * Class for lists rendered from markdown (see `.markdown-list` in
+ * index.css), keeping the ones remark-gfm adds itself such as
+ * `contains-task-list`.
+ */
+function markdownListClassName(className?: string) {
+    return className ? `markdown-list ${className}` : 'markdown-list';
+}
+
+/**
  * Inner renderer, memoized. react-markdown re-parses the WHOLE string and
  * Prism re-highlights every code block on each render — for a message
  * holding a ~2000-line code block that costs ~800ms. During streaming the
@@ -95,6 +104,18 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, codeClassName
                             <table {...rest}>{children}</table>
                         </div>
                     );
+                },
+                // index.css strips markers and indentation from every <ul>
+                // so UI menus render as bare lists; tag markdown lists so
+                // they get them back. `node` is the hast element, not a DOM
+                // attribute.
+                ul(props) {
+                    const { node, className, ...rest } = props;
+                    return <ul {...rest} className={markdownListClassName(className)} />;
+                },
+                ol(props) {
+                    const { node, className, ...rest } = props;
+                    return <ol {...rest} className={markdownListClassName(className)} />;
                 }
             }}
         />

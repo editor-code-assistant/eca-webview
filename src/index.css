@@ -69,6 +69,8 @@ body {
   background-color: var(--eca-input-bg);
 }
 
+/* Bare lists for UI menus (pickers, timeline…). Lists rendered from
+ * markdown get their markers back via `.markdown-list` below. */
 ul {
   list-style: none;
   margin-block-start: 0;
@@ -182,4 +184,36 @@ th {
 
 tr:nth-child(even) td {
   background-color: color-mix(in srgb, var(--eca-panel-bg) 40%, transparent);
+}
+
+/* Markdown lists.
+ *
+ * The global `ul` reset above also stripped the bullets and indentation
+ * from lists in chat messages, so they read as consecutive lines of text.
+ * MarkdownContent tags the lists it renders with `.markdown-list` (`ol`
+ * too, so both share one indent instead of the UA's wide 40px). */
+.markdown-list {
+  /* `revert` falls back to the browser's own markers: disc, then circle
+   * and square for nested `ul`; decimal for `ol`. */
+  list-style-type: revert;
+  margin-block: 0.5em;
+  /* Wide enough for two-digit `ol` markers: `.message-row` clips
+   * anything that overflows to the left. */
+  padding-inline-start: 2em;
+}
+
+/* Nested lists hug their parent item. */
+.markdown-list .markdown-list {
+  margin-block: 0;
+}
+
+/* GFM task lists (`- [ ] todo`): the checkbox takes the marker's place. */
+.markdown-list > .task-list-item {
+  list-style-type: none;
+}
+
+.markdown-list > .task-list-item input[type="checkbox"] {
+  margin-block: 0;
+  margin-inline: -1.4em 0.2em;
+  vertical-align: middle;
 }
