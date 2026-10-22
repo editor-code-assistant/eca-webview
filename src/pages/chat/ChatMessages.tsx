@@ -70,7 +70,19 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
 
     return (
         <div className="messages-wrapper">
-            <div className="messages-container scrollable" ref={scrollRef} >
+            {/*
+              * `tabIndex={-1}` (click-focusable, not in the Tab order) makes
+              * selecting message text focus this scroller instead of leaving
+              * focus on <body>. VS Code >= 1.143 refocuses the webview's last
+              * focused element before running clipboard commands whenever
+              * <body> is active (microsoft/vscode#341552, reported upstream as
+              * microsoft/vscode#343489). That's usually the prompt textarea,
+              * so Cmd/Ctrl+C and context-menu Copy wiped the selection and
+              * copied nothing. Keep it on the scroller itself: a focusable
+              * ancestor would break arrow/Page-key scrolling. `*:focus` in
+              * index.css hides the focus ring.
+              */}
+            <div className="messages-container scrollable" ref={scrollRef} tabIndex={-1}>
             {messages.map((message, index) => {
                 const shouldAnimate = !replaying && index >= initialCountRef.current;
 
