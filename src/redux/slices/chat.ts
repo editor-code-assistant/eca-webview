@@ -135,6 +135,7 @@ export interface Chat {
 
 interface ChatUsage {
     sessionTokens: number,
+    messageOutputTps?: number,
     lastMessageCost?: string,
     sessionCost?: string,
     limit?: {

@@ -245,6 +245,12 @@ export interface ContextBreakdown {
 interface ChatUsageContent {
     type: 'usage';
     sessionTokens: number;
+    /**
+     * Output tokens per second of the last model response, measured from
+     * its first generated token to its end, excluding tool runs and
+     * approval waits. Absent when unknown, e.g. non-streamed requests.
+     */
+    messageOutputTps?: number;
     lastMessageCost?: string;
     sessionCost?: string;
     limit?: {

@@ -36,6 +36,20 @@
             line-height: 0.5;
         }
 
+        // Its lines wrap in a narrow panel, where the tight
+        // .details-tooltip line-height above would overlap them.
+        .tps-tooltip {
+            line-height: 1.4;
+
+            p {
+                margin: 0.5em 0;
+            }
+
+            .tps-tooltip-hint {
+                opacity: 0.7;
+            }
+        }
+
         .mcps {
             @extend %item;
             .running {
@@ -71,6 +85,14 @@
             &.quota-critical > span {
                 color: var(--eca-error-fg);
             }
+        }
+
+        .tps {
+            @extend %item;
+            // Informational only, clicking does nothing.
+            cursor: default;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
     }
     .actions {

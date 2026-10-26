@@ -162,6 +162,10 @@ export function ChatSubHeader({ chatId }: Props) {
             .trim();
     }
     const level = quotaLevel(usage?.quota);
+    // Output speed of the last model response, absent until the server
+    // could measure one, e.g. not for non-streamed requests.
+    const tps = usage?.messageOutputTps;
+    const outputTps = typeof tps === 'number' ? Math.round(tps) : null;
 
     let failed = 0;
     let starting = 0;
@@ -246,6 +250,19 @@ export function ChatSubHeader({ chatId }: Props) {
                             </ToolTip>
                         )}
                     </div>
+                )}
+                {outputTps !== null && (
+                    <>
+                        <div data-tooltip-id="details-tps" className="tps">
+                            <span>{outputTps} tok/s</span>
+                        </div>
+                        <ToolTip id="details-tps" className="details-tooltip tps-tooltip">
+                            <p>Output speed of the last response: {outputTps} tokens/s</p>
+                            <p className="tps-tooltip-hint">
+                                Measured from its first generated token to its end, excluding tool runs and approval waits.
+                            </p>
+                        </ToolTip>
+                    </>
                 )}
             </div>
             <div className="actions">
