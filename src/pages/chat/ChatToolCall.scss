@@ -28,6 +28,7 @@
 
     // Header
     .tool-call-card-header {
+        position: relative;
         display: flex;
         align-items: center;
         padding: 0.45em 0.6em;
@@ -46,14 +47,21 @@
             flex-shrink: 0;
         }
 
+        // Pushes the status icon to the end with the room left over. An auto
+        // margin, not flex-grow, which would compete with the description.
         .spacing {
-            flex: 1;
+            margin-left: auto;
         }
 
         .tool-call-description {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            // Sized from the room its siblings leave, up to its own width, so
+            // in narrow panels it truncates before a running tool's progress
+            // message: the generic "Calling MCP tool" tells less.
+            flex: 1 1 0;
+            max-width: max-content;
         }
 
         .tool-call-name {
@@ -64,6 +72,43 @@
             color: var(--eca-input-fg);
             background-color: var(--eca-input-bg);
             white-space: nowrap;
+        }
+
+        // Progress a running tool reports, e.g. "3/10 · Indexing files".
+        .tool-call-progress-count,
+        .tool-call-progress-message {
+            font-size: 0.85em;
+            font-style: italic;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .tool-call-progress-count {
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tool-call-progress-message {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        // Narrower than the header gap, so it reads "3/10 · Indexing files".
+        .tool-call-progress-count + .tool-call-progress-message {
+            margin-left: -0.2em;
+        }
+
+        // Done fraction along the header bottom, when the tool reports a total.
+        .tool-call-progress-bar {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            background: var(--eca-accent-fg, #007acc);
+            opacity: 0.7;
+            transition: width 0.3s ease;
+            pointer-events: none;
         }
 
         .tool-call-status {

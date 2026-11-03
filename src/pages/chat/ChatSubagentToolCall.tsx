@@ -71,6 +71,7 @@ function SubagentMessages({ messages, subagentChatId, depth }: { messages: ChatM
                                     totalTimeMs={message.totalTimeMs}
                                     manualApproval={message.manualApproval}
                                     summary={message.summary}
+                                    progress={message.progress}
                                     argumentsText={message.argumentsText}
                                     subagentMessages={message.subagentMessages}
                                     subagentChatId={message.subagentChatId}

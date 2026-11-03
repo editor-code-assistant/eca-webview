@@ -306,6 +306,10 @@ interface ChatToolCallRunContent {
     summary?: string;
 }
 
+/**
+ * First sent when the call starts; may be sent again for the same id
+ * while it runs, e.g. with updated `progress` or subagent step `details`.
+ */
 interface ChatToolCallRunningContent {
     type: 'toolCallRunning';
     origin: ToolCallOrigin;
@@ -315,6 +319,23 @@ interface ChatToolCallRunningContent {
     arguments: string[];
     details?: ToolCallDetails;
     summary?: string;
+    /**
+     * Latest progress reported by the tool while running, mirroring MCP's
+     * `notifications/progress`. Sent at most about once per second per call.
+     */
+    progress?: ToolCallProgress;
+}
+
+/**
+ * Progress of a running tool call, mirroring MCP's progress notification params.
+ */
+export interface ToolCallProgress {
+    /** The progress so far; increases with each report, even if `total` is unknown. */
+    progress: number;
+    /** Total progress required, if known. */
+    total?: number;
+    /** Description of the current progress. */
+    message?: string;
 }
 
 interface ChatToolCallRejectedContent {

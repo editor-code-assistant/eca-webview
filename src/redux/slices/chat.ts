@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, ContextBreakdown, PendingQuestion, ProviderQuota, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput } from "../../protocol";
+import { ChatAgent, ChatCommand, ChatContent, ChatContentReceivedParams, ChatContentRole, ChatContext, ChatFile, ChatSummary, ContextBreakdown, PendingQuestion, ProviderQuota, SubagentDetails, TaskDetails, ToolCallDetails, ToolCallOrigin, ToolCallOutput, ToolCallProgress } from "../../protocol";
 import { newChatId } from "../../util";
 
 interface ChatMessageText {
@@ -23,6 +23,8 @@ interface ChatMessageToolCall {
     totalTimeMs?: number,
     details?: ToolCallDetails,
     summary?: string,
+    /** Latest progress the tool reported while running, e.g. MCP progress notifications. */
+    progress?: ToolCallProgress,
     subagentMessages?: ChatMessage[],
     subagentChatId?: string,
 }
@@ -310,6 +312,8 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
                 tool.summary = content.summary;
                 tool.details = content.details;
                 tool.argumentsText = JSON.stringify(content.arguments, null, 2);
+                // Re-sent while running with the latest progress the tool reported.
+                tool.progress = content.progress;
                 messages[existingIndex] = tool;
             }
             break;
@@ -321,6 +325,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
                 tool.status = 'rejected';
                 tool.details = content.details;
                 tool.summary = content.summary;
+                tool.progress = undefined;
                 messages[existingIndex] = tool;
             }
             break;
@@ -334,6 +339,7 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
                 tool.details = content.details;
                 tool.summary = content.summary;
                 tool.totalTimeMs = content.totalTimeMs;
+                tool.progress = undefined;
                 messages[existingIndex] = tool;
             }
             break;

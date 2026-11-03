@@ -4,7 +4,7 @@ import 'react-diff-view/style/index.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBackgroundCollapse, useKeyPressedListener } from '../../hooks';
 import { useSelector } from 'react-redux';
-import { FileChangeDetails, JsonOutputsDetails, ShellCommandBreakdown, ShellCommandDetails, SubagentDetails, ToolCallDetails, ToolCallOutput } from '../../protocol';
+import { FileChangeDetails, JsonOutputsDetails, ShellCommandBreakdown, ShellCommandDetails, SubagentDetails, ToolCallDetails, ToolCallOutput, ToolCallProgress } from '../../protocol';
 import { ChatMessage } from '../../redux/slices/chat';
 import { selectJobByToolCallId } from '../../redux/slices/jobs';
 import { EcaDispatch, State, useEcaDispatch } from '../../redux/store';
@@ -29,9 +29,46 @@ interface Props {
     outputs?: ToolCallOutput[],
     details?: ToolCallDetails,
     summary?: string,
+    progress?: ToolCallProgress,
     subagentMessages?: ChatMessage[],
     subagentChatId?: string,
     depth?: number,
+}
+
+// Progress values come verbatim from third-party MCP servers, so every
+// field is checked before use instead of trusting the declared types.
+
+/** Progress number without float noise, e.g. 0.3333… as 0.33. */
+function progressNumber(n: number): string {
+    return String(Math.round(n * 100) / 100);
+}
+
+/**
+ * Parts of the progress a running tool reports, shown as eca-emacs does:
+ * "3/10 · Indexing files", only the message when the total is unknown,
+ * or only the progress so far when there is no message either.
+ */
+function toolCallProgressParts(progress?: ToolCallProgress): { count?: string, message?: string } | null {
+    if (!progress) return null;
+    const value = Number.isFinite(progress.progress) ? progress.progress : undefined;
+    const total = Number.isFinite(progress.total) ? progress.total : undefined;
+    const message = (typeof progress.message === 'string' && progress.message.trim()) || undefined;
+    let count: string | undefined;
+    if (value !== undefined && total !== undefined) {
+        count = `${progressNumber(value)}/${progressNumber(total)}`;
+    } else if (value !== undefined && !message) {
+        count = progressNumber(value);
+    }
+    return count || message ? { count, message } : null;
+}
+
+/** Done fraction (0-1) of a running tool's progress, null when its total is unknown. */
+function toolCallProgressRatio(progress?: ToolCallProgress): number | null {
+    const value = progress?.progress;
+    const total = progress?.total;
+    if (typeof value !== 'number' || typeof total !== 'number'
+        || !Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return null;
+    return Math.min(1, Math.max(0, value / total));
 }
 
 function ToolCallCard({ props, iconClass, extraClassName, defaultOpen, headerContent, bodyContent, approvalComp }: {
@@ -48,6 +85,10 @@ function ToolCallCard({ props, iconClass, extraClassName, defaultOpen, headerCon
     const collapse = () => setExpanded(false);
     const { onMouseDown, onMouseUp } = useBackgroundCollapse(expanded, collapse, cardRef);
     const isActive = props.status === 'preparing' || props.status === 'run' || props.status === 'running';
+    // Sent by the server while the tool runs, e.g. MCP progress notifications.
+    const progress = props.status === 'running' ? props.progress : undefined;
+    const progressParts = toolCallProgressParts(progress);
+    const progressRatio = toolCallProgressRatio(progress);
 
     const toggleExpanded = () => setExpanded(!expanded);
 
@@ -60,8 +101,18 @@ function ToolCallCard({ props, iconClass, extraClassName, defaultOpen, headerCon
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 />
                 {headerContent}
+                {/* The count never shrinks, only the message truncates in narrow panels. */}
+                {progressParts?.count && <span className="tool-call-progress-count">{progressParts.count}</span>}
+                {progressParts?.message && (
+                    <span className="tool-call-progress-message" title={progressParts.message}>
+                        {progressParts.count ? `· ${progressParts.message}` : progressParts.message}
+                    </span>
+                )}
                 <span className="spacing" />
                 <i className={`tool-call-status codicon ${iconClass}`} />
+                {progressRatio !== null && (
+                    <span className="tool-call-progress-bar" style={{ width: `${progressRatio * 100}%` }} />
+                )}
             </div>
 
             <AnimatePresence initial={defaultOpen}>
