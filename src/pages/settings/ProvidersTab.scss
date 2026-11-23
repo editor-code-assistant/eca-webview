@@ -142,6 +142,37 @@
       color: var(--eca-input-placeholder-fg);
     }
 
+    .provider-error {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4em;
+      padding: 0.35em 0.5em;
+      border-radius: 0.3em;
+      font-size: 0.8em;
+      background-color: rgba(241, 76, 76, 0.08);
+      border: 1px solid rgba(241, 76, 76, 0.25);
+      color: var(--eca-error-fg);
+
+      .codicon { font-size: 0.95em; line-height: 1.4; }
+
+      .provider-error-message {
+        flex: 1;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+
+      .provider-error-dismiss {
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        cursor: pointer;
+        opacity: 0.7;
+
+        &:hover { opacity: 1; }
+      }
+    }
+
     .models-section {
       display: flex;
       flex-direction: column;

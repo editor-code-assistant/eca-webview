@@ -65,10 +65,16 @@ function getLoginLabel(provider: ProviderStatus): string | null {
     return 'Login';
 }
 
+function errorMessage(err: unknown, fallback: string): string {
+    const message = (err as { message?: unknown } | null)?.message;
+    return typeof message === 'string' && message ? message : fallback;
+}
+
 function ProviderCard({ provider }: { provider: ProviderStatus }) {
     const dispatch = useEcaDispatch();
     const [modelsExpanded, setModelsExpanded] = useState(false);
     const [loginLoading, setLoginLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const auth = provider.auth;
     const isAuthed = auth.status === 'authenticated' || auth.status === 'expiring';
@@ -151,16 +157,21 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
 
     const onLogin = async () => {
         setLoginLoading(true);
+        setError(null);
         try {
             const action = await dispatch(loginProvider({ provider: provider.id })).unwrap();
             await handleLoginAction(action);
+        } catch (err) {
+            setError(errorMessage(err, 'Login failed.'));
         } finally {
             setLoginLoading(false);
         }
     };
 
     const onLogout = () => {
-        dispatch(logoutProvider({ provider: provider.id }));
+        setError(null);
+        dispatch(logoutProvider({ provider: provider.id })).unwrap()
+            .catch((err) => setError(errorMessage(err, 'Logout failed.')));
     };
 
     return (
@@ -188,6 +199,14 @@ function ProviderCard({ provider }: { provider: ProviderStatus }) {
             </div>
 
             <div className="provider-body">
+                {error &&
+                    <div className="provider-error" role="alert">
+                        <i className="codicon codicon-error"></i>
+                        <span className="provider-error-message">{error}</span>
+                        <button className="provider-error-dismiss" title="Dismiss" onClick={() => setError(null)}>
+                            <i className="codicon codicon-close"></i>
+                        </button>
+                    </div>}
                 {info && <span className="auth-info">{info}</span>}
                 {provider.quota && provider.quota.windows.length > 0 && <QuotaWindows quota={provider.quota} />}
 
