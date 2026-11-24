@@ -114,9 +114,11 @@ const REPLAY_WINDOW_MS = 1000;
 export const rollbackChat = createAsyncThunk<void, { chatId: string, contentId: string }, ThunkApiType>(
     "chat/rollback",
     async ({ chatId, contentId }, { dispatch, getState }) => {
-        // The rolled-back message is removed from the chat by the
+        // A rolled-back user message is removed from the chat by the
         // server — load its text back into the prompt input so the
-        // user can tweak and resend it instead of retyping.
+        // user can tweak and resend it instead of retyping. A flag is
+        // kept, only what came after it being removed, so it loads
+        // nothing and the draft stays.
         const messages = getState().chat.chats[chatId]?.messages ?? [];
         const rolledBack = messages.find(msg => msg.type === 'text' && msg.contentId === contentId);
         if (rolledBack && rolledBack.type === 'text') {

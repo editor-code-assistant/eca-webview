@@ -146,6 +146,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                 <ChatFlag
                                     text={message.text}
                                     contentId={message.contentId}
+                                    onRollback={onRollbackClicked}
                                     onFork={onForkFromFlagClicked}
                                     onRemove={onRemoveFlagClicked}
                                 />

@@ -25,7 +25,8 @@
         transition: opacity 0.15s;
     }
 
-    &:hover .flag-actions {
+    &:hover .flag-actions,
+    .flag-actions:focus-within {
         opacity: 1;
     }
 
