@@ -64,6 +64,19 @@ export function relativizeFromRoot(path: string, workspaceFolders: WorkspaceFold
     return rel.split('/').slice(0, -1).join('/');
 }
 
+/** A count of tokens, compactly: 412, 12.3k, 1.2M. */
+export function formatNumber(n: number): string {
+    if (n >= 1_000_000) {
+        const val = n / 1_000_000;
+        return val % 1 === 0 ? `${val}M` : `${parseFloat(val.toFixed(1))}M`;
+    }
+    if (n >= 1_000) {
+        const val = n / 1_000;
+        return val % 1 === 0 ? `${val}k` : `${parseFloat(val.toFixed(1))}k`;
+    }
+    return n.toString();
+}
+
 /** Last segment of a file path; separator-agnostic (handles C:\ paths). */
 export function pathBasename(path: string): string {
     const parts = path.split(/[\\/]/).filter(Boolean);

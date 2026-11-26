@@ -1,0 +1,12 @@
+// What a turn used, under its answer (ChatTurnUsage.tsx): one quiet line,
+// glued to the answer by `.turn-usage-row` in ChatMessages.scss.
+.turn-usage {
+    font-size: 0.8em;
+    line-height: 1.4;
+    opacity: 0.55;
+    // Only the text shows the hover details, not the whole row.
+    width: fit-content;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    cursor: default;
+}

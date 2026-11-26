@@ -55,7 +55,17 @@ interface ChatMessageFlag {
     contentId: string,
 }
 
-export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall | ChatMessageHook | ChatMessageFlag;
+/** What a turn used, shown under its answer, see `ChatTurnUsageContent`. */
+interface ChatMessageTurnUsage {
+    type: 'turnUsage',
+    model?: string,
+    totalTimeMs?: number,
+    outputTokens: number,
+    inputTokens: number,
+    cost?: string,
+}
+
+export type ChatMessage = ChatMessageText | ChatMessageReason | ChatMessageToolCall | ChatMessageHook | ChatMessageFlag | ChatMessageTurnUsage;
 
 interface CursorPreContext {
     type: 'cursor';
@@ -405,7 +415,8 @@ function applyContentToMessages(messages: ChatMessage[], role: ChatContentRole, 
             });
             break;
         }
-        // progress, usage, metadata, url are not message-level — handled separately
+        // progress, usage, metadata, url are not message-level — handled separately.
+        // turnUsage too: shown for the chat's own turns only, not in subagents.
     }
 }
 
@@ -612,6 +623,20 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
         }
         case 'usage': {
             chat.usage = content;
+            break;
+        }
+        // Ends a turn, live or when the chat is opened again: a line under
+        // its answer. Only the chat's own turns, not those of the subagents
+        // it runs, whose content goes to their tool call above.
+        case 'turnUsage': {
+            chat.messages.push({
+                type: 'turnUsage',
+                model: content.model,
+                totalTimeMs: content.totalTimeMs,
+                outputTokens: content.outputTokens,
+                inputTokens: content.inputTokens,
+                cost: content.cost,
+            });
             break;
         }
         case 'metadata': {

@@ -13,6 +13,7 @@ import { ChatReason } from './ChatReason';
 import { ChatTextMessage } from './ChatTextMessage';
 import { ChatFlag } from './ChatFlag';
 import { ChatToolCall } from './ChatToolCall';
+import { ChatTurnUsage } from './ChatTurnUsage';
 
 const messageVariants = {
     hidden: { opacity: 0, y: 6 },
@@ -151,6 +152,16 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     onRemove={onRemoveFlagClicked}
                                 />
                             );
+                        case 'turnUsage':
+                            return (
+                                <ChatTurnUsage
+                                    model={message.model}
+                                    totalTimeMs={message.totalTimeMs}
+                                    outputTokens={message.outputTokens}
+                                    inputTokens={message.inputTokens}
+                                    cost={message.cost}
+                                />
+                            );
                         default:
                             return null;
                     }
@@ -164,12 +175,22 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                             ? `chat-hook-${index}`
                             : message.type === 'flag'
                                 ? `chat-flag-${index}`
-                                : `chat-message-${index}`;
+                                : message.type === 'turnUsage'
+                                    ? `chat-turn-usage-${index}`
+                                    : `chat-message-${index}`;
+
+                // The line telling what a turn used is glued to the answer
+                // above it, see ChatMessages.scss.
+                const rowClassName = message.type === 'turnUsage'
+                    ? 'message-row turn-usage-row'
+                    : messages[index + 1]?.type === 'turnUsage'
+                        ? 'message-row before-turn-usage'
+                        : 'message-row';
 
                 return (
                     <motion.div
                         key={key}
-                        className="message-row"
+                        className={rowClassName}
                         variants={messageVariants}
                         initial={shouldAnimate ? "hidden" : false}
                         animate="visible"

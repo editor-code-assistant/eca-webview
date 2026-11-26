@@ -13,20 +13,9 @@ import { webviewSend } from '../../hooks';
 import { ChatTimeline } from './ChatTimeline';
 import { ContextBar, ContextLegend } from './ContextBar';
 import { sendPromptToCurrentChat } from '../../redux/thunks/chat';
+import { formatNumber } from '../../util';
 
 const DEFAULT_USAGE_STRING_FORMAT = '{sessionTokens} / {contextLimit} ({sessionCost}{quota})';
-
-function formatNumber(n: number): string {
-    if (n >= 1_000_000) {
-        const val = n / 1_000_000;
-        return val % 1 === 0 ? `${val}M` : `${parseFloat(val.toFixed(1))}M`;
-    }
-    if (n >= 1_000) {
-        const val = n / 1_000;
-        return val % 1 === 0 ? `${val}k` : `${parseFloat(val.toFixed(1))}k`;
-    }
-    return n.toString();
-}
 
 function messagesToMarkdown(messages: ChatMessage[]): string {
     const parts: string[] = [];

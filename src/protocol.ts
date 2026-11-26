@@ -195,6 +195,7 @@ export type ChatContent =
     | ChatURLContent
     | ChatProgressContent
     | ChatUsageContent
+    | ChatTurnUsageContent
     | ChatToolCallPrepareContent
     | ChatToolCallRunContent
     | ChatToolCallRunningContent
@@ -260,6 +261,30 @@ interface ChatUsageContent {
     contextBreakdown?: ContextBreakdown;
     /** Subscription quota, sent instead of costs for subscription logins. */
     quota?: ProviderQuota;
+}
+
+/**
+ * What a whole turn used, from its prompt to its end: all its requests to the
+ * model, tool call rounds and subagents included. Sent once, right before the
+ * turn's `finished` progress, and again after the last message of the turn
+ * when the chat is opened again. Turns that never reached the model, or whose
+ * provider reports no usage, have none.
+ */
+export interface ChatTurnUsageContent {
+    type: 'turnUsage';
+    /** The model of the turn, e.g. 'anthropic/claude-sonnet-4-6'. */
+    model?: string;
+    /** From when the server got the prompt to the end of the turn. */
+    totalTimeMs?: number;
+    /** The tokens the model generated: text, reasoning and tool calls. */
+    outputTokens: number;
+    /** The tokens sent to the model, cache reads and writes included. */
+    inputTokens: number;
+    /**
+     * Formatted like `lastMessageCost`. Absent when a request of the turn
+     * had no known price, or with subscription logins.
+     */
+    cost?: string;
 }
 
 /** Subscription usage snapshot reported by a provider. */

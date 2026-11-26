@@ -67,6 +67,17 @@
     flex-shrink: 0;
 }
 
+// The line telling what a turn used (ChatTurnUsage) sits right under the
+// answer of its turn: its row takes back most of the gap between rows, and
+// the answer drops the bottom margin of its last block, a paragraph's 1em.
+.message-row.before-turn-usage .assistant-message > :last-child {
+    margin-bottom: 0;
+}
+
+.message-row.turn-usage-row {
+    margin-top: -0.3em;
+}
+
 // Floating "scroll to latest" pill, shown only when the user has scrolled
 // away from the bottom (see `useAutoScroll` in ChatMessages.tsx). Clicking
 // it scrolls to the bottom and re-arms the auto-stick-to-bottom behavior

@@ -1,19 +1,6 @@
 import { ContextBreakdown } from '../../protocol';
+import { formatNumber } from '../../util';
 import './ContextBar.scss';
-
-// Local humanizer (mirrors the one in ChatSubHeader) so the legend can
-// label each category compactly, e.g. 12.3k.
-function formatNumber(n: number): string {
-    if (n >= 1_000_000) {
-        const val = n / 1_000_000;
-        return val % 1 === 0 ? `${val}M` : `${parseFloat(val.toFixed(1))}M`;
-    }
-    if (n >= 1_000) {
-        const val = n / 1_000;
-        return val % 1 === 0 ? `${val}k` : `${parseFloat(val.toFixed(1))}k`;
-    }
-    return n.toString();
-}
 
 // Fallback only used when an older server omits the colour from the
 // payload; the server is the source of truth for colours/emoji.
