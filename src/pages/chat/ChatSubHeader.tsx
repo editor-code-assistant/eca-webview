@@ -152,8 +152,11 @@ export function ChatSubHeader({ chatId }: Props) {
     }
     const level = quotaLevel(usage?.quota);
     // Output speed of the last model response, absent until the server
-    // could measure one, e.g. not for non-streamed requests.
-    const tps = usage?.messageOutputTps;
+    // could measure one, e.g. not for non-streamed requests. Once a turn
+    // ended, the line under its answer tells the speed of the whole turn
+    // instead, until the next one starts.
+    const turnUsageShown = useSelector((state: State) => !!state.chat.chats[chatId]?.turnUsageShown);
+    const tps = turnUsageShown ? undefined : usage?.messageOutputTps;
     const outputTps = typeof tps === 'number' ? Math.round(tps) : null;
 
     let failed = 0;

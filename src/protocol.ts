@@ -278,6 +278,14 @@ export interface ChatTurnUsageContent {
     totalTimeMs?: number;
     /** The tokens the model generated: text, reasoning and tool calls. */
     outputTokens: number;
+    /**
+     * How fast the model generated during the turn, in tokens per second:
+     * the output tokens of its responses over the time they took, each
+     * measured like `messageOutputTps`, so short ones like tool calls
+     * barely sway it. Subagents' responses don't count. Absent when no
+     * response could be measured, and with servers up to 0.175.0.
+     */
+    outputTps?: number;
     /** The tokens sent to the model, cache reads and writes included. */
     inputTokens: number;
     /**

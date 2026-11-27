@@ -158,6 +158,7 @@ export function ChatMessages({ chatId, children }: ChatMessagesProps) {
                                     model={message.model}
                                     totalTimeMs={message.totalTimeMs}
                                     outputTokens={message.outputTokens}
+                                    outputTps={message.outputTps}
                                     inputTokens={message.inputTokens}
                                     cost={message.cost}
                                 />

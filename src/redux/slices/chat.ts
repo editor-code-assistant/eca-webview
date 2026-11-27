@@ -61,6 +61,7 @@ interface ChatMessageTurnUsage {
     model?: string,
     totalTimeMs?: number,
     outputTokens: number,
+    outputTps?: number,
     inputTokens: number,
     cost?: string,
 }
@@ -82,6 +83,13 @@ export interface Chat {
     messages: ChatMessage[],
     addedContexts: ChatPreContext[],
     usage?: ChatUsage,
+    /**
+     * `true` once the line under the answer of the last turn, which
+     * ended, tells its time or speed (`turnUsage`): the subheader then
+     * leaves out the speed of its last response until the next turn
+     * starts, see `processContentEvent`.
+     */
+    turnUsageShown?: boolean,
     pendingPrompts: string[],
     steerMessage?: string,
     /**
@@ -593,6 +601,14 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
         case 'progress': {
             switch (content.state) {
                 case 'running': {
+                    // A new turn: the subheader tells its speed again, not
+                    // the speed of the previous turn's last response.
+                    if (chat.progress === undefined) {
+                        chat.turnUsageShown = false;
+                        if (chat.usage) {
+                            chat.usage.messageOutputTps = undefined;
+                        }
+                    }
                     chat.progress = content.text!;
                     break;
                 }
@@ -634,9 +650,17 @@ function processContentEvent(state: ChatState, payload: ChatContentReceivedParam
                 model: content.model,
                 totalTimeMs: content.totalTimeMs,
                 outputTokens: content.outputTokens,
+                outputTps: content.outputTps,
                 inputTokens: content.inputTokens,
                 cost: content.cost,
             });
+            // The line tells the time and speed of the turn, so the
+            // subheader no longer does. Only once the turn ended: the server
+            // tells what it used after `chat/statusChanged` idle.
+            if (chat.progress === undefined
+                && (content.totalTimeMs != null || content.outputTps != null)) {
+                chat.turnUsageShown = true;
+            }
             break;
         }
         case 'metadata': {
@@ -678,6 +702,7 @@ export const chatSlice = createSlice({
             state.chats[chatId].messages = [];
             state.chats[chatId].taskState = null;
             state.chats[chatId].taskLoading = false;
+            state.chats[chatId].turnUsageShown = false;
         },
         cleared: (state, action) => {
             const chatId = action.payload.chatId;
@@ -686,6 +711,7 @@ export const chatSlice = createSlice({
                 state.chats[chatId].messages = [];
                 state.chats[chatId].taskState = null;
                 state.chats[chatId].taskLoading = false;
+                state.chats[chatId].turnUsageShown = false;
             }
         },
         resetChat: (state, action) => {

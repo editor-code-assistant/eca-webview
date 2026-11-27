@@ -6,6 +6,7 @@ interface Props {
     model?: string,
     totalTimeMs?: number,
     outputTokens?: number,
+    outputTps?: number,
     inputTokens?: number,
     cost?: string,
 }
@@ -33,17 +34,18 @@ function tokens(n: number, kind: string): string {
 }
 
 /** The segments of the line telling what a turn used, those it has. */
-export function turnUsageSegments({ model, totalTimeMs, outputTokens, cost }: Props): string[] {
+export function turnUsageSegments({ model, totalTimeMs, outputTokens, outputTps, cost }: Props): string[] {
     return [
         model ? model.split('/').pop() : undefined,
         totalTimeMs != null ? formatTurnTime(totalTimeMs) : undefined,
         outputTokens != null ? tokens(outputTokens, 'output') : undefined,
+        outputTps != null ? `${outputTps} tok/s` : undefined,
         cost ? `$${cost}` : undefined,
     ].filter((segment): segment is string => !!segment);
 }
 
 /** What hovering the line tells: all of it, the full model included. */
-export function turnUsageHelp({ model, totalTimeMs, outputTokens, inputTokens, cost }: Props): string {
+export function turnUsageHelp({ model, totalTimeMs, outputTokens, outputTps, inputTokens, cost }: Props): string {
     return [
         model ? `Model: ${model}` : undefined,
         totalTimeMs != null
@@ -51,6 +53,9 @@ export function turnUsageHelp({ model, totalTimeMs, outputTokens, inputTokens, c
             : undefined,
         outputTokens != null
             ? `Output tokens: ${outputTokens.toLocaleString('en-US')}, thinking, tool calls and subagents included`
+            : undefined,
+        outputTps != null
+            ? `Output speed: ${outputTps} tokens/s, on average while the model generated, subagents excluded`
             : undefined,
         inputTokens != null
             ? `Input tokens: ${inputTokens.toLocaleString('en-US')}, cache and subagents included`
@@ -61,11 +66,12 @@ export function turnUsageHelp({ model, totalTimeMs, outputTokens, inputTokens, c
 
 /**
  * The quiet line under the answer of a turn telling what the turn used,
- * like `claude-sonnet-4-5 · 9.8s · 412 output tokens · $0.03`: the model,
- * from the prompt to the end of the turn, the tokens the model generated
- * (thinking, tool calls and subagents included) and the cost, absent with
- * subscription logins. The server tells it when the turn ends, and again
- * when the chat is opened again.
+ * like `claude-sonnet-4-5 · 9.8s · 412 output tokens · 87 tok/s · $0.03`:
+ * the model, from the prompt to the end of the turn, the tokens the model
+ * generated (thinking, tool calls and subagents included), how fast it
+ * generated them over the turn, and the cost, absent with subscription
+ * logins. The server tells it when the turn ends, and again when the chat
+ * is opened again; servers up to 0.175.0 don't tell the speed.
  */
 export const ChatTurnUsage = memo(function ChatTurnUsage(props: Props) {
     const segments = turnUsageSegments(props);
